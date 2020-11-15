@@ -1,5 +1,7 @@
 from django.db import models
 
+# Please refer to https://app.swaggerhub.com/apis/open-transport/customer-account/1.0.1#/
+# for details on these models
 
 ########### Tomas ##############
 
@@ -15,6 +17,7 @@ class Account(models.Model):
 class Purchase(models.Model):
     # id may change if our interpretation of RecordID was wrong
     id = models.OneToOneField("RecordID", primary_key=True)
+    mode = models.ForeignKey("Mode")
     travel_class = models.OneToOneField("TravelClass")
     booking_date_time = models.DateTimeField()
     transaction = models.OneToOneField("Transaction")
@@ -41,7 +44,7 @@ class Purchase(models.Model):
     customer_id = models.ForeignKey("Customer")
 
     def __str__(self):
-        return "Purchase ID: " + self.id
+        return "Purchase ID: " + self.id + ", Mode of transport: " + self.mode.short-desc
 
 class Location(models.Model):
     lat_long = models.ForeignKey("LatitudeLongitude")
@@ -110,5 +113,20 @@ class Ticket(models.Model):
 
 ########################################
 
+# RecordID may change if our interpretation was wrong. Our current interpretation is:
+# The RecordID table stores a list of the IDs of all Purchase, Concession and Usage records
 class RecordID(models.Model):
-    pass
+    id = models.CharField(max_length=100, primary_key=True)
+
+    def __str__(self):
+        return self.id
+
+# The Mode table stores the modes of transport this operator provides
+class Mode(models.Model):
+    id = models.CharField(max_length=10, primary_key=True)
+    short_desc = models.CharField(max_length=50)
+    long_desc = models.CharField(max_length=8000, null=True)
+
+    def __str__(self):
+        return self.short_desc
+    
