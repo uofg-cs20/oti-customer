@@ -40,12 +40,18 @@ class Purchase(models.Model):
     service_request = models.CharField(max_length=500)
     customer_id = models.ForeignKey("Customer")
 
+    def __str__(self):
+        return "Purchase ID: " + self.id
+
 class Location(models.Model):
     lat_long = models.ForeignKey("LatitudeLongitude")
     NaPTAN = models.CharField(max_length=10)
     other = models.CharField(max_length=30)
-    other_type = models.CharFirled(max_length=20)
+    other_type = models.CharField(max_length=20)
     accuracy = models.IntegerField()
+
+    def __str__(self):
+        return "Lat: " + str(self.lat_long.latitude) + ", Long: " + str(self.lat_long.longitude) + ", NaPTAN: " + self.NaPTAN
 
 class Vehicle(models.Model):
     included = models.BooleanField()
@@ -53,9 +59,17 @@ class Vehicle(models.Model):
     vehicle_type = models.CharField(max_length=20)
     conditions = models.CharField(max_length=500)
 
+    def __str__(self):
+        return "Type: " + self.vehicle_type + ", Reference: " + self.reference
+
 class LatitudeLongitude(models.Model):
     latitude = models.DecimalField(max_digits=6, decimal_places=4)
     longitude = models.DecimalField(max_digits=7, decimal_places=4)
+
+    def __str__(self):
+        latstr = str(self.latitude)
+        longstr = str(self.longitude)
+        return "Lat: " + latstr + ", Long: " + longstr
 
 
 ############ Tomas #############
