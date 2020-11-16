@@ -19,19 +19,19 @@ class Purchase(models.Model):
     # which is also stored in the RecordID table
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
-    travel_class = models.OneToOneField("TravelClass", on_delete=models.CASCADE)
+    travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)
     booking_date_time = models.DateTimeField()
     transaction = models.OneToOneField("Transaction", on_delete=models.CASCADE)
-    account_balance = models.OneToOneField("MonetaryValue", on_delete=models.CASCADE)
+    account_balance = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
     agent = models.CharField(max_length=100, null=True)
     passenger_number = models.IntegerField(null=True)
     passenger_type = models.CharField(max_length=100, null=True)
-    vehicle = models.OneToOneField("Vehicle", on_delete=models.CASCADE)
+    vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE)
     route = models.CharField(max_length=500, null=True)
     travel_from_date_time = models.DateTimeField()
     travel_to_date_time = models.DateTimeField()
     conditions = models.CharField(max_length=500, null=True)
-    concession = models.OneToOneField("Concession", on_delete=models.CASCADE)
+    concession = models.ForeignKey("Concession", on_delete=models.CASCADE)
     restrictions = models.CharField(max_length=500, null=True)
     ticket = models.OneToOneField("Ticket", on_delete=models.CASCADE)
     # Although Purchase has a one-to-many relationship with Location, this is just
@@ -96,16 +96,16 @@ class MonetaryValue(models.Model):
 class Usage(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
-    reference = models.IntegerField()
-    travel_class = models.OneToOneField("TravelClass", on_delete=models.CASCADE)
+    reference = models.ForeignKey("UsageReference", on_delete=models.CASCADE)
+    travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)
     travel_from = models.IntegerField()
     travel_to = models.IntegerField()
-    purchase_id = models.IntegerField()
+    purchase_id = models.ForeignKey("Purchase", on_delete=models.CASCADE)
     route_via_avoid = models.CharField(max_length=500, null=True)
-    ticket_reference = models.OneToOneField("Ticket", on_delete=models.CASCADE)
+    ticket_reference = models.ForeignKey("Ticket", on_delete=models.CASCADE)
     pre_paid = models.BooleanField(null=True)
-    price = models.OneToOneField("Transaction", on_delete=models.CASCADE)
-    customer_id = models.OneToOneField("Account", on_delete=models.CASCADE)
+    price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
+    customer_id = models.ForeignKey("Account", on_delete=models.CASCADE)
     pass
 
 class UsageReference(models.Model):
@@ -116,7 +116,7 @@ class UsageReference(models.Model):
         return "Reference: " + reference + ", Reference Type: " + reference_type
 
 class UsageFromTo(models.Model):
-    location = models.OneToOneField("Location", on_delete=models.CASCADE)
+    location = models.ForeignKey("Location", on_delete=models.CASCADE)
     date_time = models.DateTimeField()
     reference = models.CharField(max_length=30)
 
@@ -127,8 +127,8 @@ class Service(models.Model):
     service_type = models.CharField(max_length=20)
     unit = models.CharField(max_length=10)
     amount = models.IntegerField()
-    price = models.OneToOneField("Transaction", on_delete=models.CASCADE)
-    usage_id = models.OneToOneField("Usage", on_delete=models.CASCADE)
+    price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
+    usage_id = models.ForeignKey("Usage", on_delete=models.CASCADE)
 
     def __str__(self):
         return "Service Type: " + service_type + ", Unit: " + unit + ", Amount: " + amount
