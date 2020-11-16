@@ -154,14 +154,14 @@ class Ticket(models.Model):
 
 # The RecordID table stores a list of the IDs of all Purchase, Concession and Usage records
 class RecordID(models.Model):
-    id = models.CharField(max_length=100, primary_key=True, on_delete=models.CASCADE)
+    id = models.CharField(max_length=100, primary_key=True)
 
     def __str__(self):
         return self.id
 
 # The Mode table stores the modes of transport this operator provides
 class Mode(models.Model):
-    id = models.CharField(max_length=10, primary_key=True, on_delete=models.CASCADE)
+    id = models.CharField(max_length=10, primary_key=True)
     short_desc = models.CharField(max_length=50)
     long_desc = models.CharField(max_length=8000, null=True)
 
