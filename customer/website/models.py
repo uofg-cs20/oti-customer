@@ -15,7 +15,8 @@ class Account(models.Model):
 ########## Torrin #############
 
 class Purchase(models.Model):
-    # id may change if our interpretation of RecordID was wrong
+    # id is a unique identifier of this Purchase record,
+    # which is also stored in the RecordID table
     id = models.OneToOneField("RecordID", primary_key=True)
     mode = models.ForeignKey("Mode")
     travel_class = models.OneToOneField("TravelClass")
@@ -113,7 +114,6 @@ class Ticket(models.Model):
 
 ########################################
 
-# RecordID may change if our interpretation was wrong. Our current interpretation is:
 # The RecordID table stores a list of the IDs of all Purchase, Concession and Usage records
 class RecordID(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
