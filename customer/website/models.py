@@ -17,38 +17,38 @@ class Account(models.Model):
 class Purchase(models.Model):
     # id is a unique identifier of this Purchase record,
     # which is also stored in the RecordID table
-    id = models.OneToOneField("RecordID", primary_key=True)
-    mode = models.ForeignKey("Mode")
-    travel_class = models.OneToOneField("TravelClass")
+    id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
+    mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
+    travel_class = models.OneToOneField("TravelClass", on_delete=models.CASCADE)
     booking_date_time = models.DateTimeField()
-    transaction = models.OneToOneField("Transaction")
-    account_balance = models.OneToOneField("MonetaryValue")
+    transaction = models.OneToOneField("Transaction", on_delete=models.CASCADE)
+    account_balance = models.OneToOneField("MonetaryValue", on_delete=models.CASCADE)
     agent = models.CharField(max_length=100, null=True)
     passenger_number = models.IntegerField(null=True)
     passenger_type = models.CharField(max_length=100, null=True)
-    vehicle = models.OneToOneField("Vehicle")
+    vehicle = models.OneToOneField("Vehicle", on_delete=models.CASCADE)
     route = models.CharField(max_length=500, null=True)
     travel_from_date_time = models.DateTimeField()
     travel_to_date_time = models.DateTimeField()
     conditions = models.CharField(max_length=500, null=True)
-    concession = models.OneToOneField("Concession")
+    concession = models.OneToOneField("Concession", on_delete=models.CASCADE)
     restrictions = models.CharField(max_length=500, null=True)
-    ticket = models.OneToOneField("Ticket")
+    ticket = models.OneToOneField("Ticket", on_delete=models.CASCADE)
     # Although Purchase has a one-to-many relationship with Location, this is just
     # because Purchase has 2 location fields location_from and location_to.
     # These are still OneToOneFields
-    location_from = models.OneToOneField("Location")
-    location_to = models.OneToOneField("Location")
+    location_from = models.OneToOneField("Location", related_name='requests_created', on_delete=models.CASCADE)
+    location_to = models.OneToOneField("Location", on_delete=models.CASCADE)
     reserved_position = models.CharField(max_length=30, null=True)
     # service_request has no relationship with the Service table, it's just a description
     service_request = models.CharField(max_length=500, null=True)
-    customer_id = models.ForeignKey("Customer")
+    customer_id = models.ForeignKey("Customer", on_delete=models.CASCADE)
 
     def __str__(self):
         return "Purchase ID: " + self.id + ", Mode of transport: " + self.mode.short-desc
 
 class Location(models.Model):
-    lat_long = models.ForeignKey("LatitudeLongitude")
+    lat_long = models.ForeignKey("LatitudeLongitude", on_delete=models.CASCADE)
     NaPTAN = models.CharField(max_length=10)
     other = models.CharField(max_length=30, null=True)
     other_type = models.CharField(max_length=20, null=True)
@@ -94,22 +94,60 @@ class MonetaryValue(models.Model):
 ############## Kameron ##############
 
 class Usage(models.Model):
+    id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
+    mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
+    reference = models.IntegerField()
+    travel_class = models.OneToOneField("TravelClass", on_delete=models.CASCADE)
+    travel_from = models.IntegerField()
+    travel_to = models.IntegerField()
+    purchase_id = models.IntegerField()
+    route_via_avoid = models.CharField(max_length=500, null=True)
+    ticket_reference = models.OneToOneField("Ticket", on_delete=models.CASCADE)
+    pre_paid = models.BooleanField(null=True)
+    price = models.OneToOneField("Transaction", on_delete=models.CASCADE)
+    customer_id = models.OneToOneField("Account", on_delete=models.CASCADE)
     pass
 
 class UsageReference(models.Model):
-    pass
+    reference = models.CharField(max_length=5)
+    reference_type = models.CharField(max_length=10)
+
+    def __str__(self):
+        return "Reference: " + reference + ", Reference Type: " + reference_type
 
 class UsageFromTo(models.Model):
-    pass
+    location = models.OneToOneField("Location", on_delete=models.CASCADE)
+    date_time = models.DateTimeField()
+    reference = models.CharField(max_length=30)
+
+    def __str__(self):
+        return "Location: " + location + ", Date-Time: " + date_time + ", Reference: " + reference
 
 class Service(models.Model):
-    pass
+    service_type = models.CharField(max_length=20)
+    unit = models.CharField(max_length=10)
+    amount = models.IntegerField()
+    price = models.OneToOneField("Transaction", on_delete=models.CASCADE)
+    usage_id = models.OneToOneField("Usage", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Service Type: " + service_type + ", Unit: " + unit + ", Amount: " + amount
 
 class TravelClass(models.Model):
-    pass
+    travel_class = models.CharField(max_length=50, primary_key=True)
+
+    def __str__(self):
+        return "Travel Class: " + travel_class
 
 class Ticket(models.Model):
-    pass
+    reference = models.CharField(max_length=30, primary_key=True)
+    number_usages = models.CharField(max_length=3)
+    reference_type = models.CharField(max_length=30)
+    medium = models.CharField(max_length=20, null=True)
+
+    def __str__(self):
+        return "Number of Usages: " + number_usages + ", Reference Type: " + reference_type + ", Medium: " + medium
+
 
 
 ########################################
