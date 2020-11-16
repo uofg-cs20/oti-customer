@@ -19,19 +19,19 @@ class Purchase(models.Model):
     # which is also stored in the RecordID table
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
-    travel_class = models.OneToOneField("TravelClass", on_delete=models.CASCADE)
+    travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)
     booking_date_time = models.DateTimeField()
     transaction = models.OneToOneField("Transaction", on_delete=models.CASCADE)
-    account_balance = models.OneToOneField("MonetaryValue", on_delete=models.CASCADE)
+    account_balance = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
     agent = models.CharField(max_length=100, null=True)
     passenger_number = models.IntegerField(null=True)
     passenger_type = models.CharField(max_length=100, null=True)
-    vehicle = models.OneToOneField("Vehicle", on_delete=models.CASCADE)
+    vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE)
     route = models.CharField(max_length=500, null=True)
     travel_from_date_time = models.DateTimeField()
     travel_to_date_time = models.DateTimeField()
     conditions = models.CharField(max_length=500, null=True)
-    concession = models.OneToOneField("Concession", on_delete=models.CASCADE)
+    concession = models.ForeignKey("Concession", on_delete=models.CASCADE)
     restrictions = models.CharField(max_length=500, null=True)
     ticket = models.OneToOneField("Ticket", on_delete=models.CASCADE)
     # Although Purchase has a one-to-many relationship with Location, this is just
@@ -154,14 +154,14 @@ class Ticket(models.Model):
 
 # The RecordID table stores a list of the IDs of all Purchase, Concession and Usage records
 class RecordID(models.Model):
-    id = models.CharField(max_length=100, primary_key=True)
+    id = models.CharField(max_length=100, primary_key=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.id
 
 # The Mode table stores the modes of transport this operator provides
 class Mode(models.Model):
-    id = models.CharField(max_length=10, primary_key=True)
+    id = models.CharField(max_length=10, primary_key=True, on_delete=models.CASCADE)
     short_desc = models.CharField(max_length=50)
     long_desc = models.CharField(max_length=8000, null=True)
 
