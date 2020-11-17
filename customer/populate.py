@@ -33,10 +33,11 @@ def populate():
     account1, created = Account.objects.get_or_create(customer=customer1, operator_id="Scotrail")
 
     # add a concession purchase to a customer account
+    record, created = RecordID.objects.get_or_create(id="123235235234")
     price, created = MonetaryValue.objects.get_or_create(amount="30.00", currency="GBP")
     transaction, created = Transaction.objects.get_or_create(payment_type="Visa", payment_method="Debit", price=price)
     discount, created = Discount.objects.get_or_create(discount_type="Young person", discount_value="0.20", discount_description="16-25 Railcard")
-    concession, created = Concession.objects.get_or_create(name="16-25 Railcard", price="30.00", discount=discount, transaction=transaction, valid_from_date_time="2020-01-01", valid_to_date_time="2022-01-01", conditions="Below 25", customer=customer1)
+    concession, created = Concession.objects.get_or_create(id=record, name="16-25 Railcard", price="30.00", discount=discount, transaction=transaction, valid_from_date_time="2020-01-01", valid_to_date_time="2022-01-01", conditions="Below 25", customer=customer1)
 
 if __name__ == '__main__':
     print('Starting population script...', end="")
