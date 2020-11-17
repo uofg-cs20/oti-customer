@@ -1,18 +1,22 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Please refer to https://app.swaggerhub.com/apis/open-transport/customer-account/1.0.1#/
 # for details on these models
 
-########### Tomas ##############
-
 class Customer(models.Model):
-    pass
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.id)
 
 class Account(models.Model):
-    pass
+    operator_id = models.CharField(max_length=50)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return str(self.operator_id) + ": " + str(self.customer.id)
 
-########## Torrin #############
 
 class Purchase(models.Model):
     # id is a unique identifier of this Purchase record,
@@ -75,23 +79,43 @@ class LatitudeLongitude(models.Model):
         longstr = str(self.longitude)
         return "Lat: " + latstr + ", Long: " + longstr
 
+class MonetaryValue(models.Model):
+    amount = models.FloatField()
+    currency = models.CharField(max_length=3)
 
-############ Tomas #############
-
-class Concession(models.Model):
-    pass
-
-class Discount(models.Model):
-    pass
+    def __str__(self):
+        return str(self.amount) + " " + self.currency
 
 class Transaction(models.Model):
-    pass
+    date_time = models.DateTimeField(auto_now_add=True)
+    payment_type = models.CharField(max_length=30)
+    payment_method = models.CharField(max_length=30)
+    price = models.ForeignKey(MonetaryValue, on_delete=models.CASCADE)
 
-class MonetaryValue(models.Model):
-    pass
+    def __str__(self):
+        return str(self.id)
 
+class Discount(models.Model):
+    discount_type = models.CharField(max_length=50)
+    discount_value = models.FloatField()
+    discount_description = models.CharField(max_length=100)
 
-############## Kameron ##############
+    def __str__(self):
+        return str(self.discount_value)
+
+class Concession(models.Model):
+    name = models.CharField(max_length=30)
+    price = models.FloatField()
+    discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    valid_from_date_time = models.DateField()
+    valid_to_date_time = models.DateField()
+    conditions = models.CharField(max_length=500)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name    
+
 
 class Usage(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
@@ -148,9 +172,6 @@ class Ticket(models.Model):
     def __str__(self):
         return "Number of Usages: " + number_usages + ", Reference Type: " + reference_type + ", Medium: " + medium
 
-
-
-########################################
 
 # The RecordID table stores a list of the IDs of all Purchase, Concession and Usage records
 class RecordID(models.Model):
