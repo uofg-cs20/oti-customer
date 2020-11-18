@@ -27,21 +27,17 @@
 	</div>
 
 	{% block content %}
-		<h3>Purchases</h3>
+		{% if startdate and enddate %}
+			<h4>Displaying purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
+		{% else %}
+			<h4>Displaying purchases made in the last 30 days</h4>
+		{% endif %}
+		
 		<ul>
 		{% for p in purchases %}
 			<li>{{ p.id }}</li>
+			{% empty %}<p>No purchases to display.</p>
 		{% endfor %}
-		</ul>
-		
-		<h3>Input Dates</h3>
-		<ul>
-		{% if startdate %}
-		<li>{{ startdate.date }}</li>
-		{% endif %}
-		{% if enddate %}
-		<li>{{ enddate.date }}</li>
-		{% endif %}
 		</ul>
 	{% endblock %}
 </body>
