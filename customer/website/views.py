@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.contrib.auth import logout
 from .models import Purchase, Concession, Usage
 from .helper_functions import formatDate, getPurchases
-from .forms import FilterTickets
 from datetime import date
 
 def index(request):
@@ -27,17 +26,20 @@ def connect(request):
 
 def purchases(request):
     context = {"purchases":[]}
+    datefilter = False
     
     if request.method == "POST":
-        form = FilterTickets(request.POST)
-        if form.is_valid():
-            startdatestr = form.cleaned_data["startdate"]
-            enddatestr = form.cleaned_data["enddate"]
-            purchases = getPurchases(request.user, formatDate(startdatestr), formatDate(enddatestr))
-            context.update({"form":form})
-        else:
-            purchases = getPurchases(request.user)
-    else:
+        startdatestr = request.POST.get("startdate")
+        enddatestr = request.POST.get("enddate")
+        if startdatestr and enddatestr:
+            startdate = formatDate(startdatestr)
+            enddate = formatDate(enddatestr)
+            purchases = getPurchases(request.user, startdate, enddate)
+            context.update({"startdate":startdate})
+            context.update({"enddate":enddate})
+            datefilter = True
+    
+    if not datefilter:
         purchases = getPurchases(request.user)
         
     for p in purchases:
