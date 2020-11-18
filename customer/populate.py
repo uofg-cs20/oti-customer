@@ -8,6 +8,7 @@ import decimal
 
 from django.contrib.auth.models import User
 from website.models import *
+from django.utils.timezone import make_aware
 
 def populate():
 
@@ -75,8 +76,6 @@ def populate():
     discount, created = Discount.objects.get_or_create(discount_type="Young person", discount_value="0.20", discount_description="16-25 Railcard")
     concession, created = Concession.objects.get_or_create(id=record, name="16-25 Railcard", price="30.00", discount=discount, transaction=transaction, valid_from_date_time="2020-01-01", valid_to_date_time="2022-01-01", conditions="Below 25", customer=customer1)
 
-
-    
     record2, created = RecordID.objects.get_or_create(id="00000002")
     train, created = Mode.objects.get_or_create(id="train", short_desc="Train")
     first_class, created = TravelClass.objects.get_or_create(travel_class="First Class")
@@ -89,7 +88,7 @@ def populate():
     location_from, created = Location.objects.get_or_create(lat_long=coordinates_from, NaPTAN="idk")
     coordinates_to, created = LatitudeLongitude.objects.get_or_create(latitude=d3, longitude=d4)
     location_to, created = Location.objects.get_or_create(lat_long=coordinates_to, NaPTAN="idk")
-    purchase1, created = Purchase.objects.get_or_create(id=record2, mode=train, travel_class=first_class, booking_date_time="2020-01-01", transaction=transaction2, account_balance=account_balance1, vehicle=vehicle_type, travel_from_date_time="2020-03-01", travel_to_date_time="2020-04-01", concession=concession, ticket=ticket1, location_from=location_from, location_to=location_to, customer=customer1)
+    purchase1, created = Purchase.objects.get_or_create(id=record2, mode=train, travel_class=first_class, booking_date_time=django.utils.timezone.now(), transaction=transaction2, account_balance=account_balance1, vehicle=vehicle_type, travel_from_date_time=django.utils.timezone.now(), travel_to_date_time=django.utils.timezone.now(), concession=concession, ticket=ticket1, location_from=location_from, location_to=location_to, customer=customer1)
 
 
 
@@ -98,11 +97,11 @@ def populate():
 
     coordinates_to2, created = LatitudeLongitude.objects.get_or_create(latitude=d5, longitude=d6)
     location_to2, created = Location.objects.get_or_create(lat_long=coordinates_to2, NaPTAN="idk")
-    travel_to2, created = UsageFromTo.objects.get_or_create(location=location_to2, date_time="2020-09-04 06:00:00", reference="reference usage")
+    travel_to2, created = UsageFromTo.objects.get_or_create(location=location_to2, date_time=django.utils.timezone.now(), reference="reference usage")
 
     coordinates_from2, created = LatitudeLongitude.objects.get_or_create(latitude=d7, longitude=d8)
     location_from2, created = Location.objects.get_or_create(lat_long=coordinates_from2, NaPTAN="idk")
-    travel_from2, created = UsageFromTo.objects.get_or_create(location=location_from2, date_time="2020-09-04 06:00:00", reference="reference usage")
+    travel_from2, created = UsageFromTo.objects.get_or_create(location=location_from2, date_time=django.utils.timezone.now(), reference="reference usage")
 
     usage, created = Usage.objects.get_or_create(id=record3, mode=train, reference=usage_reference1, travel_class=first_class, travel_from=travel_from2, travel_to=travel_to2, purchase_id=purchase1, ticket_reference=ticket1, price=price2, customer=customer1)
 
