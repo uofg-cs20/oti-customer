@@ -9,7 +9,7 @@ def formatDate(datestr):
     year = int(datestr[-4:])
     month = int(datestr[3:5])
     day = int(datestr[:2])
-    return datetime(year, month, day).replace(tzinfo=pytz.UTC)
+    return datetime(year, month, day)
 
 
 # Returns the Purchases of the given user, filtered by the given dates
