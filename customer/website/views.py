@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import logout
+from .models import Purchase, Concession, Usage
+from .helper_functions import getPurchases
 
 def index(request):
     return render(request, 'website/index.html')
@@ -22,8 +24,11 @@ def connect(request):
     return render(request, 'website/connect.html')
 
 def purchases(request):
-    # TODO
-    return render(request, 'website/purchases.html')
+    purchases = getPurchases(request.user)
+    context = {"purchases":[]}
+    for p in purchases:
+        context["purchases"].append(p)
+    return render(request, 'website/purchases.html', context)
 
 def concessions(request):
     # TODO

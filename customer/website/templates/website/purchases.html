@@ -1,0 +1,15 @@
+
+
+{% block title %}
+	Purchases
+{% endblock %}
+
+
+
+{% block content %}
+	<ul>
+	{% for p in purchases %}
+		<li>{{ p.id }}</li>
+	{% endfor %}
+	</ul>
+{% endblock %}
