@@ -6,7 +6,7 @@ class CustomerAdmin(admin.ModelAdmin):
     list_display = ('id',)
 
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('operator_id', 'customer')
+    list_display = ('operator_id', 'customer_id')
 
 class PurchaseAdmin(admin.ModelAdmin):
     list_display = ('id', 'mode', 'travel_class', 'booking_date_time', 'transaction', 'account_balance', 'agent', 'passenger_number', 'passenger_type', 'vehicle', 'route', 'travel_from_date_time', 'travel_to_date_time', 'conditions', 'concession', 'restrictions', 'ticket', 'location_from', 'location_to', 'reserved_position', 'service_request', 'customer_id')
@@ -30,7 +30,7 @@ class DiscountAdmin(admin.ModelAdmin):
     list_display = ('discount_type', 'discount_value', 'discount_description')
 
 class ConcessionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'discount', 'transaction', 'valid_from_date_time', 'valid_to_date_time', 'conditions', 'customer')
+    list_display = ('id', 'name', 'price', 'discount', 'transaction', 'valid_from_date_time', 'valid_to_date_time', 'conditions', 'customer_id')
 
 class UsageAdmin(admin.ModelAdmin):
     list_display = ('id', 'mode', 'reference', 'travel_class', 'travel_from', 'travel_to', 'purchase_id', 'route_via_avoid', 'ticket_reference', 'pre_paid', 'price', 'customer_id')
