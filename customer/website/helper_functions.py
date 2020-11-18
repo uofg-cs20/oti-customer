@@ -1,5 +1,6 @@
-from .models import Purchase
-from datetime import datetime, timedelta
+from .models import Mode, Purchase
+from datetime import timedelta
+import datetime
 from django.utils import timezone
 import pytz
 
@@ -9,9 +10,23 @@ def formatDate(datestr):
     year = int(datestr[-4:])
     month = int(datestr[3:5])
     day = int(datestr[:2])
-    return datetime(year, month, day).replace(tzinfo=pytz.UTC)
+    return datetime.datetime(year, month, day).replace(tzinfo=pytz.UTC)
 
 
-# Returns the Purchases of the given user, filtered by the given dates
-def getPurchases(user, startdate=timezone.now()-timedelta(days=30), enddate=timezone.now()):
-    return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)])
+# Returns the Purchases of the given user, filtered by the given dates and mode of transport
+def getPurchases(user, filters):
+    # If both the start date and end date aren't provided, filter the last 30 days
+    if not (filters.get("startdate") or filters.get("enddate")):
+        startdate = timezone.now()-timedelta(days=30)
+        enddate = timezone.now()
+    else:
+        startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
+        enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
+        
+    # Filter by the mode if given
+    # CURRENT ISSUE - mode is the short_desc not the id so cannot filter it properly
+    if filters.get("mode"):
+        return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode"))
+    else:
+        return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)])
+

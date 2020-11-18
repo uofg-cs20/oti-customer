@@ -1,4 +1,5 @@
 from django import forms
+from .models import Mode
 
 
 class RegisterForm(forms.Form):
@@ -9,3 +10,4 @@ class LoginForm(forms.Form):
 
 class ConnectForm(forms.Form):
     pass
+
