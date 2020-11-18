@@ -15,7 +15,7 @@ class Account(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.operator_id) + ": " + str(self.customer.id)
+        return "Operator ID: " + str(self.operator_id) + ", Customer ID: " + str(self.customer)
 
 
 class Purchase(models.Model):
@@ -43,10 +43,10 @@ class Purchase(models.Model):
     reserved_position = models.CharField(max_length=30, null=True)
     # service_request has no relationship with the Service table, it's just a description
     service_request = models.CharField(max_length=500, null=True)
-    customer_id = models.ForeignKey("Customer", on_delete=models.CASCADE)
+    customer = models.ForeignKey("Customer", on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Purchase ID: " + self.id + ", Mode of transport: " + self.mode.short-desc
+        return str(self.id)
 
 class Location(models.Model):
     lat_long = models.ForeignKey("LatitudeLongitude", on_delete=models.CASCADE)
@@ -56,7 +56,7 @@ class Location(models.Model):
     accuracy = models.IntegerField(null=True)
 
     def __str__(self):
-        return "Lat: " + str(self.lat_long.latitude) + ", Long: " + str(self.lat_long.longitude) + ", NaPTAN: " + self.NaPTAN
+        return "Lat: " + str(self.lat_long.latitude) + ", Long: " + str(self.lat_long.longitude)
 
 class Vehicle(models.Model):
     included = models.BooleanField(default=True)
@@ -65,7 +65,7 @@ class Vehicle(models.Model):
     conditions = models.CharField(max_length=500, null=True)
 
     def __str__(self):
-        return "Type: " + self.vehicle_type + ", Reference: " + self.reference
+        return self.vehicle_type
 
 class LatitudeLongitude(models.Model):
     latitude = models.DecimalField(max_digits=6, decimal_places=4)
@@ -112,7 +112,7 @@ class Concession(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name    
+        return str(self.id)
 
 
 class Usage(models.Model):
@@ -127,15 +127,17 @@ class Usage(models.Model):
     ticket_reference = models.ForeignKey("Ticket", on_delete=models.CASCADE)
     pre_paid = models.BooleanField(null=True)
     price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
-    customer_id = models.ForeignKey("Customer", on_delete=models.CASCADE)
-    pass
+    customer = models.ForeignKey("Customer", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "Usage ID: " + str(self.id) + ", Customer ID: " + str(self.customer)   
 
 class UsageReference(models.Model):
     reference = models.CharField(max_length=5)
     reference_type = models.CharField(max_length=10)
 
     def __str__(self):
-        return "Reference: " + reference + ", Reference Type: " + reference_type
+        return self.reference
 
 class UsageFromTo(models.Model):
     location = models.ForeignKey("Location", on_delete=models.CASCADE)
@@ -143,7 +145,7 @@ class UsageFromTo(models.Model):
     reference = models.CharField(max_length=30)
 
     def __str__(self):
-        return "Location: " + location + ", Date-Time: " + date_time + ", Reference: " + reference
+        return "Location: " + str(self.location)
 
 class Service(models.Model):
     service_type = models.CharField(max_length=20)
@@ -153,13 +155,13 @@ class Service(models.Model):
     usage_id = models.ForeignKey("Usage", on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Service Type: " + service_type + ", Unit: " + unit + ", Amount: " + amount
+        return "Service Type: " + self.service_type + ", Unit: " + self.unit + ", Amount: " + self.amount
 
 class TravelClass(models.Model):
     travel_class = models.CharField(max_length=50, primary_key=True)
 
     def __str__(self):
-        return "Travel Class: " + travel_class
+        return self.travel_class
 
 class Ticket(models.Model):
     reference = models.CharField(max_length=30, primary_key=True)
@@ -168,7 +170,7 @@ class Ticket(models.Model):
     medium = models.CharField(max_length=20, null=True)
 
     def __str__(self):
-        return "Number of Usages: " + number_usages + ", Reference Type: " + reference_type + ", Medium: " + medium
+        return self.reference
 
 
 # The RecordID table stores a list of the IDs of all Purchase, Concession and Usage records
