@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import logout
-from .models import Purchase, Concession, Usage
+from .models import Mode, Purchase, Concession, Usage
 from .helper_functions import formatDate, getPurchases
 from datetime import date
 
@@ -25,22 +25,22 @@ def connect(request):
     return render(request, 'website/connect.html')
 
 def purchases(request):
-    context = {"purchases":[]}
-    datefilter = False
+    context = {"purchases":[], "modes":Mode.objects.all()}
     
     if request.method == "POST":
         startdatestr = request.POST.get("startdate")
         enddatestr = request.POST.get("enddate")
-        if startdatestr and enddatestr:
+        mode = request.POST.get("mode")
+        if startdatestr:
             startdate = formatDate(startdatestr)
-            enddate = formatDate(enddatestr)
-            purchases = getPurchases(request.user, startdate, enddate)
             context.update({"startdate":startdate})
+        if enddatestr:
+            enddate = formatDate(enddatestr)
             context.update({"enddate":enddate})
-            datefilter = True
+        if mode:
+            context.update({"mode":mode})
     
-    if not datefilter:
-        purchases = getPurchases(request.user)
+    purchases = getPurchases(request.user, context)
         
     for p in purchases:
         context["purchases"].append(p)

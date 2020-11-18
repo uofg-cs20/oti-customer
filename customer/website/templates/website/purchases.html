@@ -17,20 +17,42 @@
 	{% endblock %}
 
 	<div>
-		<h3>Filter tickets by date</h3>
+		<h3>Filter Purchases</h3>
 		<form action="/purchases/" method="post" autocomplete="off">
 			{% csrf_token %}
-			<p>Start Date: <input type="text" name="startdate" id="datepicker1"></p>
-			<p>End Date: <input type="text" name="enddate" id="datepicker2"></p>
+			<p>Booked Since: <input type="text" name="startdate" id="datepicker1"></p>
+			<p>Booked Before: <input type="text" name="enddate" id="datepicker2"></p>
+			<p>Mode of Transport: <select name="mode" id="mode">
+				<option value="None">None</option>
+				{% for m in modes %}
+					<option id="mode" value="{% autoescape off %}{{ m }}{% endautoescape %}">{{m.short_desc}}</option>
+				{% endfor %}
+			</select></p>
 			<p><input type="submit" value="Filter"></p>
 		</form>
 	</div>
 
 	{% block content %}
-		{% if startdate and enddate %}
-			<h4>Displaying purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
+		{% if mode and mode != "None" %}
+			{% if startdate and enddate %}
+				<h4>Displaying {{ mode }} purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
+			{% elif startdate %}
+				<h4>Displaying {{ mode }} purchases made since {{ startdate }}</h4>
+			{% elif enddate %}
+				<h4>Displaying {{ mode }} purchases made before {{ enddate }}</h4>
+			{% else %}
+				<h4>Displaying {{ mode }} purchases made in the last 30 days</h4>
+			{% endif %}
 		{% else %}
-			<h4>Displaying purchases made in the last 30 days</h4>
+			{% if startdate and enddate %}
+				<h4>Displaying all purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
+			{% elif startdate %}
+				<h4>Displaying all purchases made since {{ startdate }}</h4>
+			{% elif enddate %}
+				<h4>Displaying all purchases made before {{ enddate }}</h4>
+			{% else %}
+				<h4>Displaying all purchases made in the last 30 days</h4>
+			{% endif %}
 		{% endif %}
 		
 		<ul>
