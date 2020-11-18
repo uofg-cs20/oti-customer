@@ -1,0 +1,44 @@
+<head>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="//resources/demos/style.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script>
+	$( function() {
+		$( "#datepicker1" ).datepicker({dateFormat: "dd-mm-yy"});
+		$( "#datepicker2" ).datepicker({dateFormat: "dd-mm-yy"});
+	} );
+	</script>
+</head>
+
+<body>
+	{% block title %}
+		Purchases
+	{% endblock %}
+
+	<div>
+		<h3>Filter tickets by date</h3>
+		<form action="/purchases/" method="post" autocomplete="off">
+			{% csrf_token %}
+			<p>Start Date: <input type="text" name="startdate" id="datepicker1"></p>
+			<p>End Date: <input type="text" name="enddate" id="datepicker2"></p>
+			<p><input type="submit" value="Filter"></p>
+		</form>
+	</div>
+
+	{% block content %}
+		<h3>Purchases</h3>
+		<ul>
+		{% for p in purchases %}
+			<li>{{ p.id }}</li>
+		{% endfor %}
+		</ul>
+		
+		<h3>Input Dates</h3>
+		<ul>
+		{% for field in form %}
+			<li>{{ field.value }}</li>
+		{% endfor %}
+		</ul>
+	{% endblock %}
+</body>
