@@ -127,7 +127,7 @@ class Usage(models.Model):
     ticket_reference = models.ForeignKey("Ticket", on_delete=models.CASCADE)
     pre_paid = models.BooleanField(null=True)
     price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
-    customer_id = models.ForeignKey("Account", on_delete=models.CASCADE)
+    customer_id = models.ForeignKey("Customer", on_delete=models.CASCADE)
     pass
 
 class UsageReference(models.Model):
