@@ -9,7 +9,3 @@ class LoginForm(forms.Form):
 
 class ConnectForm(forms.Form):
     pass
-    
-class FilterTickets(forms.Form):
-    startdate = forms.CharField(label="Start Date")
-    enddate = forms.CharField(label="End Date")

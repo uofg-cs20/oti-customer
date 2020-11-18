@@ -36,9 +36,12 @@
 		
 		<h3>Input Dates</h3>
 		<ul>
-		{% for field in form %}
-			<li>{{ field.value }}</li>
-		{% endfor %}
+		{% if startdate %}
+		<li>{{ startdate.date }}</li>
+		{% endif %}
+		{% if enddate %}
+		<li>{{ enddate.date }}</li>
+		{% endif %}
 		</ul>
 	{% endblock %}
 </body>
