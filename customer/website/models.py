@@ -35,7 +35,7 @@ class Purchase(models.Model):
     travel_from_date_time = models.DateTimeField()
     travel_to_date_time = models.DateTimeField()
     conditions = models.CharField(max_length=500, null=True)
-    concession = models.ForeignKey("Concession", on_delete=models.CASCADE)
+    concession = models.ForeignKey("Concession", on_delete=models.CASCADE, null=True)
     restrictions = models.CharField(max_length=500, null=True)
     ticket = models.OneToOneField("Ticket", on_delete=models.CASCADE)
     location_from = models.ForeignKey("Location", related_name="requests_created", on_delete=models.CASCADE)
