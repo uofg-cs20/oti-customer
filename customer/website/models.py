@@ -38,11 +38,8 @@ class Purchase(models.Model):
     concession = models.ForeignKey("Concession", on_delete=models.CASCADE)
     restrictions = models.CharField(max_length=500, null=True)
     ticket = models.OneToOneField("Ticket", on_delete=models.CASCADE)
-    # Although Purchase has a one-to-many relationship with Location, this is just
-    # because Purchase has 2 location fields location_from and location_to.
-    # These are still OneToOneFields
-    location_from = models.OneToOneField("Location", related_name='requests_created', on_delete=models.CASCADE)
-    location_to = models.OneToOneField("Location", on_delete=models.CASCADE)
+    location_from = models.ForeignKey("Location", related_name="requests_created", on_delete=models.CASCADE)
+    location_to = models.ForeignKey("Location", on_delete=models.CASCADE)
     reserved_position = models.CharField(max_length=30, null=True)
     # service_request has no relationship with the Service table, it's just a description
     service_request = models.CharField(max_length=500, null=True)
@@ -123,8 +120,8 @@ class Usage(models.Model):
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
     reference = models.ForeignKey("UsageReference", on_delete=models.CASCADE)
     travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)
-    travel_from = models.IntegerField()
-    travel_to = models.IntegerField()
+    travel_from = models.ForeignKey("UsageFromTo", related_name="requests_created", on_delete=models.CASCADE)
+    travel_to = models.ForeignKey("UsageFromTo", on_delete=models.CASCADE)
     purchase_id = models.ForeignKey("Purchase", on_delete=models.CASCADE)
     route_via_avoid = models.CharField(max_length=500, null=True)
     ticket_reference = models.ForeignKey("Ticket", on_delete=models.CASCADE)
