@@ -25,9 +25,13 @@ def connect(request):
     return render(request, 'website/connect.html')
 
 def purchases(request):
+    # Initialise a context dictionary to store the Purchases and available
+    # modes of transport
     context = {"purchases":[], "modes":Mode.objects.all()}
     
     if request.method == "POST":
+        # Check if filters have been applied, store these in the
+        # context dictionary to process
         startdatestr = request.POST.get("startdate")
         enddatestr = request.POST.get("enddate")
         mode = request.POST.get("mode")
@@ -37,11 +41,12 @@ def purchases(request):
         if enddatestr:
             enddate = formatDate(enddatestr)
             context.update({"enddate":enddate})
-        if mode:
+        if mode and mode != "None":
             context.update({"mode":mode})
     
+    # Retrieve a list of Purchases filtered by the given fields in
+    # the context dictionary, and store these in the context dictionary
     purchases = getPurchases(request.user, context)
-        
     for p in purchases:
         context["purchases"].append(p)
         
