@@ -31,3 +31,13 @@ def getPurchases(user, filters):
     else:
         return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)])
 
+def getConcessions(user, status):
+    today = timezone.now()
+    if status == 'valid' or status == '' :
+        # return valid concessions
+        # i.e. concessions with expiry date in the future
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__range=[str(valid_to_date_time),str(today)])
+    else:
+        # return expired concessions
+        # i.e. concessions with expiry date in the past
+        return Concession.objects.filter(customer_id=user.id, valid_from_date_time__range=[str(valid_from_date_time),str(today)])
