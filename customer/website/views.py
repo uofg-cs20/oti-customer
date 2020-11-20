@@ -60,6 +60,7 @@ def concessions(request):
         # if no concession status selected,  will return valid ones only
         if not status:
             status = "valid"
+        context['status'] = status
 
     # use helper function to obtain relevant concessions for user
     # depending on whether current or past concessions are requested

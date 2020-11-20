@@ -19,4 +19,23 @@
 			<p> <input type="radio" name="status" value="past">
 			<label for="past">Expired</label><br>
 			</p>
+		</form>
 	</div>
+
+	{% block content %}
+
+		{% if status %}
+			<h4>Showing valid concessions</h4>
+		{% else %}
+			<h4>Showing expired concessions</h4>
+		{% endif %}
+		<ul>
+		{% for c in concessions %}
+			<li> {{ c.name }} </li>
+			<li> {{ c.discount }} </li>
+			<li> Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }} </li> <br>
+		{% endfor %}
+		<ul>
+		
+	{% endblock %}
+</body>
