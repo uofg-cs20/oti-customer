@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<head>
+
+</head>
+
+<body>
+	{% block title %}
+		Concessions
+	{% endblock %}
+
+	<div>
+		<h3>Filter Concessions</h3>
+		<form action="/concessions/" method="post">
+			{% csrf_token %}
+			<p> <input type="radio" name="status" value="valid">
+			<label for="valid">Valid</label><br>
+			</p>
+			<p> <input type="radio" name="status" value="past">
+			<label for="past">Expired</label><br>
+			</p>
+	</div>
