@@ -53,8 +53,15 @@ def purchases(request):
     return render(request, 'website/purchases.html', context)
 
 def concessions(request):
-    # TODO
-    return render(request, 'website/concessions.html')
+    
+    context = {}
+    if request.method == "POST":
+        status = request.POST.get("status")
+        if not status:
+            status = "past"
+
+    concessions = getConcessions(request.user, status)
+    return render(request, 'website/concessions.html', context)
 
 def usage(request):
     # TODO
