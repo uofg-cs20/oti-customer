@@ -57,10 +57,18 @@ def concessions(request):
     context = {}
     if request.method == "POST":
         status = request.POST.get("status")
+        # if no concession status selected,  will return valid ones only
         if not status:
-            status = "past"
+            status = "valid"
 
+    # use helper function to obtain relevant concessions for user
+    # depending on whether current or past concessions are requested
     concessions = getConcessions(request.user, status)
+    context['concessions'] = []
+    # iterate over obtained concessions and add to context dict
+    for c in concessions:
+        context['concessions'].append(c)
+
     return render(request, 'website/concessions.html', context)
 
 def usage(request):
