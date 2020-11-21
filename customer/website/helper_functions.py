@@ -1,4 +1,4 @@
-from .models import Mode, Purchase
+from .models import Mode, Purchase, Concession
 from datetime import timedelta
 import datetime
 from django.utils import timezone
@@ -31,13 +31,14 @@ def getPurchases(user, filters):
     else:
         return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)])
 
-def getConcessions(user, status):
+def getConcessions(user, context):
     today = timezone.now()
-    if status == 'valid' or status == '' :
+    status = context["status"]
+    if status == 'valid' or status == None:
         # return valid concessions
         # i.e. concessions with expiry date in the future
-        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__range=[str(valid_to_date_time),str(today)])
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__gt=today) #=[str(valid_to_date_time),str(today)])
     else:
         # return expired concessions
         # i.e. concessions with expiry date in the past
-        return Concession.objects.filter(customer_id=user.id, valid_from_date_time__range=[str(valid_from_date_time),str(today)])
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today)#[str(valid_from_date_time),str(today)])
