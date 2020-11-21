@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import formatDate, getPurchases, getConcessions
+from .helper_functions import getModes, formatDate, getPurchases, getConcessions
 from datetime import date
 
 from .forms import LoginForm
