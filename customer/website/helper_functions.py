@@ -49,17 +49,21 @@ def getConcessions(user, context):
     today = timezone.now()
     status = context["status"]
     
-    if (status == 'valid' or status == " ") and context.get("mode"):
+    if (status == "valid" or status == " ") and context.get("mode"):
         mode = context["mode"]
-        print(mode)
         # return valid concessions
         # i.e. concessions with expiry date in the future
         return Concession.objects.filter(customer_id=user.id, valid_to_date_time__gt=today, mode=mode)
-    elif not status and context.get("mode"):
+
+    elif status == "past" and context.get("mode"):
         mode = context["mode"]
         # return expired concessions
         # i.e. concessions with expiry date in the past
         return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today, mode=mode)
+
+    elif status == "valid" and not context.get("mode"):
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__gt=today)
+
     else:
         return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today)
 
