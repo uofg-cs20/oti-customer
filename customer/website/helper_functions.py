@@ -16,18 +16,18 @@ def formatDate(datestr):
 
 # Returns the Purchases of the given user, filtered by the given dates and mode of transport
 def getPurchases(user, filters):
-    # If both the start date and end date aren't provided, filter the last 30 days
+    # If both the start date and end date aren't provided, filter the next 30 days
     if not (filters.get("startdate") or filters.get("enddate")):
-        startdate = timezone.now()-timedelta(days=30)
-        enddate = timezone.now()
+        startdate = timezone.now()
+        enddate = timezone.now()+timedelta(days=30)
     # Otherwise filter with the dates that have been given
     else:
         startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
         
-    # Filter by the mode if given
+    # Filter by the mode if given, and sort the Purchases by date
     if filters.get("mode"):
-        return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode"))
+        return Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode")).order_by("travel_from_date_time")
     else:
-        return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)])
+        return Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)]).order_by("travel_from_date_time")
 
