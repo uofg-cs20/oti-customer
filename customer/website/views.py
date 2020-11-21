@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import formatDate, getPurchases
+from .helper_functions import getModes, formatDate, getPurchases
 from datetime import date
 
 from .forms import LoginForm
@@ -43,7 +43,8 @@ def connect(request):
 def purchases(request):
     # Initialise a context dictionary to store the Purchases and available
     # modes of transport
-    context = {"purchases":[], "modes":Mode.objects.all()}
+    context = {"purchases":[], "modes":[]}
+    context["modes"] = getModes()
 
     if request.method == "POST":
         # Check if filters have been applied, store these in the
