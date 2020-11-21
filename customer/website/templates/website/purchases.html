@@ -54,9 +54,16 @@
 		{% endif %}
 
 		{% for p in purchases %}
+			<br/>
 			<div>
-				<p>ID: {{ p.id }}</p>
+				<h5>{{ p.mode.short_desc }} Ticket</h5>
+				<p>{{ p.location_from }} to {{ p.location_to }}</p>
 				<p>Departs: {{ p.travel_from_date_time }}</p>
+				{% if p.concession %}
+					<p>{{ p.transaction.price }} with concession {{ p.concession }}</p>
+				{% else %}
+					<p>{{ p.transaction.price }}</p>
+				{% endif %}
 			</div>
 			{% empty %}<p>No purchases to display.</p>
 		{% endfor %}

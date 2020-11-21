@@ -5,6 +5,15 @@ from django.utils import timezone
 import pytz
 
 
+# Returns the available modes of transport
+def getModes():
+    local_modes = Mode.objects.all()
+    
+    # Here we would also get the Modes offered by linked Operators
+    
+    return local_modes
+
+
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
 def formatDate(datestr):
     year = int(datestr[-4:])
@@ -26,8 +35,13 @@ def getPurchases(user, filters):
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
         
     # Filter by the mode if given, and sort the Purchases by date
+    local_purchases = []
     if filters.get("mode"):
-        return Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode")).order_by("travel_from_date_time")
+        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode")).order_by("travel_from_date_time")
     else:
-        return Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)]).order_by("travel_from_date_time")
+        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)]).order_by("travel_from_date_time")
+        
+    # Here we would also get the Purchases from linked Operator accounts
+    
+    return local_purchases
 
