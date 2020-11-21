@@ -34,7 +34,7 @@ def customer_login(request):
 
 def customer_logout(request):
     logout(request)
-    return redirect(reverse('website:index'))
+    return redirect(reverse('website:login'))
 
 def connect(request):
     # TODO
