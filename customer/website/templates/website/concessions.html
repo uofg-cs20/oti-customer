@@ -23,24 +23,30 @@
 			<p> <input type="radio" name="status" value="past">
 			<label for="past">Expired</label><br>
 			</p>
+			<p>Mode of Transport: <select name="mode" id="mode">
+				<option value="None">None</option>
+				{% for m in modes %}
+					<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
+				{% endfor %}
+			</select></p>
 			<p><input type="submit" value="Submit"></p>
 		</form>
 	</div>
 
 	
-		{% if status %}
-			<h4>Showing valid concessions</h4>
-		{% else %}
-			<h4>Showing expired concessions</h4>
-		{% endif %}
-		<ul>
-		{% for c in concessions %}
-			<li> {{ c.name }} </li>
-			<li> {{ c.discount }} </li>
-			<li> Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }} </li> <br>
-			{% empty %}<p>No concessions to display.</p>
-		{% endfor %}
-		<ul>
+	{% if status %}
+		<h4>Showing valid concessions</h4>
+	{% else %}
+		<h4>Showing expired concessions</h4>
+	{% endif %}
+	<ul>
+	{% for c in concessions %}
+		<li> {{ c.name }} </li>
+		<li> {{ c.discount }} </li>
+		<li> Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }} </li> <br>
+		{% empty %}<p>No concessions to display.</p>
+	{% endfor %}
+	<ul>
 		
 	{% endblock %}
 </body>
