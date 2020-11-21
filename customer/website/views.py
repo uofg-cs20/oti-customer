@@ -62,9 +62,7 @@ def purchases(request):
 
     # Retrieve a list of Purchases filtered by the given fields in
     # the context dictionary, and store these in the context dictionary
-    purchases = getPurchases(request.user, context)
-    for p in purchases:
-        context["purchases"].append(p)
+    context["purchases"] = getPurchases(request.user, context)
 
     return render(request, 'website/purchases.html', context)
 
