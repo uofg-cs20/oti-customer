@@ -1,14 +1,12 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
 <head>
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" href="//resources/demos/style.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-	<script>
-	$( function() {
-		$( "#datepicker1" ).datepicker({dateFormat: "dd-mm-yy"});
-		$( "#datepicker2" ).datepicker({dateFormat: "dd-mm-yy"});
-	} );
-	</script>
+	<script src ="{% static "js/datepicker.js" %}"></script>
 </head>
 
 <body>
@@ -16,23 +14,23 @@
 		Purchases
 	{% endblock %}
 
-	<div>
-		<h3>Filter Purchases</h3>
-		<form action="/purchases/" method="post" autocomplete="off">
-			{% csrf_token %}
-			<p>Booked Since: <input type="text" name="startdate" id="datepicker1"></p>
-			<p>Booked Before: <input type="text" name="enddate" id="datepicker2"></p>
-			<p>Mode of Transport: <select name="mode" id="mode">
-				<option value="None">None</option>
-				{% for m in modes %}
-					<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
-				{% endfor %}
-			</select></p>
-			<p><input type="submit" value="Filter"></p>
-		</form>
-	</div>
-
 	{% block content %}
+		<div>
+			<h3>Filter Purchases</h3>
+			<form action="/purchases/" method="post" autocomplete="off">
+				{% csrf_token %}
+				<p>Booked Since: <input type="text" name="startdate" id="datepicker1"></p>
+				<p>Booked Before: <input type="text" name="enddate" id="datepicker2"></p>
+				<p>Mode of Transport: <select name="mode" id="mode">
+					<option value="None">None</option>
+					{% for m in modes %}
+						<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
+					{% endfor %}
+				</select></p>
+				<p><input type="submit" value="Filter"></p>
+			</form>
+		</div>
+
 		{% if mode and mode != "None" %}
 			{% if startdate and enddate %}
 				<h4>Displaying {{ mode }} purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
@@ -54,7 +52,7 @@
 				<h4>Displaying all purchases made in the last 30 days</h4>
 			{% endif %}
 		{% endif %}
-		
+
 		<ul>
 		{% for p in purchases %}
 			<li>{{ p.id }}</li>
