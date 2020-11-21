@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import getModes, formatDate, getPurchases
+from .helper_functions import getModes, formatDate, getPurchases, getConcessions
 from datetime import date
 
 from .forms import LoginForm
@@ -68,8 +68,28 @@ def purchases(request):
     return render(request, 'website/purchases.html', context)
 
 def concessions(request):
-    # TODO
-    return render(request, 'website/concessions.html')
+    context = {"status" : " "}
+    context["modes"] = getModes()
+    if request.method == "POST":
+        status = request.POST.get("status")
+        mode = request.POST.get("mode")
+        # expired concession status selected
+        if status == "past":
+            status = None
+        context["status"] = status
+        if mode and mode != "None":
+            context["mode"] = mode
+
+    # use helper function to obtain relevant concessions for user
+    # depending on whether current or past concessions are requested
+    concessions = getConcessions(request.user, context)
+    print(concessions)
+    context['concessions'] = []
+    # iterate over obtained concessions and add to context dict
+    for c in concessions:
+        context['concessions'].append(c)
+
+    return render(request, 'website/concessions.html', context)
 
 def usage(request):
     # TODO

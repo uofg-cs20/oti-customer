@@ -1,4 +1,4 @@
-from .models import Mode, Purchase
+from .models import Mode, Purchase, Concession
 from datetime import timedelta
 import datetime
 from django.utils import timezone
@@ -44,4 +44,26 @@ def getPurchases(user, filters):
     # Here we would also get the Purchases from linked Operator accounts
     
     return local_purchases
+
+def getConcessions(user, context):
+    today = timezone.now()
+    status = context["status"]
+    
+    if (status == "valid" or status == " ") and context.get("mode"):
+        mode = context["mode"]
+        # return valid concessions
+        # i.e. concessions with expiry date in the future
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__gt=today, mode=mode)
+
+    elif status == "past" and context.get("mode"):
+        mode = context["mode"]
+        # return expired concessions
+        # i.e. concessions with expiry date in the past
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today, mode=mode)
+
+    elif status == "valid" and not context.get("mode"):
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__gt=today)
+
+    else:
+        return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today)
 
