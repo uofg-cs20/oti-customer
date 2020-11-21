@@ -69,7 +69,7 @@ def populate():
     price1, created = MonetaryValue.objects.get_or_create(amount="30.00", currency="GBP")
     transaction1, created = Transaction.objects.get_or_create(payment_type="Visa", payment_method="Debit", price=price1)
     discount1, created = Discount.objects.get_or_create(discount_type="Young person", discount_value="0.20", discount_description="16-25 Railcard")
-    concession1, created = Concession.objects.get_or_create(id=record1, name="16-25 Railcard", price="30.00", discount=discount1, transaction=transaction1, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Below 25", customer=customer1)
+    concession1, created = Concession.objects.get_or_create(id=record1, mode=train, name="16-25 Railcard", price="30.00", discount=discount1, transaction=transaction1, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Below 25", customer=customer1)
 
     # add a purchase to the customer1 account
     record2, created = RecordID.objects.get_or_create(id="00000002")
@@ -107,7 +107,7 @@ def populate():
     price6, created = MonetaryValue.objects.get_or_create(amount="10.00", currency="GBP")
     transaction6, created = Transaction.objects.get_or_create(payment_type="Visa", payment_method="Debit", price=price6)
     discount6, created = Discount.objects.get_or_create(discount_type="Senior Traveller", discount_value="0.50", discount_description="Over 60 yrs")
-    concession6, created = Concession.objects.get_or_create(id=record6, name="Senior Traveller", price="10.00", discount=discount6, transaction=transaction6, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=364), conditions="Over 60", customer=customer2)
+    concession6, created = Concession.objects.get_or_create(id=record6, mode=train, name="Senior Traveller", price="10.00", discount=discount6, transaction=transaction6, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=364), conditions="Over 60", customer=customer2)
 
     # add a purchase to the customer2 account
     record4, created = RecordID.objects.get_or_create(id="00000004")

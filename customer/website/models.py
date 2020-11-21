@@ -102,6 +102,7 @@ class Discount(models.Model):
 
 class Concession(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
+    mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
     price = models.FloatField()
     discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
