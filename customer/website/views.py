@@ -67,12 +67,12 @@ def purchases(request):
     return render(request, 'website/purchases.html', context)
 
 def concessions(request):
-    context = {"status" : None}
+    context = {"status" : " "}
     if request.method == "POST":
         status = request.POST.get("status")
-        # if no concession status selected,  will return valid ones only
-        if not status:
-            status = "valid"
+        # expired concession status selected
+        if status == "past":
+            status = None
         context['status'] = status
 
     # use helper function to obtain relevant concessions for user

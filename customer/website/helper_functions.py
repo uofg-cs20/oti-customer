@@ -34,7 +34,7 @@ def getPurchases(user, filters):
 def getConcessions(user, context):
     today = timezone.now()
     status = context["status"]
-    if status == 'valid' or status == None:
+    if status == 'valid' or status == " ":
         # return valid concessions
         # i.e. concessions with expiry date in the future
         return Concession.objects.filter(customer_id=user.id, valid_to_date_time__gt=today) #=[str(valid_to_date_time),str(today)])
