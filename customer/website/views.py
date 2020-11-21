@@ -73,6 +73,10 @@ def concessions(request):
     return render(request, 'website/concessions.html')
 
 def usage(request):
-    context = {"modes": Mode.objects.all()}
-    context["combined_tickets"] = getUsage(request.user)
+    usages = getUsage(request.user)
+    context = {}
+    if not usages:
+        context['valid'] = False
+    else:
+        context = {"modes": Mode.objects.all(), "combined_tickets": usages}
     return render(request, 'website/usage.html', context)

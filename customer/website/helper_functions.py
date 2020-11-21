@@ -33,7 +33,10 @@ def getPurchases(user, filters):
 
 def getUsage(user):
     tickets = []
-    cust = Customer.objects.get(user=user)
-    for usages in Usage.objects.filter(customer=cust.id):
-        tickets.append([usages, Account.objects.filter(customer_id=cust.id)])
+    try:
+        cust = Customer.objects.get(user=user)
+        for usages in Usage.objects.filter(customer=cust.id):
+            tickets.append([usages, Account.objects.filter(customer_id=cust.id)])
+    except TypeError:
+        pass
     return tickets
