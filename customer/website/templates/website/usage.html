@@ -1,0 +1,18 @@
+{% extends 'website/base.html' %}
+<body>
+	{% block title %}
+		Usages
+	{% endblock %}
+
+	{% block content %}
+	<div>
+		<h3>Usages</h3>
+		{% for o in combined_tickets %}
+		<div>
+			<p> <b>{{ o.0 }}</b> {{ o.0.travel_from }} to {{ o.0.travel_to }}</p>
+			<p> {{ o.1.0 }} </p>
+		</div>
+		{% endfor %}
+
+    </div>
+	{% endblock content %}

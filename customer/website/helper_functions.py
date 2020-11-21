@@ -1,4 +1,4 @@
-from .models import Mode, Purchase
+from .models import Mode, Purchase, Usage, Customer, Account
 from datetime import timedelta
 import datetime
 from django.utils import timezone
@@ -31,3 +31,9 @@ def getPurchases(user, filters):
     else:
         return Purchase.objects.filter(customer_id=user.id, booking_date_time__range=[str(startdate),str(enddate)])
 
+def getUsage(user):
+    tickets = []
+    cust = Customer.objects.get(user=user)
+    for usages in Usage.objects.filter(customer=cust.id):
+        tickets.append([usages, Account.objects.filter(customer_id=cust.id)])
+    return tickets

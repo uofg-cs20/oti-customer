@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import formatDate, getPurchases
+from .helper_functions import formatDate, getPurchases, getUsage
 from datetime import date
 
 from .forms import LoginForm
@@ -73,5 +73,6 @@ def concessions(request):
     return render(request, 'website/concessions.html')
 
 def usage(request):
-    # TODO
-    return render(request, 'website/usage.html')
+    context = {"modes": Mode.objects.all()}
+    context["combined_tickets"] = getUsage(request.user)
+    return render(request, 'website/usage.html', context)
