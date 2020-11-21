@@ -113,7 +113,7 @@ class Concession(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.id)
+        return "Concession Id: "str(self.id) + ", Concession name: " + str(self.name)
 
 
 class Usage(models.Model):
