@@ -19,8 +19,8 @@
 			<h3>Filter Purchases</h3>
 			<form action="/purchases/" method="post" autocomplete="off">
 				{% csrf_token %}
-				<p>Booked Since: <input type="text" name="startdate" id="datepicker1"></p>
-				<p>Booked Before: <input type="text" name="enddate" id="datepicker2"></p>
+				<p>Travelling After: <input type="text" name="startdate" id="datepicker1"></p>
+				<p>Travelling Before: <input type="text" name="enddate" id="datepicker2"></p>
 				<p>Mode of Transport: <select name="mode" id="mode">
 					<option value="None">None</option>
 					{% for m in modes %}
@@ -33,31 +33,39 @@
 
 		{% if mode and mode != "None" %}
 			{% if startdate and enddate %}
-				<h4>Displaying {{ mode }} purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
+				<h4>Displaying {{ mode }} tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
 			{% elif startdate %}
-				<h4>Displaying {{ mode }} purchases made since {{ startdate }}</h4>
+				<h4>Displaying {{ mode }} tickets after {{ startdate }}</h4>
 			{% elif enddate %}
-				<h4>Displaying {{ mode }} purchases made before {{ enddate }}</h4>
+				<h4>Displaying {{ mode }} tickets before {{ enddate }}</h4>
 			{% else %}
-				<h4>Displaying {{ mode }} purchases made in the last 30 days</h4>
+				<h4>Displaying {{ mode }} tickets for the next 30 days</h4>
 			{% endif %}
 		{% else %}
 			{% if startdate and enddate %}
-				<h4>Displaying all purchases made between {{ startdate.date }} and {{ enddate.date }}</h4>
+				<h4>Displaying all tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
 			{% elif startdate %}
-				<h4>Displaying all purchases made since {{ startdate }}</h4>
+				<h4>Displaying all tickets after {{ startdate }}</h4>
 			{% elif enddate %}
-				<h4>Displaying all purchases made before {{ enddate }}</h4>
+				<h4>Displaying all tickets before {{ enddate }}</h4>
 			{% else %}
-				<h4>Displaying all purchases made in the last 30 days</h4>
+				<h4>Displaying all tickets for the next 30 days</h4>
 			{% endif %}
 		{% endif %}
 
-		<ul>
 		{% for p in purchases %}
-			<li>{{ p.id }}</li>
+			<br/>
+			<div>
+				<h5>{{ p.mode.short_desc }} Ticket</h5>
+				<p>{{ p.location_from }} to {{ p.location_to }}</p>
+				<p>Departs: {{ p.travel_from_date_time }}</p>
+				{% if p.concession %}
+					<p>{{ p.transaction.price }} with concession {{ p.concession }}</p>
+				{% else %}
+					<p>{{ p.transaction.price }}</p>
+				{% endif %}
+			</div>
 			{% empty %}<p>No purchases to display.</p>
 		{% endfor %}
-		</ul>
 	{% endblock %}
 </body>
