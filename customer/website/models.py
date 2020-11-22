@@ -54,9 +54,13 @@ class Location(models.Model):
     other = models.CharField(max_length=30, null=True)
     other_type = models.CharField(max_length=20, null=True)
     accuracy = models.IntegerField(null=True)
+    name = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return "Lat: " + str(self.lat_long.latitude) + ", Long: " + str(self.lat_long.longitude)
+        if self.name:
+            return self.name
+        else:
+            return "Lat: " + str(self.lat_long.latitude) + ", Long: " + str(self.lat_long.longitude)
 
 class Vehicle(models.Model):
     included = models.BooleanField(default=True)
@@ -77,11 +81,15 @@ class LatitudeLongitude(models.Model):
         return "Lat: " + latstr + ", Long: " + longstr
 
 class MonetaryValue(models.Model):
-    amount = models.FloatField()
+    amount = models.DecimalField(max_digits=7, decimal_places=2)
     currency = models.CharField(max_length=3)
+    symbol = models.CharField(max_length=1, null=True)
 
     def __str__(self):
-        return str(self.amount) + " " + self.currency
+        if self.symbol:
+            return self.symbol + str(self.amount)
+        else:
+            return str(self.amount) + " " + self.currency
 
 class Transaction(models.Model):
     date_time = models.DateTimeField(auto_now_add=True)
@@ -94,7 +102,7 @@ class Transaction(models.Model):
 
 class Discount(models.Model):
     discount_type = models.CharField(max_length=50)
-    discount_value = models.FloatField()
+    discount_value = models.DecimalField(max_digits=6, decimal_places=2)
     discount_description = models.CharField(max_length=100)
 
     def __str__(self):
@@ -104,7 +112,7 @@ class Concession(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
-    price = models.FloatField()
+    price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
     discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
     valid_from_date_time = models.DateField()
