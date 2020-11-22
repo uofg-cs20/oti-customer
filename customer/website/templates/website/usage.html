@@ -10,8 +10,8 @@
 		{% if valid  != False %}
 		{% for o in combined_tickets %}
 		<div>
+			<p> {{ o.1 }} </p>
 			<p> <b>{{ o.0 }}</b> {{ o.2.0 }} to {{ o.2.1 }}</p>
-			<p> {{ o.1.0 }} </p>
 		</div>
 		{% endfor %}
 		{% else %}

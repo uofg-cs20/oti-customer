@@ -76,9 +76,9 @@ def getUsage(user, filters=None):
         #    filters[1] = timezone.now() + timedelta(days=30)
         cust = Customer.objects.get(user=user)
         for usages in Usage.objects.filter(customer=cust.id):
+            operator = Account.objects.get(customer_id=cust.id)
             locs = [usages.travel_from.location.other, usages.travel_to.location.other]
-            tickets.append([usages, Account.objects.filter(customer_id=cust.id), locs])
-            print(tickets)
+            tickets.append([usages, operator.operator_id, locs])
     except TypeError:
         pass
     return tickets
