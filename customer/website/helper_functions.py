@@ -37,14 +37,13 @@ def getPurchases(user, filters):
         startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
     
-    # Filter by the user and dates
+    # Filter by the user, mode and dates
     # This function assumes that the given startdate will be before the given enddate chronologically
-    local_purchases = Purchase.objects.filter(customer_id=user.id)
-    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]).union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])).union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
-    
-    # Filter by the mode if given
     if filters.get("mode"):
-        local_purchases = local_purchases.filter(mode=filters.get("mode"))
+        local_purchases = Purchase.objects.filter(customer_id=user.id, mode=filters.get("mode"))
+    else:
+        local_purchases = Purchase.objects.filter(customer_id=user.id)
+    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]).union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])).union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
     
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
