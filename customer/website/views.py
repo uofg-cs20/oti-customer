@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import formatDate, getPurchases, getUsage
+from .helper_functions import getModes, formatDate, getPurchases, getConcessions, getUsage
 from datetime import date
 
 from .forms import LoginForm
@@ -34,7 +34,7 @@ def customer_login(request):
 
 def customer_logout(request):
     logout(request)
-    return redirect(reverse('website:index'))
+    return redirect(reverse('website:login'))
 
 def connect(request):
     # TODO
@@ -43,7 +43,8 @@ def connect(request):
 def purchases(request):
     # Initialise a context dictionary to store the Purchases and available
     # modes of transport
-    context = {"purchases":[], "modes":Mode.objects.all()}
+    context = {"purchases":[], "modes":[]}
+    context["modes"] = getModes()
 
     if request.method == "POST":
         # Check if filters have been applied, store these in the
@@ -62,15 +63,33 @@ def purchases(request):
 
     # Retrieve a list of Purchases filtered by the given fields in
     # the context dictionary, and store these in the context dictionary
-    purchases = getPurchases(request.user, context)
-    for p in purchases:
-        context["purchases"].append(p)
+    context["purchases"] = getPurchases(request.user, context)
 
     return render(request, 'website/purchases.html', context)
 
 def concessions(request):
-    # TODO
-    return render(request, 'website/concessions.html')
+    context = {"status" : " "}
+    context["modes"] = getModes()
+    if request.method == "POST":
+        status = request.POST.get("status")
+        mode = request.POST.get("mode")
+        # expired concession status selected
+        if status == "past":
+            status = None
+        context["status"] = status
+        if mode and mode != "None":
+            context["mode"] = mode
+
+    # use helper function to obtain relevant concessions for user
+    # depending on whether current or past concessions are requested
+    concessions = getConcessions(request.user, context)
+    print(concessions)
+    context['concessions'] = []
+    # iterate over obtained concessions and add to context dict
+    for c in concessions:
+        context['concessions'].append(c)
+
+    return render(request, 'website/concessions.html', context)
 
 def usage(request):
     usages = getUsage(request.user)
