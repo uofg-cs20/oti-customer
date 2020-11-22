@@ -58,6 +58,12 @@ def purchases(request):
         if enddatestr:
             enddate = formatDate(enddatestr)
             context.update({"enddate":enddate})
+            # If startdate was provided and is greater than the enddate, switch them
+            s = context.get("startdate")
+            if s:
+                if s > enddate:
+                    context.update({"startdate":enddate})
+                    context.update({"enddate":s})
         if mode and mode != "None":
             context.update({"mode":mode})
 
