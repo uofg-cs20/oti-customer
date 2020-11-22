@@ -67,9 +67,13 @@ def getConcessions(user, context):
     else:
         return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today)
 
-def getUsage(user):
+def getUsage(user, filters):
     tickets = []
     try:
+        #if not filters[0]:
+        #    filters[0] = timezone.now()
+        #if not filters[1]:
+        #    filters[1] = timezone.now() + timedelta(days=30)
         cust = Customer.objects.get(user=user)
         for usages in Usage.objects.filter(customer=cust.id):
             tickets.append([usages, Account.objects.filter(customer_id=cust.id)])
