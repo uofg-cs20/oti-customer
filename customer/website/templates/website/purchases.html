@@ -22,7 +22,7 @@
 				<p>Travelling After: <input type="text" name="startdate" id="datepicker1"></p>
 				<p>Travelling Before: <input type="text" name="enddate" id="datepicker2"></p>
 				<p>Mode of Transport: <select name="mode" id="mode">
-					<option value="None">None</option>
+					<option value="None">Any</option>
 					{% for m in modes %}
 						<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
 					{% endfor %}
@@ -58,7 +58,8 @@
 			<div>
 				<h5>{{ p.mode.short_desc }} Ticket</h5>
 				<p>{{ p.location_from }} to {{ p.location_to }}</p>
-				<p>Departs: {{ p.travel_from_date_time }}</p>
+				<p>Valid From: {{ p.travel_from_date_time }}</p>
+				<p>Expires: {{ p.travel_to_date_time }}</p>
 				{% if p.concession %}
 					<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
 				{% else %}

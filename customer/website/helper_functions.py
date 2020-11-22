@@ -36,20 +36,22 @@ def getPurchases(user, filters):
     else:
         startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
-        
+    
+    # Filter by the user and dates
+    # This function assumes that the given startdate will be before the given enddate chronologically
+    local_purchases = Purchase.objects.filter(customer_id=user.id)
+    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]).union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])).union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
+    
     # Filter by the mode if given
-    local_purchases = []
     if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode"))
-    else:
-        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)])
-
+        local_purchases = local_purchases.filter(mode=filters.get("mode"))
+    
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
 
-    # Return all the user's Purchases sorted by travel_from_date_time
+    # Return all the user's Purchases sorted by travel_to_date_time
     purchases = local_purchases.union(linked_purchases)
-    return purchases.order_by("travel_from_date_time")
+    return purchases.order_by("travel_to_date_time")
 
 def getConcessions(user, context):
     today = timezone.now()
