@@ -34,19 +34,24 @@
 	</div>
 
 	
-	{% if status %}
-		<h4>Showing valid concessions</h4>
+	{% if status and mode %}
+		<h4>Showing valid {{ mode }} concessions</h4>
+		{% elif mode %}
+			<h4>Showing expired {{ mode }} concessions</h4>
+		{% elif status %}
+			<h4>Showing valid concessions</h4>
 	{% else %}
 		<h4>Showing expired concessions</h4>
 	{% endif %}
-	<ul>
+
 	{% for c in concessions %}
-		<li> {{ c.name }} </li>
-		<li> {{ c.discount }} </li>
-		<li> Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }} </li> <br>
+		<br/>
+		<div>
+			<h5> {{ c.name }} </h5>
+			<p> {{ c.discount }} </p>
+			<p>Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }}</p> 
+		</div>
 		{% empty %}<p>No concessions to display.</p>
 	{% endfor %}
-	<ul>
-		
 	{% endblock %}
 </body>
