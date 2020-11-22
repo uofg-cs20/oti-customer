@@ -67,7 +67,7 @@ def getConcessions(user, context):
     else:
         return Concession.objects.filter(customer_id=user.id, valid_to_date_time__lt=today)
 
-def getUsage(user, filters):
+def getUsage(user, filters=None):
     tickets = []
     try:
         #if not filters[0]:
