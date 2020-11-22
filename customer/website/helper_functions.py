@@ -9,9 +9,12 @@ import pytz
 def getModes():
     local_modes = Mode.objects.all()
 
-    # Here we would also get the Modes offered by linked Operators
+    ### Here we would also get the Modes offered by linked Operators ###
+    linked_modes = Mode.objects.none()
 
-    return local_modes
+    # Return all modes of transport offered by this Operator and linked Operators
+    modes = local_modes.union(linked_modes)
+    return modes
 
 
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
@@ -34,16 +37,19 @@ def getPurchases(user, filters):
         startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
         
-    # Filter by the mode if given, and sort the Purchases by date
+    # Filter by the mode if given
     local_purchases = []
     if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode")).order_by("travel_from_date_time")
+        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)], mode=filters.get("mode"))
     else:
-        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)]).order_by("travel_from_date_time")
+        local_purchases = Purchase.objects.filter(customer_id=user.id, travel_from_date_time__range=[str(startdate),str(enddate)])
 
-    # Here we would also get the Purchases from linked Operator accounts
+    ### Here we would also get the Purchases from linked Operator accounts ###
+    linked_purchases = Purchase.objects.none()
 
-    return local_purchases
+    # Return all the user's Purchases sorted by travel_from_date_time
+    purchases = local_purchases.union(linked_purchases)
+    return purchases.order_by("travel_from_date_time")
 
 def getConcessions(user, context):
     today = timezone.now()

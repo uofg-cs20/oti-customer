@@ -35,9 +35,9 @@
 			{% if startdate and enddate %}
 				<h4>Displaying {{ mode }} tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
 			{% elif startdate %}
-				<h4>Displaying {{ mode }} tickets after {{ startdate }}</h4>
+				<h4>Displaying {{ mode }} tickets after {{ startdate.date }}</h4>
 			{% elif enddate %}
-				<h4>Displaying {{ mode }} tickets before {{ enddate }}</h4>
+				<h4>Displaying {{ mode }} tickets before {{ enddate.date }}</h4>
 			{% else %}
 				<h4>Displaying {{ mode }} tickets for the next 30 days</h4>
 			{% endif %}
@@ -45,9 +45,9 @@
 			{% if startdate and enddate %}
 				<h4>Displaying all tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
 			{% elif startdate %}
-				<h4>Displaying all tickets after {{ startdate }}</h4>
+				<h4>Displaying all tickets after {{ startdate.date }}</h4>
 			{% elif enddate %}
-				<h4>Displaying all tickets before {{ enddate }}</h4>
+				<h4>Displaying all tickets before {{ enddate.date }}</h4>
 			{% else %}
 				<h4>Displaying all tickets for the next 30 days</h4>
 			{% endif %}
@@ -60,7 +60,7 @@
 				<p>{{ p.location_from }} to {{ p.location_to }}</p>
 				<p>Departs: {{ p.travel_from_date_time }}</p>
 				{% if p.concession %}
-					<p>{{ p.transaction.price }} with concession {{ p.concession }}</p>
+					<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
 				{% else %}
 					<p>{{ p.transaction.price }}</p>
 				{% endif %}
