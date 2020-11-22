@@ -1,4 +1,4 @@
-from .models import Mode, Purchase, Usage, Customer, Account, Concession
+from .models import Mode, Purchase, Usage, Customer, Account, Concession, Location
 from datetime import timedelta
 import datetime
 from django.utils import timezone
@@ -76,7 +76,9 @@ def getUsage(user, filters=None):
         #    filters[1] = timezone.now() + timedelta(days=30)
         cust = Customer.objects.get(user=user)
         for usages in Usage.objects.filter(customer=cust.id):
-            tickets.append([usages, Account.objects.filter(customer_id=cust.id)])
+            locs = [usages.travel_from.location.other, usages.travel_to.location.other]
+            tickets.append([usages, Account.objects.filter(customer_id=cust.id), locs])
+            print(tickets)
     except TypeError:
         pass
     return tickets
