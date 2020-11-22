@@ -55,7 +55,6 @@ def getPurchases(user, filters):
 def getConcessions(user, context):
     today = timezone.now()
     status = context["status"]
-    print(status)
 
     customer = Customer.objects.get(user=user)
 
@@ -75,8 +74,7 @@ def getConcessions(user, context):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
 
     else:
-        print("here")
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today)
 
 def getUsage(user):
     tickets = []
