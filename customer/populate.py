@@ -80,7 +80,7 @@ def populate():
     discount7, created = Discount.objects.get_or_create(discount_type="Student", discount_value="0.10", discount_description="Student Railcard")
     concession7, created = Concession.objects.get_or_create(id=record7, mode=bus, name="Student Railcard", price=price7, discount=discount7, transaction=transaction7, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Student", customer=customer1)
 
-    # add a purchase to the customer1 account (today)
+    # add a purchase to the customer1 account (30 days from now)
     record2, created = RecordID.objects.get_or_create(id="00000002")
     price2, created = MonetaryValue.objects.get_or_create(amount="10.00", currency="GBP", symbol="£")
     transaction2, created = Transaction.objects.get_or_create(payment_type="Visa", payment_method="Debit", price=price2)
@@ -104,7 +104,7 @@ def populate():
     location_to8, created = Location.objects.get_or_create(lat_long=coordinates_to8, NaPTAN="idk", other="Dundee", name="Dundee")
     purchase8, created = Purchase.objects.get_or_create(id=record8, mode=bus, travel_class=first_class, booking_date_time=django.utils.timezone.now(), transaction=transaction8, account_balance=account_balance8, vehicle=vehicle_type, travel_from_date_time=django.utils.timezone.now()-datetime.timedelta(days=30), travel_to_date_time=django.utils.timezone.now(), concession=concession1, ticket=ticket8, location_from=location_from8, location_to=location_to8, customer=customer1)
 
-    # add a third purchase to the customer1 account (10 days ago)
+    # add a third purchase to the customer1 account (10 days ago - 10 days from now)
     record9, created = RecordID.objects.get_or_create(id="00000009")
     price9, created = MonetaryValue.objects.get_or_create(amount="11.00", currency="GBP", symbol="£")
     transaction9, created = Transaction.objects.get_or_create(payment_type="Visa", payment_method="Debit", price=price9)
