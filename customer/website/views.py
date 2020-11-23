@@ -58,6 +58,12 @@ def purchases(request):
         if enddatestr:
             enddate = formatDate(enddatestr)
             context.update({"enddate":enddate})
+            # If startdate was provided and is greater than the enddate, switch them
+            s = context.get("startdate")
+            if s:
+                if s > enddate:
+                    context.update({"startdate":enddate})
+                    context.update({"enddate":s})
         if mode and mode != "None":
             context.update({"mode":mode})
 
@@ -68,11 +74,16 @@ def purchases(request):
     return render(request, 'website/purchases.html', context)
 
 def concessions(request):
-    context = {"status" : " "}
+    context = {}
+    context["status"] = "valid"
     context["modes"] = getModes()
     if request.method == "POST":
+
         status = request.POST.get("status")
         mode = request.POST.get("mode")
+        # if no status selected, will examine valid concessions
+        if status == None:
+            status = "valid"
         # expired concession status selected
         if status == "past":
             status = None
