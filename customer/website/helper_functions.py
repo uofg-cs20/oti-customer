@@ -2,6 +2,7 @@ from .models import Mode, Purchase, Usage, Customer, Account, Concession, Locati
 from datetime import timedelta
 import datetime
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 import pytz
 
 
@@ -81,16 +82,22 @@ def getConcessions(user, context):
 
 def getUsage(user, filters=None):
     tickets = []
+    print(filters)
     try:
-        #if not filters[0]:
-        #    filters[0] = timezone.now()
-        #if not filters[1]:
-        #    filters[1] = timezone.now() + timedelta(days=30)
+        if not filters[0]:
+            filters[0] = timezone.now() - timedelta(days=30)
+            print(filters)
+        if not filters[1]:
+            filters[1] = timezone.now()
+            print(filters)
         cust = Customer.objects.get(user=user)
+        #genuinely this was just me guessing indices and comparisons until it looks like it works
         for usages in Usage.objects.filter(customer=cust.id):
-            operator = Account.objects.get(customer_id=cust.id)
-            locs = [usages.travel_from.location.other, usages.travel_to.location.other]
-            tickets.append([usages, operator.operator_id, locs])
-    except TypeError:
+            if (usages.travel_from.date_time >= filters[0]) and (usages.travel_to.date_time <= filters[1]):
+                operator = Account.objects.get(customer_id=cust.id)
+                locs = [usages.travel_from.location.other, usages.travel_to.location.other]
+                date = [usages.travel_from.date_time, usages.travel_to.date_time]
+                tickets.append([usages, operator.operator_id, locs, date])
+    except ObjectDoesNotExist:
         pass
     return tickets
