@@ -28,6 +28,9 @@ def formatDate(datestr):
 
 # Returns the Purchases of the given user, filtered by the given dates and mode of transport
 def getPurchases(user, filters):
+    # Get the Customer object of the given user
+    customer = Customer.objects.get(user=user)
+
     # If both the start date and end date aren't provided, filter the next 30 days
     if not (filters.get("startdate") or filters.get("enddate")):
         startdate = timezone.now()
@@ -40,9 +43,9 @@ def getPurchases(user, filters):
     # Filter by the user, mode and dates
     # This function assumes that the given startdate will be before the given enddate chronologically
     if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=user.id, mode=filters.get("mode"))
+        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=filters.get("mode"))
     else:
-        local_purchases = Purchase.objects.filter(customer_id=user.id)
+        local_purchases = Purchase.objects.filter(customer_id=customer.id)
     local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]).union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])).union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
     
     ### Here we would also get the Purchases from linked Operator accounts ###
