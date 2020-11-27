@@ -1,88 +1,77 @@
 {% extends 'website/base.html' %}
 {% load static %}
 
-<head>
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<link rel="stylesheet" href="//resources/demos/style.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-	<script src ="{% static "js/datepicker.js" %}"></script>
-</head>
+{% block title %}
+	Purchases
+{% endblock %}
 
+{% block content %}
+	<div class="container" >
+		<h3 class="text-center my-4">Filter Purchases</h3>
 
-	{% block title %}
-		Purchases
-	{% endblock %}
+		<form class="form-inline" action="/purchases/" method="post" autocomplete="off">
+			{% csrf_token %}
 
-	{% block content %}
-		<div class="container" >
-			<h3 class="text-center my-4">Filter Purchases</h3>
-
-			<form class="form-inline" action="/purchases/" method="post" autocomplete="off">
-				{% csrf_token %}
-
-				<div class="row">
-					<div class="form-group col-xs-4 px-2">
-						Travelling After: <input class="form-control" type="text" name="startdate" id="datepicker1">
-					</div>
-					<div class="form-group col-xs-4 px-2">
-						Travelling Before: <input   class="form-control" type="text" name="enddate" id="datepicker2">
-					</div>
-					<div class="form-group col-xs-4 px-2">
-						Mode of Transport: <select  class="form-control" name="mode" id="mode">
-							<option value="None">Any</option>
-							{% for m in modes %}
-								<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
-							{% endfor %}
-						</select>
-					</div>
+			<div class="row">
+				<div class="form-group col-xs-4 px-2">
+					Travelling After: <input class="form-control" type="text" name="startdate" id="datepicker1">
 				</div>
-
-				<div class="text-center px-4">
-					<input class="btn btn-md btn-primary" type="submit" value="Filter">
+				<div class="form-group col-xs-4 px-2">
+					Travelling Before: <input   class="form-control" type="text" name="enddate" id="datepicker2">
 				</div>
-			</form>
-		</div>
+				<div class="form-group col-xs-4 px-2">
+					Mode of Transport: <select  class="form-control" name="mode" id="mode">
+						<option value="None">Any</option>
+						{% for m in modes %}
+							<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
 
-		<div class="container my-4 mb-5">
-			{% if mode and mode != "None" %}
-				{% if startdate and enddate %}
-					<h4 >Displaying {{ mode }} tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
-				{% elif startdate %}
-					<h4>Displaying {{ mode }} tickets after {{ startdate.date }}</h4>
-				{% elif enddate %}
-					<h4>Displaying {{ mode }} tickets before {{ enddate.date }}</h4>
-				{% else %}
-					<h4>Displaying {{ mode }} tickets for the next 30 days</h4>
-				{% endif %}
+			<div class="text-center px-4">
+				<input class="btn btn-md btn-primary" type="submit" value="Filter">
+			</div>
+		</form>
+	</div>
+
+	<div class="container my-4 mb-5">
+		{% if mode and mode != "None" %}
+			{% if startdate and enddate %}
+				<h4 >Displaying {{ mode }} tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
+			{% elif startdate %}
+				<h4>Displaying {{ mode }} tickets after {{ startdate.date }}</h4>
+			{% elif enddate %}
+				<h4>Displaying {{ mode }} tickets before {{ enddate.date }}</h4>
 			{% else %}
-				{% if startdate and enddate %}
-					<h4>Displaying all tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
-				{% elif startdate %}
-					<h4>Displaying all tickets after {{ startdate.date }}</h4>
-				{% elif enddate %}
-					<h4>Displaying all tickets before {{ enddate.date }}</h4>
-				{% else %}
-					<h4>Displaying all tickets for the next 30 days</h4>
-				{% endif %}
+				<h4>Displaying {{ mode }} tickets for the next 30 days</h4>
 			{% endif %}
+		{% else %}
+			{% if startdate and enddate %}
+				<h4>Displaying all tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
+			{% elif startdate %}
+				<h4>Displaying all tickets after {{ startdate.date }}</h4>
+			{% elif enddate %}
+				<h4>Displaying all tickets before {{ enddate.date }}</h4>
+			{% else %}
+				<h4>Displaying all tickets for the next 30 days</h4>
+			{% endif %}
+		{% endif %}
 
-			{% for p in purchases %}
-				<br/>
-				<div class="card p-4" style="width: 40rem;">
-					<h5>{{ p.mode.short_desc }} Ticket</h5>
-					<p>{{ p.location_from }} to {{ p.location_to }}</p>
-					<p>Valid From: {{ p.travel_from_date_time }}</p>
-					<p>Expires: {{ p.travel_to_date_time }}</p>
-					{% if p.concession %}
-						<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
-					{% else %}
-						<p>{{ p.transaction.price }}</p>
-					{% endif %}
-				</div>
-				{% empty %}<p>No purchases to display.</p>
-			{% endfor %}
-		</div>
+		{% for p in purchases %}
+			<div class="card p-4 my-4" style="width: 40rem;">
+				<h5>{{ p.mode.short_desc }} Ticket</h5>
+				<p>{{ p.location_from }} to {{ p.location_to }}</p>
+				<p>Valid From: {{ p.travel_from_date_time }}</p>
+				<p>Expires: {{ p.travel_to_date_time }}</p>
+				{% if p.concession %}
+					<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
+				{% else %}
+					<p>{{ p.transaction.price }}</p>
+				{% endif %}
+			</div>
+			{% empty %}<p>No purchases to display.</p>
+		{% endfor %}
+	</div>
 
-	{% endblock %}
-</body>
+{% endblock %}
