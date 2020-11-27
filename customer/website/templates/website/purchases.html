@@ -9,64 +9,80 @@
 	<script src ="{% static "js/datepicker.js" %}"></script>
 </head>
 
-<body>
+
 	{% block title %}
 		Purchases
 	{% endblock %}
 
 	{% block content %}
-		<div>
-			<h3>Filter Purchases</h3>
-			<form action="/purchases/" method="post" autocomplete="off">
+		<div class="container" >
+			<h3 class="text-center my-4">Filter Purchases</h3>
+
+			<form class="form-inline" action="/purchases/" method="post" autocomplete="off">
 				{% csrf_token %}
-				<p>Travelling After: <input type="text" name="startdate" id="datepicker1"></p>
-				<p>Travelling Before: <input type="text" name="enddate" id="datepicker2"></p>
-				<p>Mode of Transport: <select name="mode" id="mode">
-					<option value="None">Any</option>
-					{% for m in modes %}
-						<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
-					{% endfor %}
-				</select></p>
-				<p><input type="submit" value="Filter"></p>
+
+				<div class="row">
+					<div class="form-group col-xs-4 px-2">
+						Travelling After: <input class="form-control" type="text" name="startdate" id="datepicker1">
+					</div>
+					<div class="form-group col-xs-4 px-2">
+						Travelling Before: <input   class="form-control" type="text" name="enddate" id="datepicker2">
+					</div>
+					<div class="form-group col-xs-4 px-2">
+						Mode of Transport: <select  class="form-control" name="mode" id="mode">
+							<option value="None">Any</option>
+							{% for m in modes %}
+								<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+
+				<div class="text-center px-4">
+					<input class="btn btn-md btn-primary" type="submit" value="Filter">
+				</div>
 			</form>
 		</div>
 
-		{% if mode and mode != "None" %}
-			{% if startdate and enddate %}
-				<h4>Displaying {{ mode }} tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
-			{% elif startdate %}
-				<h4>Displaying {{ mode }} tickets after {{ startdate.date }}</h4>
-			{% elif enddate %}
-				<h4>Displaying {{ mode }} tickets before {{ enddate.date }}</h4>
-			{% else %}
-				<h4>Displaying {{ mode }} tickets for the next 30 days</h4>
-			{% endif %}
-		{% else %}
-			{% if startdate and enddate %}
-				<h4>Displaying all tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
-			{% elif startdate %}
-				<h4>Displaying all tickets after {{ startdate.date }}</h4>
-			{% elif enddate %}
-				<h4>Displaying all tickets before {{ enddate.date }}</h4>
-			{% else %}
-				<h4>Displaying all tickets for the next 30 days</h4>
-			{% endif %}
-		{% endif %}
-
-		{% for p in purchases %}
-			<br/>
-			<div>
-				<h5>{{ p.mode.short_desc }} Ticket</h5>
-				<p>{{ p.location_from }} to {{ p.location_to }}</p>
-				<p>Valid From: {{ p.travel_from_date_time }}</p>
-				<p>Expires: {{ p.travel_to_date_time }}</p>
-				{% if p.concession %}
-					<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
+		<div class="container my-4 mb-5">
+			{% if mode and mode != "None" %}
+				{% if startdate and enddate %}
+					<h4 >Displaying {{ mode }} tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
+				{% elif startdate %}
+					<h4>Displaying {{ mode }} tickets after {{ startdate.date }}</h4>
+				{% elif enddate %}
+					<h4>Displaying {{ mode }} tickets before {{ enddate.date }}</h4>
 				{% else %}
-					<p>{{ p.transaction.price }}</p>
+					<h4>Displaying {{ mode }} tickets for the next 30 days</h4>
 				{% endif %}
-			</div>
-			{% empty %}<p>No purchases to display.</p>
-		{% endfor %}
+			{% else %}
+				{% if startdate and enddate %}
+					<h4>Displaying all tickets between {{ startdate.date }} and {{ enddate.date }}</h4>
+				{% elif startdate %}
+					<h4>Displaying all tickets after {{ startdate.date }}</h4>
+				{% elif enddate %}
+					<h4>Displaying all tickets before {{ enddate.date }}</h4>
+				{% else %}
+					<h4>Displaying all tickets for the next 30 days</h4>
+				{% endif %}
+			{% endif %}
+
+			{% for p in purchases %}
+				<br/>
+				<div class="card p-4" style="width: 40rem;">
+					<h5>{{ p.mode.short_desc }} Ticket</h5>
+					<p>{{ p.location_from }} to {{ p.location_to }}</p>
+					<p>Valid From: {{ p.travel_from_date_time }}</p>
+					<p>Expires: {{ p.travel_to_date_time }}</p>
+					{% if p.concession %}
+						<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
+					{% else %}
+						<p>{{ p.transaction.price }}</p>
+					{% endif %}
+				</div>
+				{% empty %}<p>No purchases to display.</p>
+			{% endfor %}
+		</div>
+
 	{% endblock %}
 </body>
