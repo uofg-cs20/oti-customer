@@ -13,45 +13,58 @@
 
 	{% block content %}
 
-	<div>
-		<h3>Filter Concessions</h3>
-		<form action="/concessions/" method="post">
+	<div class="container" style="margin: 0 auto; width: 50%;">
+		<h3 class="text-center my-4">Filter Concessions</h3>
+
+		<form  class="form-inline" action="/concessions/" method="post">
 			{% csrf_token %}
-			<p> <input type="radio" name="status" value="valid">
-			<label for="valid">Valid</label><br>
-			</p>
-			<p> <input type="radio" name="status" value="past">
-			<label for="past">Expired</label><br>
-			</p>
-			<p>Mode of Transport: <select name="mode" id="mode">
-				<option value="None">None</option>
-				{% for m in modes %}
-					<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
-				{% endfor %}
-			</select></p>
-			<p><input type="submit" value="Submit"></p>
+
+			<div class="row">
+				<div class="form-group col-xs-4 px-2">
+					<p> Valid: <input  class="form-control" type="radio" name="status" value="valid">
+					</p>
+				</div>
+				<div class="form-group col-xs-4 px-2">
+					<p> Expired: <input class="form-control" type="radio" name="status" value="past">
+					</p>
+				</div>
+				<div class="form-group col-xs-4 px-2">
+					<p>Mode of Transport: <select  class="form-control" name="mode" id="mode">
+						<option value="None">None</option>
+						{% for m in modes %}
+							<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
+						{% endfor %}
+					</select></p>
+				</div>
+			</div>
+				
+			<div class="text-center px-4">
+				<p><input  class="btn btn-md btn-primary" type="submit" value="Submit"></p>
+			</div>
 		</form>
 	</div>
 
-	
-	{% if status and mode %}
-		<h4>Showing valid {{ mode }} concessions</h4>
-		{% elif mode %}
-			<h4>Showing expired {{ mode }} concessions</h4>
-		{% elif status %}
-			<h4>Showing valid concessions</h4>
-	{% else %}
-		<h4>Showing expired concessions</h4>
-	{% endif %}
+	<div class="container my-4 mb-5">
+		{% if status and mode %}
+			<h4>Showing valid {{ mode }} concessions</h4>
+			{% elif mode %}
+				<h4>Showing expired {{ mode }} concessions</h4>
+			{% elif status %}
+				<h4>Showing valid concessions</h4>
+		{% else %}
+			<h4>Showing expired concessions</h4>
+		{% endif %}
 
-	{% for c in concessions %}
-		<br/>
-		<div>
-			<h5> {{ c.name }} </h5>
-			<p> {{ c.discount }} </p>
-			<p>Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }}</p> 
-		</div>
-		{% empty %}<p>No concessions to display.</p>
-	{% endfor %}
+		{% for c in concessions %}
+			<br/>
+			<div class="card p-4" style="width: 40rem;">
+				<h5> {{ c.name }} </h5>
+				<p> {{ c.discount }} </p>
+				<p>Valid from {{ c.valid_from_date_time }} to {{ c.valid_to_date_time }}</p> 
+			</div>
+			{% empty %}<p>No concessions to display.</p>
+		{% endfor %}	
+	</div>
+
 	{% endblock %}
 </body>
