@@ -6,20 +6,20 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container"  style="margin: 0 auto; width: 80%;">
+	<div class="container" style="margin: 0 auto; width: 90%;">
 		<h3 class="text-center my-4">Filter Usages</h3>
 
-		<form  class="form-inline"  action="/usage/" method="post" autocomplete="off">
+		<form class="form-inline" action="/usage/" method="post" autocomplete="off">
 			{% csrf_token %}
 			<div class="row">
 				<div class="form-group col-xs-4 px-2">
-					<p>Travelling Between: <input type="text" name="startdate" id="datepicker1"></p>
+					<p>Travelling Between: <input class="form-control" type="text" name="startdate" id="datepicker1"></p>
 				</div>
 				<div class="form-group col-xs-4 px-2">
-					<p>			and: <input type="text" name="enddate" id="datepicker2"></p>
+					<p> and: <input type="text" class="form-control" name="enddate" id="datepicker2"></p>
 				</div>
 				<div class="form-group col-xs-4 px-2">
-					Mode of Transport: <select  class="form-control" name="mode" id="mode">
+					<p> Mode of Transport: <select  class="form-control" name="mode" id="mode"> </p>
 						<option value="None">Any</option>
 						{% for m in modes %}
 							<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
@@ -44,23 +44,20 @@
 
 	<div class="container my-4 mb-5">
 		<h3>Usages</h3>
-		<table class="table table-striped table-hover">
-			<tbody>
 				{% if valid  != False %}
 					{% for ticket in combined_tickets.items %}
+						<div class="card p-4 my-4" style="width: 40rem;">
 						<tr>
-							<td> {{ ticket.1.operator }} </td>
-							<td> <b>{{ ticket.0 }}</b> {{ ticket.1.locs.0 }} to {{ ticket.1.locs.1 }}</td>
-							<td> {{ ticket.1.date.0 }}</td>
-							<td> {{ ticket.1.date.1 }}</td>
-							<td> {{ ticket.1.mode }}</td>
+							<h5> {{ ticket.1.mode }} Ticket</h5>
+							<p> <b>{{ ticket.1.operator }}</b> </p>
+							<p>{{ ticket.1.locs.0 }} to {{ ticket.1.locs.1 }}</p>
+							<p> {{ ticket.1.date.0 }} - {{ ticket.1.date.1 }}</p>
+						</div>
 					{% endfor %}
 				{% else %}
 					<td>No usages found</td>
 				{% endif %}
 				</tr>
-			</tbody>
-		</table>
 	</div>
 
 {% endblock content %}
