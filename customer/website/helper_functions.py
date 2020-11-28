@@ -41,13 +41,20 @@ def getPurchases(user, filters):
         startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
     
-    # Filter by the user, mode and dates
+    # Filter by the user and mode
     # This function assumes that the given startdate will be before the given enddate chronologically
     if filters.get("mode"):
         local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=filters.get("mode"))
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
-    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]).union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])).union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
+    
+    # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
+    # First include those whose "from" date is within the filter range
+    # Then include those whose "to" date is within the filter range
+    # Finally include the special cases whose filter range is entirely within the "from-to" validity range
+    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]) \
+                      .union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])) \
+                      .union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
     
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
