@@ -88,23 +88,34 @@ def getConcessions(user, context):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today)
 
 def getUsage(user, filters=None):
-    tickets = []
-    print(filters)
+    tickets = {}
+    startdate = filters[0]
+    enddate = filters[1]
+    mode = filters[2]
     try:
-        if not filters[0]:
-            filters[0] = timezone.now() - timedelta(days=30)
-            print(filters)
-        if not filters[1]:
-            filters[1] = timezone.now()
-            print(filters)
+        if not startdate:
+            startdate = timezone.now() - timedelta(days=30)
+        if not enddate:
+            enddate = timezone.now()
+        if enddate < startdate:
+            startdate, enddate = enddate, startdate
         cust = Customer.objects.get(user=user)
-        #genuinely this was just me guessing indices and comparisons until it looks like it works
-        for usages in Usage.objects.filter(customer=cust.id):
-            if (usages.travel_from.date_time >= filters[0]) and (usages.travel_to.date_time <= filters[1]):
-                operator = Account.objects.get(customer_id=cust.id)
-                locs = [usages.travel_from.location.other, usages.travel_to.location.other]
-                date = [usages.travel_from.date_time, usages.travel_to.date_time]
-                tickets.append([usages, operator.operator_id, locs, date])
+
+        if (mode) and (mode != "None"):
+            usages = Usage.objects.filter(customer=cust.id, mode=mode)
+        else:
+            usages = Usage.objects.filter(customer=cust.id)
+        usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
+            .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
+            .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        for usage in usages:
+            usage_dict = {"usage": usage}
+            operator = Account.objects.get(customer_id=cust.id)
+            usage_dict["operator"] = operator.operator_id
+            usage_dict["locs"] = [usage.travel_from.location.other, usage.travel_to.location.other]
+            usage_dict["date"] = [usage.travel_from.date_time, usage.travel_to.date_time]
+            usage_dict["mode"] = usage.mode
+            tickets[usage.id] = usage_dict
     except ObjectDoesNotExist:
         pass
     return tickets

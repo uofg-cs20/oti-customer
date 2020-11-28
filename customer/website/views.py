@@ -104,6 +104,8 @@ def concessions(request):
 
 def usage(request):
     context = {}
+    context["modes"] = getModes()
+    mode = ""
     if request.method == "POST":
         # Check if filters have been applied, store these in the
         # context dictionary to process
@@ -115,14 +117,11 @@ def usage(request):
             startdate = formatDate(startdatestr)
         if enddatestr:
             enddate = formatDate(enddatestr)
-        if mode and mode != "None":
-            context.update({"mode":mode})
     else:
         startdate, enddate = "", ""
-    print(startdate, " yeet ", enddate)
-    usages = getUsage(request.user, [startdate, enddate])
+    usages = getUsage(request.user, [startdate, enddate, mode])
     if not usages:
         context['valid'] = False
     else:
-        context = {"modes": Mode.objects.all(), "combined_tickets": usages}
+        context['combined_tickets'] = usages
     return render(request, 'website/usage.html', context)
