@@ -8,17 +8,27 @@ from .helper_functions import getModes, formatDate, getPurchases, getConcessions
 from datetime import date
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import PurchaseSerializer
+from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
 from .forms import LoginForm
 
 
 # The ViewSet automatically handles API URLs
 class PurchaseViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows Purchases to be viewed or edited.
-    """
+    # API endpoint that allows Purchases to be viewed or edited.
     queryset = Purchase.objects.all().order_by('-travel_to_date_time')
     serializer_class = PurchaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+class ConcessionViewSet(viewsets.ModelViewSet):
+    # API endpoint that allows Concessions to be viewed or edited.
+    queryset = Concession.objects.all().order_by('-valid_to_date_time')
+    serializer_class = ConcessionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+class UsageViewSet(viewsets.ModelViewSet):
+    # API endpoint that allows Usages to be viewed or edited.
+    queryset = Usage.objects.all().order_by('mode')
+    serializer_class = UsageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 def index(request):
