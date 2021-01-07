@@ -98,7 +98,7 @@ class Transaction(models.Model):
     price = models.ForeignKey(MonetaryValue, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.price)
 
 class Discount(models.Model):
     discount_type = models.CharField(max_length=50)
@@ -121,7 +121,7 @@ class Concession(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Concession Id: " + str(self.id) + ", Concession name: " + str(self.name)
+        return self.name
 
 
 class Usage(models.Model):
