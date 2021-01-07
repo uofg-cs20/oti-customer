@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'website.apps.WebsiteConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'customer.wsgi.application'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
 
 
 # Database
