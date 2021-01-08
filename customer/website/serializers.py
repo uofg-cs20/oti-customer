@@ -1,4 +1,5 @@
 from .models import Purchase, Concession, Usage, Mode, MonetaryValue, Discount, Transaction, Customer
+from .models import TravelClass, UsageFromTo, Location, LatitudeLongitude, Vehicle, UsageReference, Ticket
 from rest_framework import serializers
 
 """
@@ -38,6 +39,45 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = '__all__'
 
+class TravelClassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TravelClass
+        fields = '__all__'
+
+class LatitudeLongitudeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LatitudeLongitude
+        fields = '__all__'
+
+class LocationSerializer(serializers.ModelSerializer):
+    lat_long = LatitudeLongitudeSerializer()
+
+    class Meta:
+        model = Location
+        fields = '__all__'
+
+class UsageFromToSerializer(serializers.ModelSerializer):
+    location = LocationSerializer()
+
+    class Meta:
+        model = UsageFromTo
+        fields = '__all__'
+
+class UsageReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UsageReference
+        fields = '__all__'
+
+class VehicleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehicle
+        fields = '__all__'
+
+class TicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = '__all__'
+
 class ConcessionSerializer(serializers.ModelSerializer):
     mode = ModeSerializer()
     price = MonetaryValueSerializer()
@@ -51,14 +91,29 @@ class ConcessionSerializer(serializers.ModelSerializer):
 
 class PurchaseSerializer(serializers.ModelSerializer):
     concession = ConcessionSerializer()
-        
+    mode = ModeSerializer()
+    travel_class = TravelClassSerializer()
+    account_balance = MonetaryValueSerializer()
+    vehicle = VehicleSerializer()
+    location_from = LocationSerializer()
+    location_to = LocationSerializer()
+    customer = CustomerSerializer()
+
     class Meta:
         model = Purchase
         fields = '__all__'
 
 class UsageSerializer(serializers.ModelSerializer):
     purchase_id = PurchaseSerializer()
-        
+    mode = ModeSerializer()
+    reference = UsageReferenceSerializer()
+    travel_class = TravelClassSerializer()
+    travel_from = UsageFromToSerializer()
+    travel_to = UsageFromToSerializer()
+    ticket_reference = TicketSerializer()
+    price = MonetaryValueSerializer()
+    customer = CustomerSerializer()
+    
     class Meta:
         model = Usage
         fields = '__all__'
