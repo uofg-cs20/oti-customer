@@ -1,16 +1,15 @@
 from .models import Purchase, Concession, Usage, Mode, MonetaryValue, Discount, Transaction, Customer
 from .models import TravelClass, UsageFromTo, Location, LatitudeLongitude, Vehicle, UsageReference, Ticket
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
-"""
-TO-DO:
-Define serializer classes for all models relating to
-Purchase, Concession & Usage. The order they are defined
-is important - a serializer cannot reference another
-serializer that is not yet defined. Each serializer
-class should overwrite fields which are foreign keys
-with an instance of that respective serializer.
-"""
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Returning the user's password may not be very secure, but it can be used
+        # for account verification during testing
+        fields = ['id', 'email', 'username', 'password']
 
 class ModeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,6 +34,8 @@ class TransactionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CustomerSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = Customer
         fields = '__all__'
