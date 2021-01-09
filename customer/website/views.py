@@ -6,30 +6,48 @@ from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
 from .helper_functions import getModes, formatDate, getPurchases, getConcessions, getUsage
 from datetime import date
-from rest_framework import viewsets
-from rest_framework import permissions
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
 from .forms import LoginForm
 
 
 # The ViewSet automatically handles API URLs
 class PurchaseViewSet(viewsets.ModelViewSet):
-    # API endpoint that allows Purchases to be viewed or edited.
-    queryset = Purchase.objects.all().order_by('-travel_to_date_time')
+    # API endpoint that returns the user's Purchases as an unsorted list of JSON objects
+    queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    def list(self, request):
+        queryset = Purchase.objects.filter(customer__user=request.user)
+        serializer = PurchaseSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
 class ConcessionViewSet(viewsets.ModelViewSet):
-    # API endpoint that allows Concessions to be viewed or edited.
-    queryset = Concession.objects.all().order_by('-valid_to_date_time')
+    # API endpoint that returns the user's Concessions as an unsorted list of JSON objects
+    queryset = Concession.objects.all()
     serializer_class = ConcessionSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    def list(self, request):
+        queryset = Concession.objects.filter(customer__user=request.user)
+        serializer = ConcessionSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    
 class UsageViewSet(viewsets.ModelViewSet):
-    # API endpoint that allows Usages to be viewed or edited.
-    queryset = Usage.objects.all().order_by('mode')
+    # API endpoint that returns the user's Usages as an unsorted list of JSON objects
+    queryset = Usage.objects.all()
     serializer_class = UsageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def list(self, request):
+        queryset = Usage.objects.filter(customer__user=request.user)
+        serializer = UsageSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 def index(request):
     return render(request, 'website/index.html')
