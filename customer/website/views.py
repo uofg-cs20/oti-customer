@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
 from .forms import LoginForm
 
-
 # The ViewSet automatically handles API URLs
 class PurchaseViewSet(viewsets.ModelViewSet):
     # API endpoint that returns the user's Purchases as an unsorted list of JSON objects
