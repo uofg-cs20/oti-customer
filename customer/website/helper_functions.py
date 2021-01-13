@@ -4,6 +4,9 @@ import datetime
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 import pytz
+import requests
+from requests.exceptions import ConnectionError
+
 
 
 # Returns the available modes of transport
@@ -119,3 +122,11 @@ def getUsage(user, filters=None):
     except ObjectDoesNotExist:
         pass
     return tickets
+
+
+def getOperators():
+    try:
+        r = requests.get('http://127.0.0.1:8001/api/?operator=all')
+        return r.json()
+    except ConnectionError:
+        return {"operators":{"null":"null"}}

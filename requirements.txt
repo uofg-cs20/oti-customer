@@ -6,3 +6,4 @@ Pillow==7.0.0
 pytz==2019.3
 sqlparse==0.3.0
 django-crispy-forms==1.9.2
+requests==2.25.1
