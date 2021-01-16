@@ -112,7 +112,7 @@ def getUsage(user, filters=None):
             usage_dict = {"usage": usage}
             operator = Account.objects.get(customer_id=cust.id)
             usage_dict["operator"] = operator.operator_id
-            usage_dict["locs"] = [usage.travel_from.location.other, usage.travel_to.location.other]
+            usage_dict["locs"] = [usage.travel_from.location.name, usage.travel_to.location.name]
             usage_dict["date"] = [usage.travel_from.date_time, usage.travel_to.date_time]
             usage_dict["mode"] = usage.mode
             tickets[usage.id] = usage_dict

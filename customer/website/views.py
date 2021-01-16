@@ -145,4 +145,5 @@ def usage(request):
         context['valid'] = False
     else:
         context['combined_tickets'] = usages
+    print(context)
     return render(request, 'website/usage.html', context)

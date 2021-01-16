@@ -112,6 +112,11 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.CryptPasswordHasher'
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 5
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
