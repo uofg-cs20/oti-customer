@@ -26,3 +26,6 @@ password: 1234
 Log in as website admin (/admin):  
 username: dev  
 password: 1234  
+
+Run tests:
+python manage.py test
