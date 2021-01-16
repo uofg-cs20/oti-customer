@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import getModes, formatDate, getPurchases, getConcessions, getUsage
+from .helper_functions import getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
 from datetime import date
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -58,8 +58,9 @@ def customer_logout(request):
     return redirect(reverse('website:login'))
 
 def connect(request):
-    # TODO
-    return render(request, 'website/connect.html')
+    operators = getOperators()
+    context = {"operators": operators}
+    return render(request, 'website/connect.html', context)
 
 def purchases(request):
     # Initialise a context dictionary to store the Purchases and available

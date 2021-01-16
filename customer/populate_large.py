@@ -93,7 +93,8 @@ def populate():
     latlongs = LatitudeLongitude.objects.all()
     Location.objects.bulk_create([Location(lat_long=latlongs[i], NaPTAN="idk", name=exists[i][0]) for i in range(locsnum)])
     locations = list(Location.objects.all())
-
+    locations2 = list(Location.objects.all())
+    print(len(locations2))
     #create usagefromto
     usagetimes = []
     for i in range(locsnum//2):
@@ -117,7 +118,7 @@ def populate():
 
     customerno = 6
     #create customers and users
-    User.objects.bulk_create([User(username='customer'+str(i), password=make_password('1234', None, 'md5'), email='customer'+str(i)+'@scotrail.co.uk.', first_name='Customer '+ str(i)) for i in range(customerno)])
+    User.objects.bulk_create([User(username='customer'+str(i), password=make_password('1234', None, 'md5'), email='customer'+str(i)+'customer'+str(i)+'.co.uk.', first_name='Customer '+ str(i)) for i in range(customerno)])
     users = User.objects.all()
     Customer.objects.bulk_create([Customer(user=i) for i in users])
     customers = Customer.objects.all()
@@ -130,7 +131,6 @@ def populate():
     TravelClass.objects.get_or_create(travel_class="First Class")
     TravelClass.objects.get_or_create(travel_class="Second Class")
     TravelClass.objects.get_or_create(travel_class="Economy")
-
     classes = TravelClass.objects.all()
 
     mvn = 800
@@ -148,7 +148,7 @@ def populate():
     records = list(RecordID.objects.all())
 
     #create ticket
-    Ticket.objects.bulk_create([Ticket(reference="GLASGOW-STIRLING"+str(i), number_usages="0", reference_type="Idk", medium="Idk 2") for i in range(locsnum)])
+    Ticket.objects.bulk_create([Ticket(reference="Ticket Reference " + str(i), number_usages="0", reference_type="Idk", medium="Idk 2") for i in range(locsnum)])
     tickets = Ticket.objects.all()
     #create concessions
     modelist = [modes[i%3] for i in range(0, recordno)]

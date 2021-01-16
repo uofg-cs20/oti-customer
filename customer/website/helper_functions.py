@@ -4,6 +4,9 @@ import datetime
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 import pytz
+import requests
+from requests.exceptions import ConnectionError
+import ast
 
 
 # Returns the available modes of transport
@@ -35,33 +38,34 @@ def getPurchases(user, filters):
     # If both the start date and end date aren't provided, filter the next 30 days
     if not (filters.get("startdate") or filters.get("enddate")):
         startdate = timezone.now()
-        enddate = timezone.now()+timedelta(days=30)
+        enddate = timezone.now() + timedelta(days=30)
     # Otherwise filter with the dates that have been given
     else:
         startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
         enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
-    
+
     # Filter by the user and mode
     # This function assumes that the given startdate will be before the given enddate chronologically
     if filters.get("mode"):
         local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=filters.get("mode"))
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
-    
+
     # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
     # First include those whose "from" date is within the filter range
     # Then include those whose "to" date is within the filter range
     # Finally include the special cases whose filter range is entirely within the "from-to" validity range
-    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate),str(enddate)]) \
-                      .union(local_purchases.filter(travel_from_date_time__range=[str(startdate),str(enddate)])) \
-                      .union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
-    
+    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
+        .union(local_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
+        .union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
+
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
 
     # Return all the user's Purchases sorted by travel_to_date_time
     purchases = local_purchases.union(linked_purchases)
     return purchases.order_by("travel_to_date_time")
+
 
 def getConcessions(user, context):
     today = timezone.now()
@@ -86,6 +90,7 @@ def getConcessions(user, context):
 
     else:
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today)
+
 
 def getUsage(user, filters=None):
     tickets = {}
@@ -119,3 +124,14 @@ def getUsage(user, filters=None):
     except ObjectDoesNotExist:
         pass
     return tickets
+
+
+def getOperators():
+    try:
+        r = requests.get('http://127.0.0.1:8001/api/?operator=all')
+        catalogue = r.json()["items"]
+        out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
+        print(out_list)
+        return out_list
+    except ConnectionError:
+        return {"operators": {"null": "null"}}
