@@ -15,12 +15,14 @@
                 <tr>
                     <th>Name</th>
                     <th>Homepage</th>
+                    <th>ID </th>
                     <th> </th>
             </tr>
             {% for operator in operators %}
             <tr>
-              <td>{{ operator.fields.name }}</td>
-              <td>{{operator.fields.homepage}}</td>
+              <td>{{ operator.item_metadata.1.val }}</td>
+              <td>{{ operator.item_metadata.2.val }}</td>
+              <td>{{ operator.item_metadata.3.val }}</td>
                 <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider"></td>
             </tr>
             {% endfor %}

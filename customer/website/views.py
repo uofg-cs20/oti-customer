@@ -38,7 +38,7 @@ def customer_logout(request):
 
 def connect(request):
     operators = getOperators()
-    context = {"operators": operators['operators']}
+    context = {"operators": operators}
     return render(request, 'website/connect.html', context)
 
 def purchases(request):
