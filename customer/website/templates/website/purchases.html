@@ -23,7 +23,7 @@
 					Mode of Transport: <select  class="form-control" name="mode" id="mode">
 						<option value="None">Any</option>
 						{% for m in modes %}
-							<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
+							<option id="mode" value="{% autoescape off %}{{ m }}{% endautoescape %}">{{m.short_desc}}</option>
 						{% endfor %}
 					</select>
 				</div>

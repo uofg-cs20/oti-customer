@@ -47,7 +47,7 @@ def getPurchases(user, filters):
     # Filter by the user and mode
     # This function assumes that the given startdate will be before the given enddate chronologically
     if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=filters.get("mode"))
+        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=filters.get("mode")))
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
 
@@ -61,6 +61,8 @@ def getPurchases(user, filters):
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
+    if filters.get("link"):
+        pass
 
     # Return all the user's Purchases sorted by travel_to_date_time
     purchases = local_purchases.union(linked_purchases)
@@ -77,13 +79,13 @@ def getConcessions(user, context):
         mode = context["mode"]
         # return valid concessions
         # i.e. concessions with expiry date in the future
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=mode)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=Mode.objects.get(short_desc=mode))
 
     elif not status and context.get("mode"):
         mode = context["mode"]
         # return expired concessions
         # i.e. concessions with expiry date in the past
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=mode)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=Mode.objects.get(short_desc=mode))
 
     elif status == "valid" and not context.get("mode"):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)

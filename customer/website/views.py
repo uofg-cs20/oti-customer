@@ -145,7 +145,6 @@ def concessions(request):
     # use helper function to obtain relevant concessions for user
     # depending on whether current or past concessions are requested
     concessions = getConcessions(request.user, context)
-    print(concessions)
     context['concessions'] = []
     # iterate over obtained concessions and add to context dict
     for c in concessions:
@@ -175,5 +174,4 @@ def usage(request):
         context['valid'] = False
     else:
         context['combined_tickets'] = usages
-    print(context)
     return render(request, 'website/usage.html', context)
