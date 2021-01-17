@@ -97,7 +97,7 @@ def populate():
     location_from8, created = Location.objects.get_or_create(lat_long=coordinates_from8, NaPTAN="idk", other="Edinburgh", name="Edinburgh")
     coordinates_to8, created = LatitudeLongitude.objects.get_or_create(latitude=decimal.Decimal(7.5312), longitude=decimal.Decimal(8.5312))
     location_to8, created = Location.objects.get_or_create(lat_long=coordinates_to8, NaPTAN="idk", other="Dundee", name="Dundee")
-    purchase8, created = Purchase.objects.get_or_create(id=record8, mode=bus, travel_class=first_class, booking_date_time=django.utils.timezone.now(), transaction=transaction8, account_balance=account_balance8, vehicle=vehicle_type, travel_from_date_time=django.utils.timezone.now()-datetime.timedelta(days=30), travel_to_date_time=django.utils.timezone.now(), concession=concession1, ticket=ticket8, location_from=location_from8, location_to=location_to8, customer=customer1)
+    purchase8, created = Purchase.objects.get_or_create(id=record8, mode=bus, travel_class=first_class, booking_date_time=django.utils.timezone.now(), transaction=transaction8, account_balance=account_balance8, vehicle=vehicle_type, travel_from_date_time=django.utils.timezone.now()-datetime.timedelta(days=30), travel_to_date_time=django.utils.timezone.now()-datetime.timedelta(days=1), concession=concession1, ticket=ticket8, location_from=location_from8, location_to=location_to8, customer=customer1)
 
     # add a third purchase to the customer1 account (10 days ago - 10 days from now)
     record9, created = RecordID.objects.get_or_create(id="00000009")

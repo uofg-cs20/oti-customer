@@ -61,6 +61,8 @@ def getPurchases(user, filters):
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
+    if filters.get("link"):
+        pass
 
     # Return all the user's Purchases sorted by travel_to_date_time
     purchases = local_purchases.union(linked_purchases)
