@@ -47,7 +47,7 @@ def getPurchases(user, filters):
     # Filter by the user and mode
     # This function assumes that the given startdate will be before the given enddate chronologically
     if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=filters.get("mode"))
+        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=filters.get("mode")))
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
 

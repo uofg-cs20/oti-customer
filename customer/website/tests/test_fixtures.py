@@ -75,7 +75,7 @@ def populate():
     discount7, created = Discount.objects.get_or_create(discount_type="Student", discount_value="0.10", discount_description="Student Railcard")
     concession7, created = Concession.objects.get_or_create(id=record7, mode=bus, name="Student Railcard", price=price7, discount=discount7, transaction=transaction7, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Student", customer=customer1)
 
-    # add a purchase to the customer1 account (30 days from now)
+    # add a purchase to the customer1 account (20 days from now)
     record2, created = RecordID.objects.get_or_create(id="00000002")
     price2, created = MonetaryValue.objects.get_or_create(amount="10.00", currency="GBP", symbol="£")
     transaction2, created = Transaction.objects.get_or_create(payment_type="Visa", payment_method="Debit", price=price2)
@@ -85,7 +85,7 @@ def populate():
     location_from2, created = Location.objects.get_or_create(lat_long=coordinates_from2, NaPTAN="idk", other="Glasgow", name="Partick")
     coordinates_to2, created = LatitudeLongitude.objects.get_or_create(latitude=decimal.Decimal(3.5312), longitude=decimal.Decimal(4.5312))
     location_to2, created = Location.objects.get_or_create(lat_long=coordinates_to2, NaPTAN="idk", other="Stirling", name="Stirling")
-    purchase2, created = Purchase.objects.get_or_create(id=record2, mode=train, travel_class=first_class, booking_date_time=django.utils.timezone.now(), transaction=transaction2, account_balance=account_balance2, vehicle=vehicle_type, travel_from_date_time=django.utils.timezone.now(), travel_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=30), concession=concession1, ticket=ticket2, location_from=location_from2, location_to=location_to2, customer=customer1)
+    purchase2, created = Purchase.objects.get_or_create(id=record2, mode=train, travel_class=first_class, booking_date_time=django.utils.timezone.now(), transaction=transaction2, account_balance=account_balance2, vehicle=vehicle_type, travel_from_date_time=django.utils.timezone.now(), travel_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=20), concession=concession1, ticket=ticket2, location_from=location_from2, location_to=location_to2, customer=customer1)
 
     # add a second purchase to the customer1 account (30 days ago)
     record8, created = RecordID.objects.get_or_create(id="00000008")
