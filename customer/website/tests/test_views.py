@@ -88,14 +88,51 @@ class PurchaseTests(TestCase):
         filtered_purchases = filtered_purchases.order_by('travel_to_date_time')
         
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering after a given date does not display the correct Purchases")
+                
+    def test_purchase_filters_before_given_date(self):
+        response = self.client.post('/purchases/', {"enddate":(timezone.now()-timedelta(days=5)).strftime("%d-%m-%Y"), "link":False})
+
+        # Purchases passed in the request
+        shown_purchases = response.context["purchases"]
         
-        # Try filtering after a set date
+        # Purchases that should have been filtered by the request
+        customer = Customer.objects.get(user=response.context["user"])
+        enddate = timezone.now()-timedelta(days=5)
+        startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
+        filtered_purchases = Purchase.objects.filter(customer_id=customer.id)
+        # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
+        # First include those whose "from" date is within the filter range
+        # Then include those whose "to" date is within the filter range
+        # Finally include the special cases whose filter range is entirely within the "from-to" validity range
+        filtered_purchases = filtered_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
+        .union(filtered_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
+        .union(filtered_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
+        filtered_purchases = filtered_purchases.order_by('travel_to_date_time')
         
+        self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering before a given date does not display the correct Purchases")
         
-        # Try filtering before a set date
+    def test_purchase_filters_between_given_dates(self):
+        response = self.client.post('/purchases/', {"startdate":timezone.now().strftime("%d-%m-%Y"), "enddate":(timezone.now()+timedelta(days=10)).strftime("%d-%m-%Y"), "link":False})
+
+        # Purchases passed in the request
+        shown_purchases = response.context["purchases"]
         
+        # Purchases that should have been filtered by the request
+        customer = Customer.objects.get(user=response.context["user"])
+        enddate = timezone.now()+timedelta(days=10)
+        startdate = timezone.now()
+        filtered_purchases = Purchase.objects.filter(customer_id=customer.id)
+        # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
+        # First include those whose "from" date is within the filter range
+        # Then include those whose "to" date is within the filter range
+        # Finally include the special cases whose filter range is entirely within the "from-to" validity range
+        filtered_purchases = filtered_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
+        .union(filtered_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
+        .union(filtered_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
+        filtered_purchases = filtered_purchases.order_by('travel_to_date_time')
         
-        # Try filtering between 2 set dates
+        self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering between two given dates does not display the correct Purchases")
         
+
         
 
