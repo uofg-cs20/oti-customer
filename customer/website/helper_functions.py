@@ -79,13 +79,13 @@ def getConcessions(user, context):
         mode = context["mode"]
         # return valid concessions
         # i.e. concessions with expiry date in the future
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=mode)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=Mode.objects.get(short_desc=mode))
 
     elif not status and context.get("mode"):
         mode = context["mode"]
         # return expired concessions
         # i.e. concessions with expiry date in the past
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=mode)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=Mode.objects.get(short_desc=mode))
 
     elif status == "valid" and not context.get("mode"):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)

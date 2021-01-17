@@ -133,6 +133,64 @@ class PurchaseTests(TestCase):
         
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering between two given dates does not display the correct Purchases")
         
+class ConcessionTests(TestCase):
 
+    def setUp(self):
+        populate()
+        login = self.client.login(username='customer', password='1234')
+        
+    def test_concession_uses_correct_template(self):
+        response = self.client.get('/concessions/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'website/concessions.html')
+        
+    def test_concession_mode_filter(self):
+        # Make an example request to the Concessions page
+        context = {"mode":Mode.objects.get(short_desc="Bus")}
+        response = self.client.post('/concessions/', context)
+        
+        # Test that the mode filter works correctly
+        concessions = response.context["concessions"]
+        self.assertEqual(set([True]), set([c.mode.short_desc == response.context["mode"] for c in concessions]), "Not all concessions have been filtered by the correct mode")
+        
+    def test_concession_displays_valid_concessions_by_default(self):
+        # Test the concession page with no filters - should show valid concessions
+        get_response = self.client.get('/concessions/')
+        post_response = self.client.post('/concessions/', {"link":False})
+
+        # concessions passed in the request
+        shown_get_concessions = get_response.context["concessions"]
+        shown_post_concessions = get_response.context["concessions"]
+        
+        # concessions that should have been filtered by the request
+        customer = Customer.objects.get(user=get_response.context["user"])
+        filtered_concessions = Concession.objects.filter(valid_to_date_time__gt=timezone.now(), customer_id=customer.id)
+        
+        self.assertEqual(list(shown_get_concessions), list(filtered_concessions), "Not all Concessions shown by default from a GET request are valid")
+        self.assertEqual(list(shown_post_concessions), list(filtered_concessions), "Not all Concessions shown by default from a POST request with no filters are valid")
+        
+    def test_concession_valid_filter(self):
+        response = self.client.post('/concessions/', {"status":"valid", "link":False})
+
+        # concessions passed in the request
+        shown_concessions = response.context["concessions"]
+        
+        # concessions that should have been filtered by the request
+        customer = Customer.objects.get(user=response.context["user"])
+        filtered_concessions = Concession.objects.filter(valid_to_date_time__gt=timezone.now(), customer_id=customer.id)
+        
+        self.assertEqual(list(shown_concessions), list(filtered_concessions), "Valid filter does not display the correct Concessions")
+        
+    def test_concession_expired_filter(self):
+        response = self.client.post('/concessions/', {"status":"past", "link":False})
+
+        # concessions passed in the request
+        shown_concessions = response.context["concessions"]
+        
+        # concessions that should have been filtered by the request
+        customer = Customer.objects.get(user=response.context["user"])
+        filtered_concessions = Concession.objects.filter(valid_to_date_time__lt=timezone.now(), customer_id=customer.id)
+        
+        self.assertEqual(list(shown_concessions), list(filtered_concessions), "Expired filter does not display the correct Concessions")
         
 
