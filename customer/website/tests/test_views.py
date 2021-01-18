@@ -193,4 +193,59 @@ class ConcessionTests(TestCase):
         
         self.assertEqual(list(shown_concessions), list(filtered_concessions), "Expired filter does not display the correct Concessions")
         
+class UsageTests(TestCase):
+
+    def setUp(self):
+        populate()
+        login = self.client.login(username='customer', password='1234')
+        
+    def test_usage_uses_correct_template(self):
+        response = self.client.get('/usage/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'website/usage.html')
+        
+    def test_usage_mode_filter(self):
+        response = self.client.post('/usage/', {"mode":Mode.objects.get(short_desc="Bus"), "startdate":(timezone.now()-timedelta(days=20)).strftime("%d-%m-%Y"), "enddate":(timezone.now()+timedelta(days=20)).strftime("%d-%m-%Y"), "link":False})
+
+        # Usages passed in the request
+        shown_usage = list(response.context["combined_tickets"])
+        
+        # Usages that should have been filtered by the request
+        customer = Customer.objects.get(user=response.context["user"])
+        startdate = timezone.now()-timedelta(days=20)
+        enddate = timezone.now()+timedelta(days=20)
+        filtered_usages = Usage.objects.filter(customer=customer.id, mode=Mode.objects.get(short_desc="Bus"))
+        # Filter by date, including all usages whose "from-to" validity date range overlaps the filtered date range
+        # First include those whose "from" date is within the filter range
+        # Then include those whose "to" date is within the filter range
+        # Finally include the special cases whose filter range is entirely within the "from-to" validity range
+        filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
+        .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
+        .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        usage_records = [u.id for u in filtered_usages]
+        
+        self.assertEqual(shown_usage, usage_records, "Filtering by mode does not display the correct Usages")
+        
+    def test_usage_date_filters(self):
+        response = self.client.post('/usage/', {"startdate":(timezone.now()-timedelta(days=15)).strftime("%d-%m-%Y"), "enddate":(timezone.now()-timedelta(days=6)).strftime("%d-%m-%Y"), "link":False})
+
+        # Usages passed in the request
+        shown_usage = list(response.context["combined_tickets"])
+        
+        # Usages that should have been filtered by the request
+        customer = Customer.objects.get(user=response.context["user"])
+        startdate = timezone.now()-timedelta(days=15)
+        enddate = timezone.now()-timedelta(days=6)
+        filtered_usages = Usage.objects.filter(customer=customer.id)
+        # Filter by date, including all usages whose "from-to" validity date range overlaps the filtered date range
+        # First include those whose "from" date is within the filter range
+        # Then include those whose "to" date is within the filter range
+        # Finally include the special cases whose filter range is entirely within the "from-to" validity range
+        filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
+        .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
+        .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        usage_records = [u.id for u in filtered_usages]
+        
+        self.assertEqual(shown_usage, usage_records, "Filtering between given dates does not display the correct Usages")
+        
 
