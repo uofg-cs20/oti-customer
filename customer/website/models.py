@@ -126,7 +126,7 @@ class Concession(models.Model):
 
 
 class Usage(models.Model):
-    id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
+    id = models.OneToOneField("RecordID", primary_key=True, related_name="recordid", on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
     reference = models.ForeignKey("UsageReference", on_delete=models.CASCADE)
     travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)

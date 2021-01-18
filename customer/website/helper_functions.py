@@ -109,7 +109,7 @@ def getUsage(user, filters=None):
         cust = Customer.objects.get(user=user)
 
         if (mode) and (mode != "None"):
-            usages = Usage.objects.filter(customer=cust.id, mode=mode)
+            usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
         else:
             usages = Usage.objects.filter(customer=cust.id)
         usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \

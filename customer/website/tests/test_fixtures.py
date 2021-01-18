@@ -131,10 +131,10 @@ def populate():
 
     coordinates_to10, created = LatitudeLongitude.objects.get_or_create(latitude=decimal.Decimal(17.8312), longitude=decimal.Decimal(18.8312))
     location_to10, created = Location.objects.get_or_create(lat_long=coordinates_to10, NaPTAN="idk", other="Edinburgh Haymarket", name="Edinburgh Haymarket")
-    travel_to10, created = UsageFromTo.objects.get_or_create(location=location_to10, date_time=django.utils.timezone.now(), reference="reference usage")
+    travel_to10, created = UsageFromTo.objects.get_or_create(location=location_to10, date_time=django.utils.timezone.now()+datetime.timedelta(days=20), reference="reference usage")
 
     coordinates_from10, created = LatitudeLongitude.objects.get_or_create(latitude=decimal.Decimal(19.9312), longitude=decimal.Decimal(20.9312))
     location_from10, created = Location.objects.get_or_create(lat_long=coordinates_from10, NaPTAN="idk", other="Pitlochry", name="Pitlochry")
-    travel_from10, created = UsageFromTo.objects.get_or_create(location=location_from10, date_time=django.utils.timezone.now()-datetime.timedelta(days=10), reference="reference usage")
+    travel_from10, created = UsageFromTo.objects.get_or_create(location=location_from10, date_time=django.utils.timezone.now()-datetime.timedelta(days=5), reference="reference usage")
 
     usage10, created = Usage.objects.get_or_create(id=record10, mode=bus, reference=usage_reference10, travel_class=first_class, travel_from=travel_from10, travel_to=travel_to10, purchase_id=purchase8, ticket_reference=ticket8, price=price8, customer=customer1)
