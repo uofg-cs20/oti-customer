@@ -18,6 +18,19 @@ class Account(models.Model):
     def __str__(self):
         return "Operator ID: " + str(self.operator_id) + ", Customer ID: " + str(self.customer)
 
+class Operator(models.Model):
+    admin = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    modes = models.ManyToManyField('Mode')
+    homepage = models.URLField()
+    api_url = models.URLField()
+    default_language = models.CharField(default='English', max_length=40)
+    phone = models.CharField(max_length=20)
+    email = models.EmailField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
 
 class Purchase(models.Model):
     # id is a unique identifier of this Purchase record,

@@ -18,6 +18,8 @@ def populate():
         Customer.objects.all().delete()
     if Account.objects.all():
         Account.objects.all().delete()
+    if Operator.objects.all():
+        Operator.objects.all().delete()
     if MonetaryValue.objects.all():
         MonetaryValue.objects.all().delete()
     if Discount.objects.all():
@@ -60,6 +62,11 @@ def populate():
     user1 = User.objects.create_user(username='customer', password='1234', email='customer@scotrail.co.uk.', first_name='Customer One')
     customer1, created = Customer.objects.get_or_create(user=user1)
     account1, created = Account.objects.get_or_create(customer=customer1, operator_id="Scotrail")
+    
+    # create Zebras operator
+    zebras, created = Operator.objects.get_or_create(admin=user1, name="Zebras", homepage="http://127.0.0.1:8000/", api_url="http://127.0.0.1:8000/api/", phone="0394098748", email="bigemail@domain.com")
+    modes = [train, bus, tram]
+    zebras.modes.set(modes)
 
     # add a concession purchase to the customer1 account
     record1, created = RecordID.objects.get_or_create(id="00000001")

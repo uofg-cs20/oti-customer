@@ -35,6 +35,8 @@ def populate():
         Customer.objects.all().delete()
     if Account.objects.all():
         Account.objects.all().delete()
+    if Operator.objects.all():
+        Operator.objects.delete()
     if MonetaryValue.objects.all():
         MonetaryValue.objects.all().delete()
     if Discount.objects.all():
@@ -74,8 +76,10 @@ def populate():
     bus, created = Mode.objects.get_or_create(id="bus", short_desc="Bus")
     tram, created = Mode.objects.get_or_create(id="tram", short_desc="Tram")
     vehicle_type, created = Vehicle.objects.get_or_create(reference="train 3001", vehicle_type="train")
-
+    zebras, created = Operator.objects.get_or_create(admin=dev, name="Zebras", homepage="http://127.0.0.1:8000/", api_url="http://127.0.0.1:8000/api/", phone="0394098748", email="bigemail@domain.com")
     modes = [train, bus, tram]
+    zebras.modes.set(modes)
+
     #create latlongs and location
     locsnum = 400
     exists = []
