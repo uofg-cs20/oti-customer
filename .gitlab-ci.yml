@@ -1,0 +1,6 @@
+test_app:
+  script:
+    - pip install -r requirements.txt
+    - cd customer
+    - python manage.py test
+    - echo test!
