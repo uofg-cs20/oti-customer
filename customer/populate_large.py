@@ -33,8 +33,8 @@ def populate():
         User.objects.all().delete()
     if Customer.objects.all():
         Customer.objects.all().delete()
-    if Account.objects.all():
-        Account.objects.all().delete()
+    if Operator.objects.all():
+        Operator.objects.delete()
     if MonetaryValue.objects.all():
         MonetaryValue.objects.all().delete()
     if Discount.objects.all():
@@ -74,8 +74,10 @@ def populate():
     bus, created = Mode.objects.get_or_create(id="bus", short_desc="Bus")
     tram, created = Mode.objects.get_or_create(id="tram", short_desc="Tram")
     vehicle_type, created = Vehicle.objects.get_or_create(reference="train 3001", vehicle_type="train")
-
+    zebras, created = Operator.objects.get_or_create(admin=dev, name="Zebras", homepage="http://127.0.0.1:8000/", api_url="http://127.0.0.1:8000/api/", phone="0394098748", email="bigemail@domain.com")
     modes = [train, bus, tram]
+    zebras.modes.set(modes)
+
     #create latlongs and location
     locsnum = 400
     exists = []
@@ -120,12 +122,8 @@ def populate():
     #create customers and users
     User.objects.bulk_create([User(username='customer'+str(i), password=make_password('1234', None, 'md5'), email='customer'+str(i)+'customer'+str(i)+'.co.uk.', first_name='Customer '+ str(i)) for i in range(customerno)])
     users = User.objects.all()
-    Customer.objects.bulk_create([Customer(user=i) for i in users])
+    Customer.objects.bulk_create([Customer(user=i, operator=zebras) for i in users])
     customers = Customer.objects.all()
-
-    #create account
-    operators = ["ScotRail", "CityLink", "FirstBus", "Zebras"]
-    Account.objects.bulk_create([Account(customer=customer, operator_id=random.choice(operators)) for customer in customers])
 
     #create travelclass
     TravelClass.objects.get_or_create(travel_class="First Class")
@@ -153,7 +151,7 @@ def populate():
     #create concessions
     modelist = [modes[i%3] for i in range(0, recordno)]
     random.shuffle(modelist)
-    Concession.objects.bulk_create([Concession(id=records.pop(), mode=modelist[i], name=modelist[i].short_desc,
+    Concession.objects.bulk_create([Concession(id=records.pop(), mode=modelist[i], operator=zebras, name=modelist[i].short_desc,
                                      price=mvns.pop(), discount=random.choice(discounts),
                                      transaction=trans.pop(),
                                      valid_from_date_time=randtime(1, 45, i),
@@ -164,7 +162,7 @@ def populate():
 
     #create purchases
     curtime = django.utils.timezone.now()
-    Purchase.objects.bulk_create([Purchase(id=records.pop(), mode=random.choice(modes), travel_class=random.choice(classes), booking_date_time=django.utils.timezone.now(),
+    Purchase.objects.bulk_create([Purchase(id=records.pop(), mode=random.choice(modes), operator=zebras, travel_class=random.choice(classes), booking_date_time=django.utils.timezone.now(),
                                  transaction=trans.pop(),
                                  account_balance=mvns.pop(),
                                  vehicle=vehicle_type,
@@ -174,7 +172,7 @@ def populate():
                                  location_from=locations.pop(), location_to=locations.pop(), customer=customers[i%3]) for i in range(recordno//3, 2*recordno//3)])
     purchases = list(Purchase.objects.all())
 
-    Usage.objects.bulk_create([Usage(id=records.pop(), mode=random.choice(modes), reference=URs[i],
+    Usage.objects.bulk_create([Usage(id=records.pop(), mode=random.choice(modes), operator=zebras, reference=URs[i],
                                       travel_class=random.choice(classes), travel_from=UFT.pop(),
                                       travel_to=UFT.pop(), purchase_id=purchases.pop(),
                                       ticket_reference=tickets[i], price=mvns.pop(),

@@ -5,9 +5,12 @@ from .models import *
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ('id',)
 
-class AccountAdmin(admin.ModelAdmin):
-    list_display = ('operator_id', 'customer_id')
+class OperatorAdmin(admin.ModelAdmin):
+    list_display = ('admin', 'name', 'get_modes', 'homepage', 'api_url', 'default_language', 'phone', 'email', 'active')
 
+    def get_modes(self, obj):
+        return "\n".join([mode.short_desc for mode in obj.modes.all()])
+        
 class PurchaseAdmin(admin.ModelAdmin):
     list_display = ('id', 'mode', 'travel_class', 'booking_date_time', 'transaction', 'account_balance', 'agent', 'passenger_number', 'passenger_type', 'vehicle', 'route', 'travel_from_date_time', 'travel_to_date_time', 'conditions', 'concession', 'restrictions', 'ticket', 'location_from', 'location_to', 'reserved_position', 'service_request', 'customer_id')
 
@@ -58,7 +61,7 @@ class ModeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Customer, CustomerAdmin)
-admin.site.register(Account, AccountAdmin)
+admin.site.register(Operator, OperatorAdmin)
 admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(Vehicle, VehicleAdmin)
