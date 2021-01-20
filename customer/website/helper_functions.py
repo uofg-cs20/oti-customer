@@ -100,10 +100,15 @@ def getUsage(user, filters=None):
     enddate = filters[1]
     mode = filters[2]
     try:
-        if not startdate:
-            startdate = timezone.now() - timedelta(days=30)
-        if not enddate:
-            enddate = timezone.now()
+        # If both the start date and end date aren't provided, filter the last 30 days
+        if not (startdate or enddate):
+            startdate = timezone.now()
+            enddate = timezone.now() - timedelta(days=30)
+        elif not startdate:
+            startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
+        elif not enddate:
+            enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
+
         if enddate < startdate:
             startdate, enddate = enddate, startdate
         cust = Customer.objects.get(user=user)
@@ -115,6 +120,7 @@ def getUsage(user, filters=None):
         usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
             .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
             .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        #usages = usages.order_by("-travel_to__date_time")
         for usage in usages:
             usage_dict = {"usage": usage}
             usage_dict["operator"] = cust.operator

@@ -115,7 +115,7 @@ class Discount(models.Model):
     discount_description = models.CharField(max_length=100)
 
     def __str__(self):
-        return str(self.discount_value)
+        return str(self.discount_value) + "%"
 
 class Concession(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)

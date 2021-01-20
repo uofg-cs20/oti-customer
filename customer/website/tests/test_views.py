@@ -222,6 +222,7 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        #filtered_usages = filtered_usages.order_by("-travel_to__date_time")
         usage_records = [u.id for u in filtered_usages]
         
         self.assertEqual(shown_usage, usage_records, "Filtering by mode does not display the correct Usages")
@@ -244,6 +245,7 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        #filtered_usages = filtered_usages.order_by("-travel_to__date_time")
         usage_records = [u.id for u in filtered_usages]
         
         self.assertEqual(shown_usage, usage_records, "Filtering between given dates does not display the correct Usages")
