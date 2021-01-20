@@ -61,6 +61,7 @@
 		{% for p in purchases %}
 			<div class="card p-4 my-4" style="width: 40rem;">
 				<h5>{{ p.mode.short_desc }} Ticket</h5>
+				<p><b>{{ p.operator }}</b></p>
 				<p>{{ p.location_from }} to {{ p.location_to }}</p>
 				<p>Valid From: {{ p.travel_from_date_time }}</p>
 				<p>Expires: {{ p.travel_to_date_time }}</p>
