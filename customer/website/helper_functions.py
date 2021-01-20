@@ -1,4 +1,4 @@
-from .models import Mode, Purchase, Usage, Customer, Account, Concession, Location
+from .models import Mode, Purchase, Usage, Customer, Operator, Concession, Location
 from datetime import timedelta
 import datetime
 from django.utils import timezone
@@ -117,8 +117,7 @@ def getUsage(user, filters=None):
             .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
         for usage in usages:
             usage_dict = {"usage": usage}
-            operator = Account.objects.get(customer_id=cust.id)
-            usage_dict["operator"] = operator.operator_id
+            usage_dict["operator"] = cust.operator
             usage_dict["locs"] = [usage.travel_from.location.name, usage.travel_to.location.name]
             usage_dict["date"] = [usage.travel_from.date_time, usage.travel_to.date_time]
             usage_dict["mode"] = usage.mode

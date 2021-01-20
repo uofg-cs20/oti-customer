@@ -5,19 +5,6 @@ from django.contrib.auth.hashers import make_password
 # Please refer to https://app.swaggerhub.com/apis/open-transport/customer-account/1.0.1#/
 # for details on these models
 
-class Customer(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.id)
-
-class Account(models.Model):
-    operator_id = models.CharField(max_length=50)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return "Operator ID: " + str(self.operator_id) + ", Customer ID: " + str(self.customer)
-
 class Operator(models.Model):
     admin = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
@@ -31,12 +18,20 @@ class Operator(models.Model):
 
     def __str__(self):
         return self.name
+        
+class Customer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    operator = models.ForeignKey("Operator", on_delete=models.CASCADE)
 
+    def __str__(self):
+        return str(self.id)
+        
 class Purchase(models.Model):
     # id is a unique identifier of this Purchase record,
     # which is also stored in the RecordID table
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
+    operator = models.ForeignKey("Operator", on_delete=models.CASCADE)
     travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)
     booking_date_time = models.DateTimeField()
     transaction = models.OneToOneField("Transaction", on_delete=models.CASCADE)
@@ -125,6 +120,7 @@ class Discount(models.Model):
 class Concession(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
+    operator = models.ForeignKey("Operator", on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
     price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
     discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
@@ -141,6 +137,7 @@ class Concession(models.Model):
 class Usage(models.Model):
     id = models.OneToOneField("RecordID", primary_key=True, related_name="recordid", on_delete=models.CASCADE)
     mode = models.ForeignKey("Mode", on_delete=models.CASCADE)
+    operator = models.ForeignKey("Operator", on_delete=models.CASCADE)
     reference = models.ForeignKey("UsageReference", on_delete=models.CASCADE)
     travel_class = models.ForeignKey("TravelClass", on_delete=models.CASCADE)
     travel_from = models.ForeignKey("UsageFromTo", related_name="requests_created", on_delete=models.CASCADE)

@@ -1,5 +1,5 @@
 from .models import Purchase, Concession, Usage, Mode, MonetaryValue, Discount, Transaction, Customer
-from .models import TravelClass, UsageFromTo, Location, LatitudeLongitude, Vehicle, UsageReference, Ticket
+from .models import TravelClass, UsageFromTo, Location, LatitudeLongitude, Vehicle, UsageReference, Ticket, Operator
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -15,6 +15,13 @@ class ModeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mode
         fields = '__all__'
+        
+class OperatorSerializer(serializers.ModelSerializer):
+    modes = ModeSerializer(many=True)
+    
+    class Meta:
+        model = Operator
+        fields = ['id', 'name', 'modes', 'homepage', 'api_url', 'default_language', 'phone', 'email']
 
 class MonetaryValueSerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,6 +88,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class ConcessionSerializer(serializers.ModelSerializer):
     mode = ModeSerializer()
+    operator = OperatorSerializer()
     price = MonetaryValueSerializer()
     discount = DiscountSerializer()
     transaction = TransactionSerializer()
@@ -93,6 +101,7 @@ class ConcessionSerializer(serializers.ModelSerializer):
 class PurchaseSerializer(serializers.ModelSerializer):
     concession = ConcessionSerializer()
     mode = ModeSerializer()
+    operator = OperatorSerializer()
     travel_class = TravelClassSerializer()
     account_balance = MonetaryValueSerializer()
     vehicle = VehicleSerializer()
@@ -107,6 +116,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
 class UsageSerializer(serializers.ModelSerializer):
     purchase_id = PurchaseSerializer()
     mode = ModeSerializer()
+    operator = OperatorSerializer()
     reference = UsageReferenceSerializer()
     travel_class = TravelClassSerializer()
     travel_from = UsageFromToSerializer()
