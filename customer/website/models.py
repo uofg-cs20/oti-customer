@@ -144,7 +144,7 @@ class Usage(models.Model):
     travel_to = models.ForeignKey("UsageFromTo", on_delete=models.CASCADE)
     purchase_id = models.ForeignKey("Purchase", on_delete=models.CASCADE)
     route_via_avoid = models.CharField(max_length=500, null=True)
-    ticket_reference = models.ForeignKey("Ticket", on_delete=models.CASCADE)
+    ticket = models.ForeignKey("Ticket", on_delete=models.CASCADE)
     pre_paid = models.BooleanField(null=True)
     price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE)
@@ -172,10 +172,10 @@ class Service(models.Model):
     unit = models.CharField(max_length=10)
     amount = models.IntegerField()
     price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
-    usage_id = models.ForeignKey("Usage", on_delete=models.CASCADE)
+    usage_id = models.ForeignKey("Usage", on_delete=models.CASCADE, related_name="services")
 
     def __str__(self):
-        return "Service Type: " + self.service_type + ", Unit: " + self.unit + ", Amount: " + self.amount
+        return "Service Type: " + self.service_type + ", Unit: " + self.unit + ", Amount: " + str(self.amount)
 
 class TravelClass(models.Model):
     travel_class = models.CharField(max_length=50, primary_key=True)

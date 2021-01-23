@@ -36,7 +36,7 @@ class ConcessionAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'price', 'discount', 'transaction', 'valid_from_date_time', 'valid_to_date_time', 'conditions', 'customer_id')
 
 class UsageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'mode', 'reference', 'travel_class', 'travel_from', 'travel_to', 'purchase_id', 'route_via_avoid', 'ticket_reference', 'pre_paid', 'price', 'customer_id')
+    list_display = ('id', 'mode', 'reference', 'travel_class', 'travel_from', 'travel_to', 'purchase_id', 'route_via_avoid', 'ticket', 'pre_paid', 'price', 'customer_id')
 
 class UsageReferenceAdmin(admin.ModelAdmin):
     list_display = ('reference', 'reference_type')

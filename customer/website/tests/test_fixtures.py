@@ -129,7 +129,7 @@ def populate():
     location_from3, created = Location.objects.get_or_create(lat_long=coordinates_from3, NaPTAN="idk", other="Gleneagles", name="Gleneagles")
     travel_from3, created = UsageFromTo.objects.get_or_create(location=location_from3, date_time=django.utils.timezone.now()-datetime.timedelta(days=10), reference="reference usage")
 
-    usage3, created = Usage.objects.get_or_create(id=record3, mode=train, operator=zebras, reference=usage_reference3, travel_class=first_class, travel_from=travel_from3, travel_to=travel_to3, purchase_id=purchase2, ticket_reference=ticket2, price=price2, customer=customer1)
+    usage3, created = Usage.objects.get_or_create(id=record3, mode=train, operator=zebras, reference=usage_reference3, travel_class=first_class, travel_from=travel_from3, travel_to=travel_to3, purchase_id=purchase2, ticket=ticket2, price=price2, customer=customer1)
 
     # add a second usage to the customer1 account
     record10, created = RecordID.objects.get_or_create(id="00000010")
@@ -143,4 +143,4 @@ def populate():
     location_from10, created = Location.objects.get_or_create(lat_long=coordinates_from10, NaPTAN="idk", other="Pitlochry", name="Pitlochry")
     travel_from10, created = UsageFromTo.objects.get_or_create(location=location_from10, date_time=django.utils.timezone.now()-datetime.timedelta(days=5), reference="reference usage")
 
-    usage10, created = Usage.objects.get_or_create(id=record10, mode=bus, operator=zebras, reference=usage_reference10, travel_class=first_class, travel_from=travel_from10, travel_to=travel_to10, purchase_id=purchase8, ticket_reference=ticket8, price=price8, customer=customer1)
+    usage10, created = Usage.objects.get_or_create(id=record10, mode=bus, operator=zebras, reference=usage_reference10, travel_class=first_class, travel_from=travel_from10, travel_to=travel_to10, purchase_id=purchase8, ticket=ticket8, price=price8, customer=customer1)

@@ -178,8 +178,12 @@ def populate():
     Usage.objects.bulk_create([Usage(id=records.pop(), mode=random.choice(modes), operator=zebras, reference=URs[i],
                                       travel_class=random.choice(classes), travel_from=UFT.pop(),
                                       travel_to=UFT.pop(), purchase_id=purchases.pop(),
-                                      ticket_reference=tickets[i], price=mvns.pop(),
+                                      ticket=tickets[i], price=mvns.pop(),
                                       customer=customers[i%3]) for i in range(2*recordno//3, recordno)])
+
+    # Add some services
+    usages = list(Usage.objects.all())
+    Service.objects.bulk_create([Service(service_type="Charging", unit="KwH", amount=20, price=mvns.pop(), usage_id=usages[i]) for i in range(recordno//6)])
 
     for user in User.objects.all():
         Token.objects.get_or_create(user=user)

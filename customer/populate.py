@@ -147,7 +147,7 @@ def populate():
     location_from10, created = Location.objects.get_or_create(lat_long=coordinates_from10, NaPTAN="idk", other="Pitlochry", name="Pitlochry")
     travel_from10, created = UsageFromTo.objects.get_or_create(location=location_from10, date_time=django.utils.timezone.now()-datetime.timedelta(days=10), reference="reference usage")
 
-    usage10, created = Usage.objects.get_or_create(id=record10, mode=bus, operator=zebras, reference=usage_reference10, travel_class=first_class, travel_from=travel_from10, travel_to=travel_to10, purchase_id=purchase8, ticket_reference=ticket8, price=price8, customer=customer1)
+    usage10, created = Usage.objects.get_or_create(id=record10, mode=bus, operator=zebras, reference=usage_reference10, travel_class=first_class, travel_from=travel_from10, travel_to=travel_to10, purchase_id=purchase8, ticket=ticket8, price=price8, customer=customer1)
 
     # create customer 2
     user2 = User.objects.create_user(username='customer2', password='1234', email='customer2@scotrail.co.uk.', first_name='Customer Two')
@@ -184,7 +184,7 @@ def populate():
     location_from5, created = Location.objects.get_or_create(lat_long=coordinates_from5, NaPTAN="idk", name="Kyle of Lochalsh")
     travel_from5, created = UsageFromTo.objects.get_or_create(location=location_from5, date_time=django.utils.timezone.now()-datetime.timedelta(days=10), reference="reference usage")
 
-    usage5, created = Usage.objects.get_or_create(id=record5, mode=train, operator=zebras, reference=usage_reference5, travel_class=first_class, travel_from=travel_from5, travel_to=travel_to5, purchase_id=purchase4, ticket_reference=ticket4, price=price4, customer=customer2)
+    usage5, created = Usage.objects.get_or_create(id=record5, mode=train, operator=zebras, reference=usage_reference5, travel_class=first_class, travel_from=travel_from5, travel_to=travel_to5, purchase_id=purchase4, ticket=ticket4, price=price4, customer=customer2)
 
 if __name__ == '__main__':
     print('Starting population script...', end="")

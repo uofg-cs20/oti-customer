@@ -174,7 +174,7 @@ def populate():
     Usage.objects.bulk_create([Usage(id=records.pop(), mode=random.choice(modes), operator=zebras, reference=URs[i],
                                       travel_class=random.choice(classes), travel_from=UFT.pop(),
                                       travel_to=UFT.pop(), purchase_id=purchases.pop(),
-                                      ticket_reference=tickets[i], price=mvns.pop(),
+                                      ticket=tickets[i], price=mvns.pop(),
                                       customer=customers[i%3]) for i in range(2*recordno//3, recordno)])
 
 
