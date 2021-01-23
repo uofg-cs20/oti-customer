@@ -12,7 +12,7 @@ from django.utils.timezone import make_aware
 def populate():
 
     # delete data if the database is already populated
-    if User.objects.filter(username='customer').exists():
+    if User.objects.filter(username='customer0').exists():
         User.objects.all().delete()
     if Customer.objects.all():
         Customer.objects.all().delete()
@@ -57,7 +57,7 @@ def populate():
     vehicle_type, created = Vehicle.objects.get_or_create(reference="train 3001", vehicle_type="train")
     
     # create user 1
-    user1 = User.objects.create_user(username='customer', password='1234', email='customer@scotrail.co.uk.', first_name='Customer One')
+    user1 = User.objects.create_user(username='customer0', password='1234', email='customer@scotrail.co.uk.', first_name='Customer One')
     
     # create Zebras operator
     zebras, created = Operator.objects.get_or_create(admin=user1, name="Zebras", homepage="http://127.0.0.1:8000/", api_url="http://127.0.0.1:8000/api/", phone="0394098748", email="bigemail@domain.com")

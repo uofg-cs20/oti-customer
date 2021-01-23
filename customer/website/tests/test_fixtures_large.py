@@ -2,8 +2,6 @@ import os, random, csv, datetime, pytz
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'customer.settings')
 from django.contrib.auth.hashers import make_password
 
-
-
 import django
 django.setup()
 
@@ -13,7 +11,6 @@ import datetime
 from django.contrib.auth.models import User
 from website.models import *
 from django.utils.timezone import make_aware
-from rest_framework.authtoken.models import Token
 
 times = [random.randint(-90,90) for i in range(1000)]
 
@@ -82,7 +79,7 @@ def populate():
     zebras.modes.set(modes)
 
     #create latlongs and location
-    locsnum = 400
+    locsnum = 90
     exists = []
     with open('extra/gb.csv') as csvfile:
         reader = list(csv.reader(csvfile, delimiter=',', quotechar='|'))
@@ -99,7 +96,6 @@ def populate():
     Location.objects.bulk_create([Location(lat_long=latlongs[i], NaPTAN="idk", name=exists[i][0]) for i in range(locsnum)])
     locations = list(Location.objects.all())
     locations2 = list(Location.objects.all())
-    print(len(locations2))
     #create usagefromto
     usagetimes = []
     for i in range(locsnum//2):
@@ -134,7 +130,7 @@ def populate():
     TravelClass.objects.get_or_create(travel_class="Economy")
     classes = TravelClass.objects.all()
 
-    mvn = 800
+    mvn = 180
     #create monetary value
     MonetaryValue.objects.bulk_create([MonetaryValue(amount=random.randint(0,10), currency="GBP", symbol="£") for i in range(mvn)])
     mvns = list(MonetaryValue.objects.all())
@@ -144,7 +140,7 @@ def populate():
     trans = list(Transaction.objects.all())
 
     #create recordID
-    recordno = 30
+    recordno = 90
     RecordID.objects.bulk_create([RecordID(id=str(i)) for i in range(recordno)])
     records = list(RecordID.objects.all())
 
@@ -181,10 +177,6 @@ def populate():
                                       ticket_reference=tickets[i], price=mvns.pop(),
                                       customer=customers[i%3]) for i in range(2*recordno//3, recordno)])
 
-    for user in User.objects.all():
-        Token.objects.get_or_create(user=user)
 
 if __name__ == '__main__':
-    print('Starting population script...', end="")
     populate()
-    print('DONE')
