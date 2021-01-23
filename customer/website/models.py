@@ -102,6 +102,7 @@ class MonetaryValue(models.Model):
 
 class Transaction(models.Model):
     date_time = models.DateTimeField(auto_now_add=True)
+    reference = models.CharField(max_length=30)
     payment_type = models.CharField(max_length=30)
     payment_method = models.CharField(max_length=30)
     price = models.ForeignKey(MonetaryValue, on_delete=models.CASCADE)
@@ -131,7 +132,7 @@ class Concession(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Concession Id: " + str(self.id) + ", Concession name: " + str(self.name)
+        return self.name
 
 
 class Usage(models.Model):

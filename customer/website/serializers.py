@@ -18,48 +18,48 @@ class OperatorSerializer(serializers.ModelSerializer):
 class MonetaryValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = MonetaryValue
-        fields = '__all__'
+        fields = ['amount', 'currency']
 
 class DiscountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discount
-        fields = '__all__'
+        fields = ['discount_type', 'discount_value', 'discount_description']
 
 class TransactionSerializer(serializers.ModelSerializer):
     price = MonetaryValueSerializer()
 
     class Meta:
         model = Transaction
-        fields = '__all__'
+        fields = ['date_time', 'reference', 'payment_type', 'payment_method', 'price']
 
 class LatitudeLongitudeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LatitudeLongitude
-        fields = '__all__'
+        fields = ['latitude', 'longitude']
 
 class LocationSerializer(serializers.ModelSerializer):
     lat_long = LatitudeLongitudeSerializer()
 
     class Meta:
         model = Location
-        fields = '__all__'
+        fields = ['lat_long', 'NaPTAN', 'other', 'other_type', 'accuracy']
 
 class UsageFromToSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
 
     class Meta:
         model = UsageFromTo
-        fields = '__all__'
+        fields = ['location', 'date_time', 'reference']
 
 class UsageReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsageReference
-        fields = '__all__'
+        fields = ['reference', 'reference_type']
 
 class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
-        fields = '__all__'
+        fields = ['included', 'reference', 'vehicle_type', 'conditions']
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,6 +87,7 @@ class ConcessionSerializer(serializers.ModelSerializer):
 class PurchaseSerializer(serializers.ModelSerializer):
     mode = ModeSerializer()
     operator = OperatorSerializer()
+    concession = serializers.StringRelatedField()
     account_balance = MonetaryValueSerializer()
     vehicle = VehicleSerializer()
     location_from = LocationSerializer()
