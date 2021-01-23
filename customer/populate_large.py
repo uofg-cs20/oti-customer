@@ -2,6 +2,8 @@ import os, random, csv, datetime, pytz
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'customer.settings')
 from django.contrib.auth.hashers import make_password
 
+
+
 import django
 django.setup()
 
@@ -11,6 +13,7 @@ import datetime
 from django.contrib.auth.models import User
 from website.models import *
 from django.utils.timezone import make_aware
+from rest_framework.authtoken.models import Token
 
 times = [random.randint(-90,90) for i in range(1000)]
 
@@ -141,7 +144,7 @@ def populate():
     trans = list(Transaction.objects.all())
 
     #create recordID
-    recordno = 360
+    recordno = 30
     RecordID.objects.bulk_create([RecordID(id=str(i)) for i in range(recordno)])
     records = list(RecordID.objects.all())
 
@@ -178,6 +181,8 @@ def populate():
                                       ticket_reference=tickets[i], price=mvns.pop(),
                                       customer=customers[i%3]) for i in range(2*recordno//3, recordno)])
 
+    for user in User.objects.all():
+        Token.objects.get_or_create(user=user)
 
 if __name__ == '__main__':
     print('Starting population script...', end="")
