@@ -8,15 +8,20 @@ import pytz
 import json
 from django.utils import timezone
 
+# Specify the filepath to a JSON file containing test parameters
 test_params_filepath = "./website/tests/customerapitestparams.json"
+
+# Test parameters are:
+# api_url - the URL of the Customer API
+# default_pagination - the default page size if not specified in the request
 
 # Read in test parameters from customerapitestparams.json
 with open(test_params_filepath, 'r') as f:
     testparams = json.load(f)
     
-purchases_url = testparams["api_url"] + "purchases/"
-concessions_url = testparams["api_url"] + "concessions/"
-usages_url = testparams["api_url"] + "usages/"
+purchases_url = testparams["api_url"] + "purchase/"
+concessions_url = testparams["api_url"] + "concession/"
+usages_url = testparams["api_url"] + "usage/"
 
 # Common testing functions
 def set_up_tests(testobj):

@@ -20,7 +20,10 @@ class PurchaseViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def list(self, request):
+        filterString = self.request.query_params.get('filterString', None)
         queryset = Purchase.objects.filter(customer__user=request.user)
+        if filterString:
+            queryset = queryset.filter(id__id__contains=filterString)            
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = PurchaseSerializer(page, many=True)

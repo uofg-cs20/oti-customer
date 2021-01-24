@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from . import views
 from rest_framework import routers
 
@@ -6,9 +6,9 @@ app_name = 'website'
 
 # Set up the router for the API URLs
 router = routers.DefaultRouter()
-router.register(r'purchases', views.PurchaseViewSet)
-router.register(r'concessions', views.ConcessionViewSet)
-router.register(r'usages', views.UsageViewSet)
+router.register(r'purchase(?P<filterString>.+)*', views.PurchaseViewSet)
+router.register(r'concession', views.ConcessionViewSet)
+router.register(r'usage', views.UsageViewSet)
 
 urlpatterns = [
     #path('', views.index, name='index'),
