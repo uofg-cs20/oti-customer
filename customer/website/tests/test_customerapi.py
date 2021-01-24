@@ -8,8 +8,10 @@ import pytz
 import json
 from django.utils import timezone
 
+test_params_filepath = "./website/tests/customerapitestparams.json"
+
 # Read in test parameters from customerapitestparams.json
-with open("customerapitestparams.json", 'r') as f:
+with open(test_params_filepath, 'r') as f:
     testparams = json.load(f)
     
 purchases_url = testparams["api_url"] + "purchases/"
