@@ -144,7 +144,7 @@ def populate():
     trans = list(Transaction.objects.all())
 
     #create recordID
-    recordno = 30
+    recordno = 90
     RecordID.objects.bulk_create([RecordID(id=str(i)) for i in range(recordno)])
     records = list(RecordID.objects.all())
 
