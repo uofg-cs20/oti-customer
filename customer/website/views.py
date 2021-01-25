@@ -33,16 +33,14 @@ class PurchaseViewSet(viewsets.ModelViewSet):
         travel_valid_during_to = options.get('travel_valid_during_from', None)
         if not travel_valid_during_to:
             travel_valid_during_to = options.get('travel-valid-during-to', None)
-        skip = options.get('skip', None)
-        limit = options.get('limit', None)
         
         # Filter the queryset with the given parameters
         if filterString:
             queryset = queryset.filter(id__id__contains=filterString)
         if travel_valid_during_from:
-            queryset = queryset.filter(travel_to_date_time__gt=travel_valid_during_from)
+            queryset = queryset.filter(travel_to_date_time__gte=travel_valid_during_from)
         if travel_valid_during_to:
-            queryset = queryset.filter(travel_from_date_time__lt=travel_valid_during_to)
+            queryset = queryset.filter(travel_from_date_time__lte=travel_valid_during_to)
             
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -57,9 +55,29 @@ class ConcessionViewSet(viewsets.ModelViewSet):
     queryset = Concession.objects.all()
     serializer_class = ConcessionSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = LimitSkipPagination
     
     def list(self, request):
         queryset = Concession.objects.filter(customer__user=request.user)
+    
+        # Get any query parameters
+        options = self.request.query_params
+        filterString = options.get('filterString', None)
+        concession_valid_during_from = options.get('concession_valid_during_from', None)
+        if not concession_valid_during_from:
+            concession_valid_during_from = options.get('concession-valid-during-from', None)
+        concession_valid_during_to = options.get('concession_valid_during_from', None)
+        if not concession_valid_during_to:
+            concession_valid_during_to = options.get('concession-valid-during-to', None)
+        
+        # Filter the queryset with the given parameters
+        if filterString:
+            queryset = queryset.filter(id__id__contains=filterString)
+        if concession_valid_during_from:
+            queryset = queryset.filter(valid_to_date_time__gte=concession_valid_during_from)
+        if concession_valid_during_to:
+            queryset = queryset.filter(valid_from_date_time__lte=concession_valid_during_to)
+        
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = ConcessionSerializer(page, many=True)
@@ -73,9 +91,30 @@ class UsageViewSet(viewsets.ModelViewSet):
     queryset = Usage.objects.all()
     serializer_class = UsageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = LimitSkipPagination
     
     def list(self, request):
         queryset = Usage.objects.filter(customer__user=request.user)
+    
+        # Get any query parameters
+        options = self.request.query_params
+        filterString = options.get('filterString', None)
+        usage_occurred_during_from = options.get('usage_occurred_during_from', None)
+        if not usage_occurred_during_from:
+            usage_occurred_during_from = options.get('usage-occurred-during-from', None)
+        usage_occurred_during_to = options.get('usage_occurred_during_from', None)
+        if not usage_occurred_during_to:
+            usage_occurred_during_to = options.get('usage-occurred-during-to', None)
+        
+        # Filter the queryset with the given parameters
+        if filterString:
+            queryset = queryset.filter(id__id__contains=filterString)
+        if usage_occurred_during_from:
+            queryset = queryset.filter(travel_to__date_time__gte=usage_occurred_during_from)
+        if usage_occurred_during_to:
+            queryset = queryset.filter(travel_from__date_time__lte=usage_occurred_during_to)
+        
+        
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = UsageSerializer(page, many=True)

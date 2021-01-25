@@ -126,8 +126,8 @@ class Concession(models.Model):
     price = models.ForeignKey("MonetaryValue", on_delete=models.CASCADE)
     discount = models.ForeignKey(Discount, on_delete=models.CASCADE)
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
-    valid_from_date_time = models.DateField()
-    valid_to_date_time = models.DateField()
+    valid_from_date_time = models.DateTimeField()
+    valid_to_date_time = models.DateTimeField()
     conditions = models.CharField(max_length=500)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
