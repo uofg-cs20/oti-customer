@@ -119,21 +119,17 @@ def purchases(request):
 
 def concessions(request):
     context = {}
-    context["status"] = "valid"
+    context["expired"] = False
     context["modes"] = getModes()
 
     if request.method == "POST":
-
         status = request.POST.get("status")
         mode = request.POST.get("mode")
-        # if no status selected, will examine valid concessions
-        if status == None:
-            status = "valid"
-        # expired concession status selected
-        if status == "past":
-            status = None
 
-        context["status"] = status
+        # check if the customer wants to see expired concessions
+        if status == 'past':
+            context['expired'] = True
+
         if mode and mode != "None":
             context["mode"] = mode
 
@@ -155,6 +151,6 @@ def usage(request):
     context['mode'] = mode
 
     usages = getUsage(request.user, context)
-
     context['usages'] = usages
+    
     return render(request, 'website/usage.html', context)   

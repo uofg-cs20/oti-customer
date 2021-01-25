@@ -21,7 +21,7 @@ def getModes():
     return modes
 
 
-# Returns date filters (empty if none applied)
+# Returns date filters
 def getDates(request):
     startdate = request.POST.get("startdate")
     enddate = request.POST.get("enddate")
@@ -30,15 +30,17 @@ def getDates(request):
     if startdate and startdate > enddate:
         startdate, enddate = enddate, startdate
 
-    # Format start date 
+    # Format start date if present
     if startdate:
         startdate = formatDate(startdate)
+    # if not, assign today
     else:
         startdate = timezone.now()
 
-    # Format end date
+    # Format end date if present
     if enddate:
         enddate = formatDate(enddate)
+    # if not, assign today + 30 days
     else:
         enddate = timezone.now() + timedelta(days=30)
 
@@ -58,15 +60,15 @@ def formatDate(datestr):
 def getPurchases(user, filters):
     # Get the Customer object of the given user
     customer = Customer.objects.get(user=user)
-
-    # Filter with the dates that have been given
+    
+    # Get the filters
+    mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
     enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
 
     # Filter by the user and mode
-    # This function assumes that the given startdate will be before the given enddate chronologically
-    if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=filters.get("mode")))
+    if mode:
+        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=mode))
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
 
@@ -85,25 +87,24 @@ def getPurchases(user, filters):
 
 
 def getConcessions(user, context):
-    today = timezone.now()
-    status = context["status"]
-    mode = context.get("mode")
-
     customer = Customer.objects.get(user=user)
+    today = timezone.now()
 
-    if status == "valid" and mode:
-        mode = context["mode"]
+    # Get the filters
+    expired = context.get('expired')
+    mode = context.get('mode')
+
+    if not expired and mode:
         # return valid concessions
         # i.e. concessions with expiry date in the future
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=Mode.objects.get(short_desc=mode))
 
-    elif not status and mode:
-        mode = context["mode"]
+    elif expired and mode:
         # return expired concessions
         # i.e. concessions with expiry date in the past
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=Mode.objects.get(short_desc=mode))
 
-    elif status == "valid" and not mode:
+    elif not expired and not mode:
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
 
     else:
@@ -111,16 +112,15 @@ def getConcessions(user, context):
 
 
 def getUsage(user, filters=None):
-    tickets = {}
- 
+    cust = Customer.objects.get(user=user)
+
+    # Get the filters
     mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
     enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
 
-    cust = Customer.objects.get(user=user)
-
     # Filter with the mode if given
-    if (mode) and (mode != "None"):
+    if mode:
         usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
     else:
         usages = Usage.objects.filter(customer=cust.id)

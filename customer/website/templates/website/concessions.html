@@ -38,11 +38,11 @@
 	</div>
 
 	<div class="container my-4 mb-5">
-		{% if status and mode %}
+		{% if not expired and mode %}
 			<h4>Showing valid {{ mode }} concessions</h4>
 			{% elif mode %}
 				<h4>Showing expired {{ mode }} concessions</h4>
-			{% elif status %}
+			{% elif not expired %}
 				<h4>Showing valid concessions</h4>
 		{% else %}
 			<h4>Showing expired concessions</h4>
