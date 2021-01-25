@@ -21,6 +21,18 @@ def getModes():
     return modes
 
 
+def getDates(request):
+    startdate = request.POST.get("startdate")
+    enddate = request.POST.get("enddate")
+    if startdate:
+        startdate = formatDate(startdate)
+    if enddate:
+        enddate = formatDate(enddate)
+    if startdate and startdate > enddate:
+        startdate, enddate = enddate, startdate
+    return (startdate, enddate)
+
+
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
 def formatDate(datestr):
     year = int(datestr[-4:])

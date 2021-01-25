@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
+from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
 from datetime import date
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -101,23 +101,15 @@ def purchases(request):
     context["modes"] = getModes()
 
     if request.method == "POST":
+        startdate, enddate = getDates(request)
+        mode = request.POST.get("mode")
+
         # Check if filters have been applied, store these in the
         # context dictionary to process
-        startdatestr = request.POST.get("startdate")
-        enddatestr = request.POST.get("enddate")
-        mode = request.POST.get("mode")
-        if startdatestr:
-            startdate = formatDate(startdatestr)
-            context.update({"startdate":startdate})
-        if enddatestr:
-            enddate = formatDate(enddatestr)
-            context.update({"enddate":enddate})
-            # If startdate was provided and is greater than the enddate, switch them
-            s = context.get("startdate")
-            if s:
-                if s > enddate:
-                    context.update({"startdate":enddate})
-                    context.update({"enddate":s})
+        if startdate:
+            context['startdate'] = startdate
+        if enddate:
+            context['enddate'] = enddate
         if mode and mode != "None":
             context.update({"mode":mode})
 
