@@ -147,21 +147,21 @@ def concessions(request):
 def usage(request):
     context = {}
     context["modes"] = getModes()
-    mode = ""
+    
     if request.method == "POST":
+        startdate, enddate = getDates(request)
+        mode = request.POST.get("mode")
+
         # Check if filters have been applied, store these in the
         # context dictionary to process
-        startdate, enddate = "", ""
-        startdatestr = request.POST.get("startdate")
-        enddatestr = request.POST.get("enddate")
-        mode = request.POST.get("mode")
-        if startdatestr:
-            startdate = formatDate(startdatestr)
-        if enddatestr:
-            enddate = formatDate(enddatestr)
-    else:
-        startdate, enddate = "", ""
-    usages = getUsage(request.user, [startdate, enddate, mode])
+        if startdate:
+            context['startdate'] = startdate
+        if enddate:
+            context['enddate'] = enddate
+        if mode and mode != "None":
+            context.update({"mode":mode})
+
+    usages = getUsage(request.user, context)
     if not usages:
         context['valid'] = False
     else:

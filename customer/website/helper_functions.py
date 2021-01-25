@@ -108,9 +108,9 @@ def getConcessions(user, context):
 
 def getUsage(user, filters=None):
     tickets = {}
-    startdate = filters[0]
-    enddate = filters[1]
-    mode = filters[2]
+    startdate = filters.get("startdate")
+    enddate = filters.get("enddate")
+    mode = filters.get("mode")
     try:
         # If both the start date and end date aren't provided, filter the last 30 days
         if not (startdate or enddate):
