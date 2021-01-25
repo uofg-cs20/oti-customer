@@ -66,9 +66,11 @@ class UsageViewSet(viewsets.ModelViewSet):
 def index(request):
     return render(request, 'website/index.html')
 
+
 def register(request):
     # TODO
     return render(request, 'website/register.html')
+
 
 def customer_login(request):
     form = LoginForm()
@@ -85,44 +87,41 @@ def customer_login(request):
 
     return render(request, 'website/login.html', {"form": form})
 
+
 def customer_logout(request):
     logout(request)
     return redirect(reverse('website:login'))
+
 
 def connect(request):
     operators = getOperators()
     context = {"operators": operators}
     return render(request, 'website/connect.html', context)
 
+
 def purchases(request):
-    # Initialise a context dictionary to store the Purchases and available
-    # modes of transport
     context = {"purchases":[], "modes":[]}
     context["modes"] = getModes()
+    startdate, enddate = getDates(request)
+    mode = request.POST.get("mode")
 
-    if request.method == "POST":
-        startdate, enddate = getDates(request)
-        mode = request.POST.get("mode")
+    context['startdate'] = startdate
+    context['enddate'] = enddate
+        
+    if mode and mode != "None":
+        context.update({"mode":mode})
 
-        # Check if filters have been applied, store these in the
-        # context dictionary to process
-        if startdate:
-            context['startdate'] = startdate
-        if enddate:
-            context['enddate'] = enddate
-        if mode and mode != "None":
-            context.update({"mode":mode})
-
-    # Retrieve a list of Purchases filtered by the given fields in
-    # the context dictionary, and store these in the context dictionary
+    # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)
 
     return render(request, 'website/purchases.html', context)
+
 
 def concessions(request):
     context = {}
     context["status"] = "valid"
     context["modes"] = getModes()
+
     if request.method == "POST":
 
         status = request.POST.get("status")
@@ -133,37 +132,29 @@ def concessions(request):
         # expired concession status selected
         if status == "past":
             status = None
+
         context["status"] = status
         if mode and mode != "None":
             context["mode"] = mode
 
-    # use helper function to obtain relevant concessions for user
-    # depending on whether current or past concessions are requested
+    # obtain either current or past concessions for user 
     concessions = getConcessions(request.user, context)
     context['concessions'] = concessions
 
     return render(request, 'website/concessions.html', context)
 
+
 def usage(request):
     context = {}
     context["modes"] = getModes()
-    
-    if request.method == "POST":
-        startdate, enddate = getDates(request)
-        mode = request.POST.get("mode")
+    startdate, enddate = getDates(request)
+    mode = request.POST.get("mode")
 
-        # Check if filters have been applied, store these in the
-        # context dictionary to process
-        if startdate:
-            context['startdate'] = startdate
-        if enddate:
-            context['enddate'] = enddate
-        if mode and mode != "None":
-            context.update({"mode":mode})
+    context['startdate'] = startdate
+    context['enddate'] = enddate
+    context['mode'] = mode
 
     usages = getUsage(request.user, context)
-    if not usages:
-        context['valid'] = False
-    else:
-        context['combined_tickets'] = usages
-    return render(request, 'website/usage.html', context)
+
+    context['usages'] = usages
+    return render(request, 'website/usage.html', context)   

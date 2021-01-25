@@ -44,20 +44,20 @@
 
 	<div class="container my-4 mb-5">
 		<h3>Usages</h3>
-				{% if valid  != False %}
-					{% for ticket in combined_tickets.items %}
-						<div class="card p-4 my-4" style="width: 40rem;">
-						<tr>
-							<h5> {{ ticket.1.mode }} Ticket</h5>
-							<p> <b>{{ ticket.1.operator }}</b> </p>
-							<p>{{ ticket.1.locs.0 }} to {{ ticket.1.locs.1 }}</p>
-							<p> {{ ticket.1.date.0 }} - {{ ticket.1.date.1 }}</p>
-						</div>
-					{% endfor %}
-				{% else %}
-					<td>No usages found</td>
-				{% endif %}
-				</tr>
+			{% if usages %}
+				{% for ticket in usages %}
+					<div class="card p-4 my-4" style="width: 40rem;">
+					<tr>
+						<h5> {{ ticket.mode }} Ticket</h5>
+						<p> <b>{{ ticket.operator }}</b> </p>
+						<p>{{ ticket.travel_from.location.name }} to {{ ticket.travel_to.location.name }}</p>
+						<p> {{ ticket.travel_from.date_time }} - {{ ticket.travel_to.date_time }}</p>
+					</div>
+				{% endfor %}
+			{% else %}
+				<td>No usages found</td>
+			{% endif %}
+			</tr>
 	</div>
 
 {% endblock content %}
