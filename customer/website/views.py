@@ -140,10 +140,7 @@ def concessions(request):
     # use helper function to obtain relevant concessions for user
     # depending on whether current or past concessions are requested
     concessions = getConcessions(request.user, context)
-    context['concessions'] = []
-    # iterate over obtained concessions and add to context dict
-    for c in concessions:
-        context['concessions'].append(c)
+    context['concessions'] = concessions
 
     return render(request, 'website/concessions.html', context)
 
