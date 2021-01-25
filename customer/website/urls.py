@@ -6,7 +6,7 @@ app_name = 'website'
 
 # Set up the router for the API URLs
 router = routers.DefaultRouter()
-router.register(r'purchase(?P<filterString>.+)*', views.PurchaseViewSet)
+router.register(r'purchase', views.PurchaseViewSet)
 router.register(r'concession', views.ConcessionViewSet)
 router.register(r'usage', views.UsageViewSet)
 

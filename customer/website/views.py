@@ -10,6 +10,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
 from .forms import LoginForm
+from customer.pagination import LimitSkipPagination
 
 
 # The ViewSet automatically handles API URLs
@@ -18,12 +19,31 @@ class PurchaseViewSet(viewsets.ModelViewSet):
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = LimitSkipPagination
     
     def list(self, request):
-        filterString = self.request.query_params.get('filterString', None)
         queryset = Purchase.objects.filter(customer__user=request.user)
+    
+        # Get any query parameters
+        options = self.request.query_params
+        filterString = options.get('filterString', None)
+        travel_valid_during_from = options.get('travel_valid_during_from', None)
+        if not travel_valid_during_from:
+            travel_valid_during_from = options.get('travel-valid-during-from', None)
+        travel_valid_during_to = options.get('travel_valid_during_from', None)
+        if not travel_valid_during_to:
+            travel_valid_during_to = options.get('travel-valid-during-to', None)
+        skip = options.get('skip', None)
+        limit = options.get('limit', None)
+        
+        # Filter the queryset with the given parameters
         if filterString:
-            queryset = queryset.filter(id__id__contains=filterString)            
+            queryset = queryset.filter(id__id__contains=filterString)
+        if travel_valid_during_from:
+            queryset = queryset.filter(travel_to_date_time__gt=travel_valid_during_from)
+        if travel_valid_during_to:
+            queryset = queryset.filter(travel_from_date_time__lt=travel_valid_during_to)
+            
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = PurchaseSerializer(page, many=True)
