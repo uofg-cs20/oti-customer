@@ -70,13 +70,9 @@ def getPurchases(user, filters):
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
 
-    # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
-    # First include those whose "from" date is within the filter range
-    # Then include those whose "to" date is within the filter range
-    # Finally include the special cases whose filter range is entirely within the "from-to" validity range
-    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
-        .union(local_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
-        .union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
+    # Filter by date, exclude purchases before the start date and after the enddate
+    excluded_purchases = local_purchases.filter(travel_to_date_time__lt=startdate).union(local_purchases.filter(travel_from_date_time__gt=enddate))
+    local_purchases = local_purchases.difference(excluded_purchases)
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
@@ -129,10 +125,9 @@ def getUsage(user, filters=None):
     else:
         usages = Usage.objects.filter(customer=cust.id)
 
-    # Filter with the dates
-    usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
-        .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
-        .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+    # Filter by date, exclude usages before the start date and after the enddate
+    excluded_usages = usages.filter(travel_to__date_time__lt=startdate).union(usages.filter(travel_from__date_time__gt=enddate))
+    usages = usages.difference(excluded_usages)
 
     return usages
 
