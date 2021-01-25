@@ -1,32 +1,28 @@
 from django.test import TestCase
-
 from website.models import *
-from .test_fixtures_large import populate
 from datetime import timedelta
 import datetime
 import pytz
 import json
 from django.utils import timezone
 
-# Specify the filepath to a JSON file containing test parameters
-test_params_filepath = "./website/tests/customerapitestparams.json"
+from .test_fixtures_large import populate
 
-# Test parameters are:
-# api_url - the URL of the Customer API
-# default_pagination - the default page size if not specified in the request
-
-# Read in test parameters from customerapitestparams.json
-with open(test_params_filepath, 'r') as f:
-    testparams = json.load(f)
+# --- TEST PARAMETERS -------------------
+api_url = "/api/"
+default_pagination = 5
+test_user_username = "customer0"
+test_user_password = "1234"
+# ---------------------------------------
     
-purchases_url = testparams["api_url"] + "purchase/"
-concessions_url = testparams["api_url"] + "concession/"
-usages_url = testparams["api_url"] + "usage/"
+purchases_url = api_url + "purchase/"
+concessions_url = api_url + "concession/"
+usages_url = api_url + "usage/"
 
 # Common testing functions
 def set_up_tests(testobj):
     populate()
-    login = testobj.client.login(username="customer0", password="1234")
+    login = testobj.client.login(username=test_user_username, password=test_user_password)
 
 def api_page_response(testobj, page_url):
     response = testobj.client.get(page_url)
@@ -42,10 +38,10 @@ class APIPurchaseTests(TestCase):
         self.assertEqual(api_page_response(self, purchases_url).status_code, 200)
         
     def test_api_purchases_default_pagination(self):
-        self.assertTrue(len(api_page_response(self, purchases_url).data) <= testparams["default_pagination"])
+        self.assertTrue(len(api_page_response(self, purchases_url).data) <= default_pagination)
         
     def test_api_purchases_correct_user(self):
-        self.assertTrue(Purchase.objects.get(id=p['id']).customer == Customer.objects.get(user=User.objects.get(username="customer0")) for p in api_page_response(self, purchases_url).data)
+        self.assertTrue(Purchase.objects.get(id=p['id']).customer == Customer.objects.get(user=User.objects.get(username=test_user_username)) for p in api_page_response(self, purchases_url).data)
         
 class APIConcessionTests(TestCase):
 
@@ -56,10 +52,10 @@ class APIConcessionTests(TestCase):
         self.assertEqual(api_page_response(self, concessions_url).status_code, 200)
         
     def test_api_purchases_default_pagination(self):
-        self.assertTrue(len(api_page_response(self, concessions_url).data) <= testparams["default_pagination"])
+        self.assertTrue(len(api_page_response(self, concessions_url).data) <= default_pagination)
         
     def test_api_concessions_correct_user(self):
-        self.assertTrue(Concession.objects.get(id=c['id']).customer == Customer.objects.get(user=User.objects.get(username="customer0")) for c in api_page_response(self, concessions_url).data)
+        self.assertTrue(Concession.objects.get(id=c['id']).customer == Customer.objects.get(user=User.objects.get(username=test_user_username)) for c in api_page_response(self, concessions_url).data)
        
 class APIUsageTests(TestCase):
 
@@ -70,8 +66,8 @@ class APIUsageTests(TestCase):
         self.assertEqual(api_page_response(self, usages_url).status_code, 200)
         
     def test_api_usages_default_pagination(self):
-        self.assertTrue(len(api_page_response(self, usages_url).data) <= testparams["default_pagination"])
+        self.assertTrue(len(api_page_response(self, usages_url).data) <= default_pagination)
         
     def test_api_usages_correct_user(self):
-        self.assertTrue(Usage.objects.get(id=u['id']).customer == Customer.objects.get(user=User.objects.get(username="customer0")) for u in api_page_response(self, usages_url).data)
+        self.assertTrue(Usage.objects.get(id=u['id']).customer == Customer.objects.get(user=User.objects.get(username=test_user_username)) for u in api_page_response(self, usages_url).data)
 
