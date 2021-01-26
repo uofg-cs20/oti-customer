@@ -26,14 +26,14 @@ def getDates(request):
     startdate = request.POST.get("startdate")
     enddate = request.POST.get("enddate")
 
-    # Swap if start date > enddate
-    if startdate and enddate and startdate > enddate:
-        startdate, enddate = enddate, startdate
-    
-        # Both given
+    # Both given
     if startdate and enddate:
         startdate = formatDate(startdate)
         enddate = formatDate(enddate)
+    
+    # Swap if start date > enddate
+    if startdate and enddate  and startdate > enddate:
+        startdate, enddate = enddate, startdate
 
     # Only startdate given
     if startdate and not enddate:
@@ -126,8 +126,8 @@ def getUsage(user, filters=None):
 
     # Get the filters
     mode = filters.get("mode")
-    startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
-    enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
+    startdate = filters.get("startdate")
+    enddate = filters.get("enddate")
 
     # Filter with the mode if given
     if mode:
