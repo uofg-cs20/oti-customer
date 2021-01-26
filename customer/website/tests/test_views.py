@@ -208,7 +208,7 @@ class UsageTests(TestCase):
         response = self.client.post('/usage/', {"mode":Mode.objects.get(short_desc="Bus"), "startdate":(timezone.now()-timedelta(days=750)).strftime("%d-%m-%Y"), "enddate":timezone.now().strftime("%d-%m-%Y"), "link":False})
 
         # Usages passed in the request
-        shown_usage = list(response.context.get("combined_tickets", []))
+        shown_usage = list(response.context.get("usages", []))
         
         # Usages that should have been filtered by the request
         customer = Customer.objects.get(user=response.context["user"])
@@ -222,16 +222,14 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
-        #filtered_usages = filtered_usages.order_by("-travel_to__date_time")
-        usage_records = [u.id for u in filtered_usages]
         
-        self.assertEqual(shown_usage, usage_records, "Filtering by mode does not display the correct Usages")
+        self.assertEqual(shown_usage, list(filtered_usages), "Filtering by mode does not display the correct Usages")
         
     def test_usage_date_filters(self):
         response = self.client.post('/usage/', {"startdate":(timezone.now()-timedelta(days=1000)).strftime("%d-%m-%Y"), "enddate":(timezone.now()-timedelta(days=500)).strftime("%d-%m-%Y"), "link":False})
 
         # Usages passed in the request
-        shown_usage = list(response.context.get("combined_tickets", []))
+        shown_usage = list(response.context.get("usages", []))
         
         # Usages that should have been filtered by the request
         customer = Customer.objects.get(user=response.context["user"])
@@ -245,9 +243,7 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
-        #filtered_usages = filtered_usages.order_by("-travel_to__date_time")
-        usage_records = [u.id for u in filtered_usages]
         
-        self.assertEqual(shown_usage, usage_records, "Filtering between given dates does not display the correct Usages")
+        self.assertEqual(shown_usage,list(filtered_usages), "Filtering between given dates does not display the correct Usages")
         
 

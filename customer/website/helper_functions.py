@@ -21,6 +21,38 @@ def getModes():
     return modes
 
 
+# Returns date filters
+def getDates(request):
+    startdate = request.POST.get("startdate")
+    enddate = request.POST.get("enddate")
+
+    # Both given
+    if startdate and enddate:
+        startdate = formatDate(startdate)
+        enddate = formatDate(enddate)
+    
+    # Swap if start date > enddate
+    if startdate and enddate  and startdate > enddate:
+        startdate, enddate = enddate, startdate
+
+    # Only startdate given
+    if startdate and not enddate:
+        startdate = formatDate(startdate)
+        enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
+    
+    # Only enddate given
+    if not startdate and enddate:
+        startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
+        enddate = formatDate(enddate)
+
+    # None given
+    if not startdate and not enddate:
+        startdate = timezone.now()
+        enddate = timezone.now() + timedelta(days=30)
+
+    return (startdate, enddate)
+
+
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
 def formatDate(datestr):
     year = int(datestr[-4:])
@@ -34,20 +66,15 @@ def formatDate(datestr):
 def getPurchases(user, filters):
     # Get the Customer object of the given user
     customer = Customer.objects.get(user=user)
-
-    # If both the start date and end date aren't provided, filter the next 30 days
-    if not (filters.get("startdate") or filters.get("enddate")):
-        startdate = timezone.now()
-        enddate = timezone.now() + timedelta(days=30)
-    # Otherwise filter with the dates that have been given
-    else:
-        startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
-        enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
+    
+    # Get the filters
+    mode = filters.get("mode")
+    startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
+    enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
 
     # Filter by the user and mode
-    # This function assumes that the given startdate will be before the given enddate chronologically
-    if filters.get("mode"):
-        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=filters.get("mode")))
+    if mode:
+        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=mode))
     else:
         local_purchases = Purchase.objects.filter(customer_id=customer.id)
 
@@ -70,24 +97,24 @@ def getPurchases(user, filters):
 
 
 def getConcessions(user, context):
-    today = timezone.now()
-    status = context["status"]
-
     customer = Customer.objects.get(user=user)
+    today = timezone.now()
 
-    if status == "valid" and context.get("mode"):
-        mode = context["mode"]
+    # Get the filters
+    expired = context.get('expired')
+    mode = context.get('mode')
+
+    if not expired and mode:
         # return valid concessions
         # i.e. concessions with expiry date in the future
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=Mode.objects.get(short_desc=mode))
 
-    elif not status and context.get("mode"):
-        mode = context["mode"]
+    elif expired and mode:
         # return expired concessions
         # i.e. concessions with expiry date in the past
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=Mode.objects.get(short_desc=mode))
 
-    elif status == "valid" and not context.get("mode"):
+    elif not expired and not mode:
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
 
     else:
@@ -95,42 +122,24 @@ def getConcessions(user, context):
 
 
 def getUsage(user, filters=None):
-    tickets = {}
-    startdate = filters[0]
-    enddate = filters[1]
-    mode = filters[2]
-    try:
-        # If both the start date and end date aren't provided, filter the last 30 days
-        if not (startdate or enddate):
-            startdate = timezone.now()
-            enddate = timezone.now() - timedelta(days=30)
-        elif not startdate:
-            startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
-        elif not enddate:
-            enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
+    cust = Customer.objects.get(user=user)
 
-        if enddate < startdate:
-            startdate, enddate = enddate, startdate
-        cust = Customer.objects.get(user=user)
+    # Get the filters
+    mode = filters.get("mode")
+    startdate = filters.get("startdate")
+    enddate = filters.get("enddate")
 
-        if (mode) and (mode != "None"):
-            usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
-        else:
-            usages = Usage.objects.filter(customer=cust.id)
-        usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
-            .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
-            .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
-        #usages = usages.order_by("-travel_to__date_time")
-        for usage in usages:
-            usage_dict = {"usage": usage}
-            usage_dict["operator"] = cust.operator
-            usage_dict["locs"] = [usage.travel_from.location.name, usage.travel_to.location.name]
-            usage_dict["date"] = [usage.travel_from.date_time, usage.travel_to.date_time]
-            usage_dict["mode"] = usage.mode
-            tickets[usage.id] = usage_dict
-    except ObjectDoesNotExist:
-        pass
-    return tickets
+    # Filter with the mode if given
+    if mode:
+        usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
+    else:
+        usages = Usage.objects.filter(customer=cust.id)
+
+    usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
+        .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
+        .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        
+    return usages
 
 
 def getOperators():
@@ -138,7 +147,6 @@ def getOperators():
         r = requests.get('http://127.0.0.1:8001/api/?operator=all')
         catalogue = r.json()["items"]
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
-        print(out_list)
         return out_list
     except ConnectionError:
         return {"operators": {"null": "null"}}

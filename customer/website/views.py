@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .models import Mode, Purchase, Concession, Usage
-from .helper_functions import getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
+from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
 from datetime import date
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -125,9 +125,11 @@ class UsageViewSet(viewsets.ModelViewSet):
 def index(request):
     return render(request, 'website/index.html')
 
+
 def register(request):
     # TODO
     return render(request, 'website/register.html')
+
 
 def customer_login(request):
     form = LoginForm()
@@ -144,96 +146,70 @@ def customer_login(request):
 
     return render(request, 'website/login.html', {"form": form})
 
+
 def customer_logout(request):
     logout(request)
     return redirect(reverse('website:login'))
+
 
 def connect(request):
     operators = getOperators()
     context = {"operators": operators}
     return render(request, 'website/connect.html', context)
 
+
 def purchases(request):
-    # Initialise a context dictionary to store the Purchases and available
-    # modes of transport
     context = {"purchases":[], "modes":[]}
     context["modes"] = getModes()
+    startdate, enddate = getDates(request)
+    mode = request.POST.get("mode")
 
-    if request.method == "POST":
-        # Check if filters have been applied, store these in the
-        # context dictionary to process
-        startdatestr = request.POST.get("startdate")
-        enddatestr = request.POST.get("enddate")
-        mode = request.POST.get("mode")
-        if startdatestr:
-            startdate = formatDate(startdatestr)
-            context.update({"startdate":startdate})
-        if enddatestr:
-            enddate = formatDate(enddatestr)
-            context.update({"enddate":enddate})
-            # If startdate was provided and is greater than the enddate, switch them
-            s = context.get("startdate")
-            if s:
-                if s > enddate:
-                    context.update({"startdate":enddate})
-                    context.update({"enddate":s})
-        if mode and mode != "None":
-            context.update({"mode":mode})
+    context['startdate'] = startdate
+    context['enddate'] = enddate
+        
+    if mode and mode != "None":
+        context.update({"mode":mode})
 
-    # Retrieve a list of Purchases filtered by the given fields in
-    # the context dictionary, and store these in the context dictionary
+    # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)
 
     return render(request, 'website/purchases.html', context)
 
+
 def concessions(request):
     context = {}
-    context["status"] = "valid"
+    context["expired"] = False
     context["modes"] = getModes()
-    if request.method == "POST":
 
+    if request.method == "POST":
         status = request.POST.get("status")
         mode = request.POST.get("mode")
-        # if no status selected, will examine valid concessions
-        if status == None:
-            status = "valid"
-        # expired concession status selected
-        if status == "past":
-            status = None
-        context["status"] = status
+
+        # check if the customer wants to see expired concessions
+        if status == 'past':
+            context['expired'] = True
+
         if mode and mode != "None":
             context["mode"] = mode
 
-    # use helper function to obtain relevant concessions for user
-    # depending on whether current or past concessions are requested
+    # obtain either current or past concessions for user 
     concessions = getConcessions(request.user, context)
-    context['concessions'] = []
-    # iterate over obtained concessions and add to context dict
-    for c in concessions:
-        context['concessions'].append(c)
+    context['concessions'] = concessions
 
     return render(request, 'website/concessions.html', context)
+
 
 def usage(request):
     context = {}
     context["modes"] = getModes()
-    mode = ""
-    if request.method == "POST":
-        # Check if filters have been applied, store these in the
-        # context dictionary to process
-        startdate, enddate = "", ""
-        startdatestr = request.POST.get("startdate")
-        enddatestr = request.POST.get("enddate")
-        mode = request.POST.get("mode")
-        if startdatestr:
-            startdate = formatDate(startdatestr)
-        if enddatestr:
-            enddate = formatDate(enddatestr)
-    else:
-        startdate, enddate = "", ""
-    usages = getUsage(request.user, [startdate, enddate, mode])
-    if not usages:
-        context['valid'] = False
-    else:
-        context['combined_tickets'] = usages
-    return render(request, 'website/usage.html', context)
+    startdate, enddate = getDates(request)
+    mode = request.POST.get("mode")
+
+    context['startdate'] = startdate
+    context['enddate'] = enddate
+    context['mode'] = mode
+
+    usages = getUsage(request.user, context)
+    context['usages'] = usages
+    
+    return render(request, 'website/usage.html', context)   
