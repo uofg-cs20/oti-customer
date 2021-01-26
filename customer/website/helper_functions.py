@@ -30,7 +30,7 @@ def getDates(request):
     if startdate and enddate:
         startdate = formatDate(startdate)
         enddate = formatDate(enddate)
-    
+
     # Swap if start date > enddate
     if startdate and enddate  and startdate > enddate:
         startdate, enddate = enddate, startdate
@@ -39,7 +39,7 @@ def getDates(request):
     if startdate and not enddate:
         startdate = formatDate(startdate)
         enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
-    
+
     # Only enddate given
     if not startdate and enddate:
         startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
@@ -66,7 +66,7 @@ def formatDate(datestr):
 def getPurchases(user, filters):
     # Get the Customer object of the given user
     customer = Customer.objects.get(user=user)
-    
+
     # Get the filters
     mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
@@ -129,7 +129,7 @@ def getUsage(user, filters=None):
     startdate = filters.get("startdate")
     enddate = filters.get("enddate")
     # Filter with the mode if given
-    if mode != 'None':
+    if (mode != 'None') and (mode is not None):
         usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
     else:
         usages = Usage.objects.filter(customer=cust.id)
@@ -137,7 +137,7 @@ def getUsage(user, filters=None):
     usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
-        
+
     return usages
 
 
