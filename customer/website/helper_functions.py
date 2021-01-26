@@ -128,9 +128,8 @@ def getUsage(user, filters=None):
     mode = filters.get("mode")
     startdate = filters.get("startdate")
     enddate = filters.get("enddate")
-
     # Filter with the mode if given
-    if mode:
+    if mode != 'None':
         usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
     else:
         usages = Usage.objects.filter(customer=cust.id)
