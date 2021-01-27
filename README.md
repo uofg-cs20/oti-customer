@@ -29,3 +29,6 @@ password: 1234
 
 Run tests:
 python manage.py test
+
+Customer API URL (need to be logged in):
+/api
