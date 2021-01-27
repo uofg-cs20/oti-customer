@@ -47,8 +47,12 @@ def getDates(request):
 
     # None given
     if not startdate and not enddate:
-        startdate = timezone.now()
-        enddate = timezone.now() + timedelta(days=30)
+        if request.POST.get("usages"):
+            startdate = timezone.now() - timedelta(days=30)
+            enddate = timezone.now()
+        else:
+            startdate = timezone.now()
+            enddate = timezone.now() + timedelta(days=30)
 
     return (startdate, enddate)
 
