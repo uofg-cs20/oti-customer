@@ -28,7 +28,10 @@ username: dev
 password: 1234  
 
 Run tests:
-python manage.py test
+`python manage.py test`
+
+Run mutation tests (takes >10 minutes):
+`python manage.py muttest website`
 
 Customer API URL (need to be logged in):
 /api
