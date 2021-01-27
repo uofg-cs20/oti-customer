@@ -7,3 +7,5 @@ sqlparse==0.3.0
 django-crispy-forms==1.9.2
 requests==2.25.1
 djangorestframework==3.12.2
+mutpy==0.6.1
+django-mutpy==0.1.2

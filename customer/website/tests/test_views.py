@@ -133,6 +133,12 @@ class PurchaseTests(TestCase):
         
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering between two given dates does not display the correct Purchases")
         
+    def test_formatDate_correctly_formats_dates(self):
+        formatted_date = formatDate("22-05-2017")
+        self.assertEqual(formatted_date.year, 2017)
+        self.assertEqual(formatted_date.month, 5)
+        self.assertEqual(formatted_date.day, 22)
+        
 class ConcessionTests(TestCase):
 
     def setUp(self):

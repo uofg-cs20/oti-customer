@@ -39,9 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
-    'website.apps.WebsiteConfig',
+    'website',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_mutpy',
 ]
 
 MIDDLEWARE = [
