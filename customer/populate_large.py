@@ -140,7 +140,7 @@ def populate():
     mvns = list(MonetaryValue.objects.all())
 
     #create transactions
-    Transaction.objects.bulk_create([Transaction(date_time=random.choice(usagetimes), reference="Ref"+str(i), payment_type="Visa", payment_method="Debit", price=mvns[i]) for i in range(mvn)])
+    Transaction.objects.bulk_create([Transaction(date_time=random.choice(usagetimes), reference="Ref"+str(i), payment_type="Card", payment_method="Visa Debit", price=mvns[i]) for i in range(mvn)])
     trans = list(Transaction.objects.all())
 
     #create recordID
