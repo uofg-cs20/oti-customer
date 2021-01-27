@@ -143,9 +143,10 @@ def getUsage(user, filters=None):
 
 def getOperators():
     try:
-        r = requests.get('http://127.0.0.1:8001/api/?operator=all')
-        catalogue = r.json()["items"]
+        r = requests.get('http://127.0.0.1:8001/api/operator/')
+        catalogue = r.json()[0]["items"]
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
         return out_list
     except ConnectionError:
         return {"operators": {"null": "null"}}
+
