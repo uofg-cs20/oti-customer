@@ -147,7 +147,7 @@ def getUsage(user, filters=None):
 
 def getOperators():
     try:
-        r = requests.get('http://127.0.0.1:8001/api/operator/')
+        r = requests.get('https://cs20operator.herokuapp.com/api/operator/')
         catalogue = r.json()[0]["items"]
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
         return out_list
