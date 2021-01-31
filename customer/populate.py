@@ -74,14 +74,14 @@ def populate():
     record1, created = RecordID.objects.get_or_create(id="00000001")
     price1, created = MonetaryValue.objects.get_or_create(amount="30.00", currency="GBP", symbol="£")
     transaction1, created = Transaction.objects.get_or_create(payment_type="Card", payment_method="Visa Debit", price=price1)
-    discount1, created = Discount.objects.get_or_create(discount_type="%", discount_value="20", discount_description="16-25 Railcard")
+    discount1, created = Discount.objects.get_or_create(discount_type="%", discount_value="20.00", discount_description="16-25 Railcard")
     concession1, created = Concession.objects.get_or_create(id=record1, mode=train, operator=zebras, name="16-25 Railcard", price=price1, discount=discount1, transaction=transaction1, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Below 25", customer=customer1)
 
     # add a second concession purchase to the customer1 account
     record7, created = RecordID.objects.get_or_create(id="00000007")
     price7, created = MonetaryValue.objects.get_or_create(amount="7.00", currency="GBP", symbol="£")
     transaction7, created = Transaction.objects.get_or_create(payment_type="Card", payment_method="Visa Debit", price=price7)
-    discount7, created = Discount.objects.get_or_create(discount_type="Amount", discount_value="£10.00", discount_description="Student Railcard")
+    discount7, created = Discount.objects.get_or_create(discount_type="Amount", discount_value="10.00", discount_description="Student Railcard")
     concession7, created = Concession.objects.get_or_create(id=record7, mode=bus, operator=zebras, name="Student Railcard", price=price7, discount=discount7, transaction=transaction7, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Student", customer=customer1)
 
     # add a purchase to the customer1 account (30 days from now)
