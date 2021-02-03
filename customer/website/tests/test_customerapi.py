@@ -13,12 +13,13 @@ api_url = "/api/"
 default_pagination = 5
 test_user_username = "customer0"
 test_user_password = "1234"
+datetime_parse_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+localtime = pytz.UTC
 # ---------------------------------------
     
 purchases_url = api_url + "purchase/"
 concessions_url = api_url + "concession/"
 usages_url = api_url + "usage/"
-utc = pytz.UTC
 
 # Common testing functions
 def set_up_tests(testobj):
@@ -30,7 +31,7 @@ def api_page_response(testobj, page_url, queryparams=None):
     return response
     
 def format_query_datetime(datetimestr):
-    return utc.localize(datetime.datetime.strptime(datetimestr, "%Y-%m-%dT%H:%M:%S.%fZ"))
+    return localtime.localize(datetime.datetime.strptime(datetimestr, datetime_parse_format))
 
 # Unit tests for the Customer API
 class APIPurchaseTests(TestCase):
