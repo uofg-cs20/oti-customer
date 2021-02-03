@@ -144,7 +144,7 @@ def populate():
     trans = list(Transaction.objects.all())
 
     #create recordID
-    recordno = 90
+    recordno = 180
     RecordID.objects.bulk_create([RecordID(id=str(i)) for i in range(recordno)])
     records = list(RecordID.objects.all())
 
@@ -159,7 +159,7 @@ def populate():
                                      transaction=trans.pop(),
                                      valid_from_date_time=randtime(1, 45, i),
                                      valid_to_date_time=randtime(2, 1, i),
-                                     conditions="Below 25", customer=customers[i%3]) for i in range(0, recordno//3)])
+                                     conditions="Below 25", customer=customers[i%len(customers)]) for i in range(0, recordno//3)])
 
     cons = list(Concession.objects.all())
 
@@ -172,14 +172,14 @@ def populate():
                                  travel_from_date_time=randtime(1,45),
                                  travel_to_date_time=randtime(2,45),
                                  concession=cons.pop(), ticket=tickets[i],
-                                 location_from=locations.pop(), location_to=locations.pop(), customer=customers[i%3]) for i in range(recordno//3, 2*recordno//3)])
+                                 location_from=locations.pop(), location_to=locations.pop(), customer=customers[i%len(customers)]) for i in range(recordno//3, 2*recordno//3)])
     purchases = list(Purchase.objects.all())
 
     Usage.objects.bulk_create([Usage(id=records.pop(), mode=random.choice(modes), operator=zebras, reference=URs[i],
                                       travel_class=random.choice(classes), travel_from=UFT.pop(),
                                       travel_to=UFT.pop(), purchase_id=purchases.pop(),
                                       ticket=tickets[i], price=mvns.pop(),
-                                      customer=customers[i%3]) for i in range(2*recordno//3, recordno)])
+                                      customer=customers[i%len(customers)]) for i in range(2*recordno//3, recordno)])
 
     # Add some services
     usages = list(Usage.objects.all())
