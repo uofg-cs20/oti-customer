@@ -109,6 +109,7 @@ def populate():
         usagetimes.append(datetime.datetime.fromtimestamp(time2, pytz.UTC))
     UsageFromTo.objects.bulk_create([UsageFromTo(location=locations[i], date_time=usagetimes[i], reference="reference usage") for i in range(locsnum)])
     UFT = list(UsageFromTo.objects.all())
+    UFT.reverse()
 
     #create usagereference
     UsageReference.objects.bulk_create([UsageReference(reference=i, reference_type='usage type') for i in range(locsnum)])
