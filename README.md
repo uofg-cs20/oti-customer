@@ -36,3 +36,6 @@ Run mutation tests (takes >10 minutes):
 Customer API URL (need to be logged in):
 /api
 
+Coverage Test Information
+`coverage run --source 'website' manage.py test website`
+`coverage report`
