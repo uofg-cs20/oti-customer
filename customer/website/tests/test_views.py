@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from website.models import *
+from website.apps import WebsiteConfig
 from website.helper_functions import getModes, getPurchases, getConcessions, getUsage, formatDate
 from .test_fixtures_large import populate
 from datetime import timedelta
@@ -19,6 +20,9 @@ class CustomerTests(TestCase):
     def test_get_modes(self):
         modes = getModes()
         self.assertEqual(len(modes), 3)
+        
+    def test_apps(self):
+        self.assertEqual(WebsiteConfig.name, 'website')
         
 
 class PurchaseTests(TestCase):

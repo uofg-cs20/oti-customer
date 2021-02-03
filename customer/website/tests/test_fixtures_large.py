@@ -176,7 +176,3 @@ def populate():
                                       travel_to=UFT.pop(), purchase_id=purchases.pop(),
                                       ticket=tickets[i], price=mvns.pop(),
                                       customer=customers[i%3]) for i in range(2*recordno//3, recordno)])
-
-
-if __name__ == '__main__':
-    populate()
