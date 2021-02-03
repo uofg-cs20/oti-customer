@@ -52,6 +52,7 @@ OAUTH2_PROVIDER = {
     'groups': 'Access to your groups'}
 }
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

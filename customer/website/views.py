@@ -212,4 +212,4 @@ def usage(request):
     usages = getUsage(request.user, context)
     context['usages'] = usages
     
-    return render(request, 'website/usage.html', context)   
+    return render(request, 'website/usage.html', context)

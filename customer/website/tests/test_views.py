@@ -34,7 +34,7 @@ class PurchaseTests(TestCase):
         
     def test_purchase_mode_filter(self):
         # Make an example request to the Purchase page
-        context = {"mode":Mode.objects.get(short_desc="Train")}
+        context = {"mode": Mode.objects.get(short_desc="Train")}
         response = self.client.post('/purchases/', context)
         
         # Test that the mode filter works correctly
