@@ -186,54 +186,55 @@ def getOperators():
 
 
 def getPCU(url, pcu, token=None):
-    #try:
-    cust = Customer.objects.get(user=User.objects.get(username='customer2'))
-    r = requests.get(url + pcu)
-    print(r)
-    catalogue = r.json()
-    out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
-    objs = []
-    for ticket in out_list:
-        mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
-        operator = Operator(name='RETRIEVED OP', homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
-        recordid = RecordID(id=ticket['id'])
-        latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
+    try:
+        cust = Customer.objects.get(user=User.objects.get(username='customer2'))
+        r = requests.get(url + pcu)
+        catalogue = r.json()
+        out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
+        objs = []
+        for ticket in out_list:
+            mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
+            operator = Operator(name='RETRIEVED OP', homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
+            recordid = RecordID(id=ticket['id'])
+            latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
 
-        if pcu == "concession/?format=json":
-            price = MonetaryValue(amount=ticket['transaction']['price']['amount'], currency=ticket['transaction']['price']['currency'])
-            trans = Transaction(date_time=formatdt(ticket['transaction']['date_time']), reference=ticket['transaction']['reference'], payment_type=ticket['transaction']['payment_type'], payment_method=ticket['transaction']['payment_method'], price=price)
-            disc = Discount(discount_type=ticket['discount']['discount_type'], discount_value=ticket['discount']['discount_value'], discount_description=ticket['discount']['discount_description'])
-            concession = Concession(id=recordid, mode=mode, operator=operator, name=mode.short_desc, price=price, discount=disc,
-                                    transaction=trans, valid_from_date_time=formatdt(ticket['valid_from_date_time']), valid_to_date_time=formatdt(ticket['valid_to_date_time']),
-                                    conditions=ticket['conditions'], customer=cust)
-            objs.append(concession)
+            if pcu == "concession/?format=json":
+                price = MonetaryValue(amount=ticket['transaction']['price']['amount'], currency=ticket['transaction']['price']['currency'])
+                trans = Transaction(date_time=formatdt(ticket['transaction']['date_time']), reference=ticket['transaction']['reference'], payment_type=ticket['transaction']['payment_type'], payment_method=ticket['transaction']['payment_method'], price=price)
+                disc = Discount(discount_type=ticket['discount']['discount_type'], discount_value=ticket['discount']['discount_value'], discount_description=ticket['discount']['discount_description'])
+                concession = Concession(id=recordid, mode=mode, operator=operator, name=mode.short_desc, price=price, discount=disc,
+                                        transaction=trans, valid_from_date_time=formatdt(ticket['valid_from_date_time']), valid_to_date_time=formatdt(ticket['valid_to_date_time']),
+                                        conditions=ticket['conditions'], customer=cust)
+                objs.append(concession)
 
-        if pcu == "purchase/?format=json":
-            price = MonetaryValue(amount=ticket['transaction']['price']['amount'], currency=ticket['transaction']['price']['currency'])
-            tc = TravelClass(travel_class=ticket['travel_class'])
-            trans = Transaction(date_time=formatdt(ticket['transaction']['date_time']), reference=ticket['transaction']['reference'], payment_type=ticket['transaction']['payment_type'], payment_method=ticket['transaction']['payment_method'], price=price)
-            tick = Ticket(reference=ticket['ticket']['reference'], number_usages=ticket['ticket']['number_usages'], reference_type=ticket['ticket']['reference_type'], medium=ticket['ticket']['medium'])
-            balance = MonetaryValue(amount=ticket['account_balance']['amount'], currency=ticket['account_balance']['currency'])
-            vehicle = Vehicle(reference=ticket['vehicle']['reference'], vehicle_type=ticket['vehicle']['vehicle_type'])
-            purchase = Purchase(id=recordid, mode=mode, operator=operator, travel_class=tc, booking_date_time=formatdt(ticket['booking_date_time']),
-                                transaction=trans, account_balance=balance, vehicle=vehicle, travel_from_date_time=formatdt(ticket['travel_from_date_time']),
-                                travel_to_date_time=formatdt(ticket['travel_to_date_time']), ticket=tick,
-                                location_from=loc_from, location_to=loc_to, customer=cust)
-            objs.append(purchase)
+            if pcu == "purchase/?format=json":
+                price = MonetaryValue(amount=ticket['transaction']['price']['amount'], currency=ticket['transaction']['price']['currency'])
+                tc = TravelClass(travel_class=ticket['travel_class'])
+                trans = Transaction(date_time=formatdt(ticket['transaction']['date_time']), reference=ticket['transaction']['reference'], payment_type=ticket['transaction']['payment_type'], payment_method=ticket['transaction']['payment_method'], price=price)
+                tick = Ticket(reference=ticket['ticket']['reference'], number_usages=ticket['ticket']['number_usages'], reference_type=ticket['ticket']['reference_type'], medium=ticket['ticket']['medium'])
+                balance = MonetaryValue(amount=ticket['account_balance']['amount'], currency=ticket['account_balance']['currency'])
+                vehicle = Vehicle(reference=ticket['vehicle']['reference'], vehicle_type=ticket['vehicle']['vehicle_type'])
+                purchase = Purchase(id=recordid, mode=mode, operator=operator, travel_class=tc, booking_date_time=formatdt(ticket['booking_date_time']),
+                                    transaction=trans, account_balance=balance, vehicle=vehicle, travel_from_date_time=formatdt(ticket['travel_from_date_time']),
+                                    travel_to_date_time=formatdt(ticket['travel_to_date_time']), ticket=tick,
+                                    location_from=loc_from, location_to=loc_to, customer=cust)
+                objs.append(purchase)
 
-        if pcu == "usage/?format=json":
-            price = MonetaryValue(amount=ticket['price']['amount'], currency=ticket['price']['currency'])
-            uft1 = UsageFromTo(location=loc_from, date_time=formatdt(ticket['travel_from']['date_time'], False), reference=ticket['travel_from']['reference'])
-            uft2 = UsageFromTo(location=loc_to, date_time=formatdt(ticket['travel_to']['date_time'], False), reference=ticket['travel_from']['reference'])
-            tc = TravelClass(travel_class=ticket['travel_class'])
-            ur = UsageReference(reference=ticket['reference']['reference'], reference_type=ticket['reference']['reference_type'])
-            tick = Ticket(reference=ticket['ticket']['reference'], number_usages=ticket['ticket']['number_usages'], reference_type=ticket['ticket']['reference_type'], medium=ticket['ticket']['medium'])
-            usage = Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
-                          travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
-            objs.append(usage)
-    return objs
-    #except ConnectionError:
-        #return {"operators": {"null": "null"}}
+            if pcu == "usage/?format=json":
+                price = MonetaryValue(amount=ticket['price']['amount'], currency=ticket['price']['currency'])
+                uft1 = UsageFromTo(location=loc_from, date_time=formatdt(ticket['travel_from']['date_time'], False), reference=ticket['travel_from']['reference'])
+                uft2 = UsageFromTo(location=loc_to, date_time=formatdt(ticket['travel_to']['date_time'], False), reference=ticket['travel_from']['reference'])
+                tc = TravelClass(travel_class=ticket['travel_class'])
+                ur = UsageReference(reference=ticket['reference']['reference'], reference_type=ticket['reference']['reference_type'])
+                tick = Ticket(reference=ticket['ticket']['reference'], number_usages=ticket['ticket']['number_usages'], reference_type=ticket['ticket']['reference_type'], medium=ticket['ticket']['medium'])
+                usage = Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
+                              travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
+                objs.append(usage)
+        return objs
+    except ConnectionError:
+        return []
+    except TypeError:
+        return []
 
 
 def getLocs(pcu, ticket):

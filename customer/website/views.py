@@ -18,11 +18,11 @@ class PurchaseViewSet(viewsets.ModelViewSet):
     # API endpoint that returns the user's Purchases as an unsorted list of JSON objects
     queryset = Purchase.objects.all()
     serializer_class = PurchaseSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitSkipPagination
     
     def list(self, request):
-        queryset = Purchase.objects.all()
+        queryset = Purchase.objects.filter(customer__user=request.user)
     
         # Get any query parameters
         options = self.request.query_params
@@ -54,12 +54,11 @@ class ConcessionViewSet(viewsets.ModelViewSet):
     # API endpoint that returns the user's Concessions as an unsorted list of JSON objects
     queryset = Concession.objects.all()
     serializer_class = ConcessionSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitSkipPagination
     
     def list(self, request):
-        #queryset = Concession.objects.filter(customer__user=request.user)
-        queryset = Concession.objects.all()
+        queryset = Concession.objects.filter(customer__user=request.user)
 
         # Get any query parameters
         options = self.request.query_params
@@ -91,12 +90,11 @@ class UsageViewSet(viewsets.ModelViewSet):
     # API endpoint that returns the user's Usages as an unsorted list of JSON objects
     queryset = Usage.objects.all()
     serializer_class = UsageSerializer
-    #permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitSkipPagination
     
     def list(self, request):
-        #queryset = Usage.objects.filter(customer__user=request.user)
-        queryset = Usage.objects.all()
+        queryset = Usage.objects.filter(customer__user=request.user)
 
         # Get any query parameters
         options = self.request.query_params
