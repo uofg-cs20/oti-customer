@@ -99,7 +99,7 @@ def getPurchases(user, filters):
             local_purchases.append(purchase)
 
     # Return all the user's Purchases sorted by travel_to_date_time
-    return local_purchases
+    return sorted(local_purchases, key=lambda x: x.travel_from_date_time)
 
 
 def getConcessions(user, context):
@@ -189,6 +189,7 @@ def getPCU(url, pcu, token=None):
     #try:
     cust = Customer.objects.get(user=User.objects.get(username='customer2'))
     r = requests.get(url + pcu)
+    print(r)
     catalogue = r.json()
     out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
     objs = []
@@ -252,7 +253,8 @@ def getLocs(pcu, ticket):
 
 def formatdt(time, nano=True):
     time = time.replace('_', '-')
-    if nano:
-        return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.UTC)
+    if nano and (len(time) > 20):
+        time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.UTC)
+        return time.replace(microsecond=0)
     else:
         return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
