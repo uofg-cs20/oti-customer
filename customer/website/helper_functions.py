@@ -99,7 +99,7 @@ def getPurchases(user, filters):
             local_purchases.append(purchase)
 
     # Return all the user's Purchases sorted by travel_to_date_time
-    return sorted(local_purchases, key=lambda x: x.travel_from_date_time)
+    return sorted(local_purchases, key=lambda x: x.travel_to_date_time)
 
 
 def getConcessions(user, context):
@@ -115,37 +115,44 @@ def getConcessions(user, context):
     if not expired and mode:
         # return valid concessions
         # i.e. concessions with expiry date in the future
-        curmode = Mode.objects.get(short_desc=mode)
-        concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=curmode))
-        for conc in linked_conc:
-            if (conc.valid_to_date_time > today) and (conc.mode == curmode):
-                concs.append(conc)
-        return sorted(concs, key=lambda x: x.valid_from_date_time)
+        if linked_conc:
+            curmode = Mode.objects.get(short_desc=mode)
+            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=curmode))
+            for conc in linked_conc:
+                if (conc.valid_to_date_time > today) and (conc.mode == curmode):
+                    concs.append(conc)
+            return sorted(concs, key=lambda x: x.valid_from_date_time)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=Mode.objects.get(short_desc=mode))
 
     elif expired and mode:
         # return expired concessions
         # i.e. concessions with expiry date in the past
-        curmode = Mode.objects.get(short_desc=mode)
-        concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=curmode))
-        for conc in linked_conc:
-            if (conc.valid_to_date_time < today) and (conc.mode == curmode):
-                concs.append(conc)
-        return sorted(concs, key=lambda x: x.valid_from_date_time)
+        if linked_conc:
+            curmode = Mode.objects.get(short_desc=mode)
+            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=curmode))
+            for conc in linked_conc:
+                if (conc.valid_to_date_time < today) and (conc.mode == curmode):
+                    concs.append(conc)
+            return sorted(concs, key=lambda x: x.valid_from_date_time)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=Mode.objects.get(short_desc=mode))
 
     elif not expired and not mode:
-        concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today))
-        for conc in linked_conc:
-            if conc.valid_to_date_time > today:
-                concs.append(conc)
-        return sorted(concs, key=lambda x: x.valid_from_date_time)
+        if linked_conc:
+            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today))
+            for conc in linked_conc:
+                if conc.valid_to_date_time > today:
+                    concs.append(conc)
+            return sorted(concs, key=lambda x: x.valid_from_date_time)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
 
     else:
-        concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today))
-        for conc in linked_conc:
-            if conc.valid_to_date_time < today:
-                concs.append(conc)
-        return sorted(concs, key=lambda x: x.valid_from_date_time)
-
+        if linked_conc:
+            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today))
+            for conc in linked_conc:
+                if conc.valid_to_date_time < today:
+                    concs.append(conc)
+            return sorted(concs, key=lambda x: x.valid_from_date_time)
+        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today)
 
 def getUsage(user, filters=None):
     cust = Customer.objects.get(user=user)
@@ -164,15 +171,15 @@ def getUsage(user, filters=None):
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
-    linked_usages = Usage.objects.none()
     linked_usages = getPCU('http://127.0.0.1:8000/api/', 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
         for usage in linked_usages:
             if (usage.travel_from.date_time < enddate) and (usage.travel_to.date_time >= startdate):
                 usages.append(usage)
-
-    return sorted(usages, key=lambda x: x.travel_from.date_time)
+        return sorted(usages, key=lambda x: x.travel_from.date_time)
+    else:
+        return usages
 
 
 def getOperators():
