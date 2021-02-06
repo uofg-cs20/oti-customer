@@ -24,6 +24,41 @@ class CustomerTests(TestCase):
     def test_apps(self):
         self.assertEqual(WebsiteConfig.name, 'website')
         
+        
+class AuthenticationTests(TestCase):
+
+    def setUp(self):
+        populate()
+        
+    def test_connect_redirect_if_not_logged_in(self):
+        response = self.client.get('/connect/')
+        self.assertRedirects(response, '/')
+    
+    def test_connect_redirect_if_not_logged_in(self):
+        response = self.client.get('/connect/')
+        self.assertRedirects(response, '/')
+        
+    def test_purchase_redirect_if_not_logged_in(self):
+        response = self.client.get('/purchases/')
+        self.assertRedirects(response, '/')
+        
+    def test_concession_redirect_if_not_logged_in(self):
+        response = self.client.get('/concessions/')
+        self.assertRedirects(response, '/')
+        
+    def test_usage_redirect_if_not_logged_in(self):
+        response = self.client.get('/usage/')
+        self.assertRedirects(response, '/')
+        
+    def test_login_redirect_if_logged_in(self):
+        login = self.client.login(username='customer0', password='1234')
+        response = self.client.get('/')
+        self.assertRedirects(response, '/purchases/')
+        
+    def test_logout(self):
+        response = self.client.get('/logout/')
+        self.assertRedirects(response, '/')
+        
 
 class PurchaseTests(TestCase):
 
