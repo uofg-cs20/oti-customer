@@ -178,6 +178,11 @@ class PurchaseTests(TestCase):
         self.assertEqual(formatted_date.month, 5)
         self.assertEqual(formatted_date.day, 22)
         
+    def test_getDates_swaps_dates_if_reverse_chronological(self):
+        response = self.client.post('/purchases/', {"startdate":"06-02-2021", "enddate":"01-02-2021"})
+        startdate, enddate = response.context["startdate"], response.context["enddate"]
+        self.assertTrue(startdate < enddate)
+        
 class ConcessionTests(TestCase):
 
     def setUp(self):
