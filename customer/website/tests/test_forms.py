@@ -1,5 +1,5 @@
 from django.test import TestCase
-
+from django.urls import reverse
 from django import forms
 from website.forms import *
 from .test_fixtures_large import populate
@@ -41,8 +41,8 @@ class LoginTests(TestCase):
         login = self.client.login(username=username, password=password)
         self.assertTrue(login)
         
-        response = self.client.post('/', {"username":username, "password":password})
-        self.assertRedirects(response, '/purchases/')
+        response = self.client.post(reverse("website:login"), {"username":username, "password":password})
+        self.assertRedirects(response, reverse("website:purchases"))
         
     def test_loginform_cleaned_data(self):
         username = "customer0"
