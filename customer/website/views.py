@@ -132,6 +132,10 @@ def register(request):
 
 
 def customer_login(request):
+    # If the user is logged in, redirect to the purchases page
+    if request.user.is_authenticated:
+        return redirect(reverse('website:purchases'))
+
     form = LoginForm()
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -153,12 +157,20 @@ def customer_logout(request):
 
 
 def connect(request):
+    # If the user is not logged in, redirect to the login page
+    if not request.user.is_authenticated:
+        return redirect(reverse('website:login'))
+
     operators = getOperators()
     context = {"operators": operators}
     return render(request, 'website/connect.html', context)
 
 
 def purchases(request):
+    # If the user is not logged in, redirect to the login page
+    if not request.user.is_authenticated:
+        return redirect(reverse('website:login'))
+    
     context = {"purchases":[], "modes":[]}
     context["modes"] = getModes()
     startdate, enddate = getDates(request)
@@ -177,6 +189,10 @@ def purchases(request):
 
 
 def concessions(request):
+    # If the user is not logged in, redirect to the login page
+    if not request.user.is_authenticated:
+        return redirect(reverse('website:login'))
+
     context = {}
     context["expired"] = False
     context["modes"] = getModes()
@@ -200,6 +216,10 @@ def concessions(request):
 
 
 def usage(request):
+    # If the user is not logged in, redirect to the login page
+    if not request.user.is_authenticated:
+        return redirect(reverse('website:login'))
+
     context = {}
     context["modes"] = getModes()
     startdate, enddate = getDates(request)

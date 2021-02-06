@@ -1,6 +1,7 @@
 from django.test import TestCase
-
+from django.urls import reverse
 from website.models import *
+from website.apps import WebsiteConfig
 from website.helper_functions import getModes, getPurchases, getConcessions, getUsage, formatDate
 from .test_fixtures_large import populate
 from datetime import timedelta
@@ -20,6 +21,44 @@ class CustomerTests(TestCase):
         modes = getModes()
         self.assertEqual(len(modes), 3)
         
+    def test_apps(self):
+        self.assertEqual(WebsiteConfig.name, 'website')
+        
+        
+class AuthenticationTests(TestCase):
+
+    def setUp(self):
+        populate()
+        
+    def test_connect_redirect_if_not_logged_in(self):
+        response = self.client.get(reverse("website:connect"))
+        self.assertRedirects(response, reverse("website:login"))
+    
+    def test_connect_redirect_if_not_logged_in(self):
+        response = self.client.get(reverse("website:connect"))
+        self.assertRedirects(response, reverse("website:login"))
+        
+    def test_purchase_redirect_if_not_logged_in(self):
+        response = self.client.get(reverse("website:purchases"))
+        self.assertRedirects(response, reverse("website:login"))
+        
+    def test_concession_redirect_if_not_logged_in(self):
+        response = self.client.get(reverse("website:concessions"))
+        self.assertRedirects(response, reverse("website:login"))
+        
+    def test_usage_redirect_if_not_logged_in(self):
+        response = self.client.get(reverse("website:usage"))
+        self.assertRedirects(response, reverse("website:login"))
+        
+    def test_login_redirect_if_logged_in(self):
+        login = self.client.login(username='customer0', password='1234')
+        response = self.client.get(reverse("website:login"))
+        self.assertRedirects(response, reverse("website:purchases"))
+        
+    def test_logout(self):
+        response = self.client.get(reverse("website:logout"))
+        self.assertRedirects(response, reverse("website:login"))
+        
 
 class PurchaseTests(TestCase):
 
@@ -28,14 +67,14 @@ class PurchaseTests(TestCase):
         login = self.client.login(username='customer0', password='1234')
         
     def test_purchase_uses_correct_template(self):
-        response = self.client.get('/purchases/')
+        response = self.client.get(reverse("website:purchases"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'website/purchases.html')
         
     def test_purchase_mode_filter(self):
         # Make an example request to the Purchase page
         context = {"mode": Mode.objects.get(short_desc="Train")}
-        response = self.client.post('/purchases/', context)
+        response = self.client.post(reverse("website:purchases"), context)
         
         # Test that the mode filter works correctly
         purchases = response.context["purchases"]
@@ -43,8 +82,8 @@ class PurchaseTests(TestCase):
         
     def test_purchase_displays_next_30_days_by_default(self):
         # Test the Purchase page with no filters - should be the next 30 days
-        get_response = self.client.get('/purchases/')
-        post_response = self.client.post('/purchases/', {"link":False})
+        get_response = self.client.get(reverse("website:purchases"))
+        post_response = self.client.post(reverse("website:purchases"), {"link":False})
 
         # Purchases passed in the request
         shown_get_purchases = get_response.context["purchases"]
@@ -68,7 +107,7 @@ class PurchaseTests(TestCase):
         self.assertEqual(list(shown_post_purchases), list(filtered_purchases), "Purchases shown by default from a POST request with no filters are not valid within the next 30 days")
         
     def test_purchase_filters_after_given_date(self):
-        response = self.client.post('/purchases/', {"startdate":(timezone.now()+timedelta(days=15)).strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:purchases"), {"startdate":(timezone.now()+timedelta(days=15)).strftime("%d-%m-%Y"), "link":False})
 
         # Purchases passed in the request
         shown_purchases = response.context["purchases"]
@@ -90,7 +129,7 @@ class PurchaseTests(TestCase):
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering after a given date does not display the correct Purchases")
                 
     def test_purchase_filters_before_given_date(self):
-        response = self.client.post('/purchases/', {"enddate":(timezone.now()-timedelta(days=5)).strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:purchases"), {"enddate":(timezone.now()-timedelta(days=5)).strftime("%d-%m-%Y"), "link":False})
 
         # Purchases passed in the request
         shown_purchases = response.context["purchases"]
@@ -112,7 +151,7 @@ class PurchaseTests(TestCase):
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering before a given date does not display the correct Purchases")
         
     def test_purchase_filters_between_given_dates(self):
-        response = self.client.post('/purchases/', {"startdate":(timezone.now()+ timedelta(days=15)).strftime("%d-%m-%Y"), "enddate":(timezone.now()+timedelta(days=100)).strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:purchases"), {"startdate":(timezone.now()+ timedelta(days=15)).strftime("%d-%m-%Y"), "enddate":(timezone.now()+timedelta(days=100)).strftime("%d-%m-%Y"), "link":False})
 
         # Purchases passed in the request
         shown_purchases = response.context["purchases"]
@@ -139,6 +178,11 @@ class PurchaseTests(TestCase):
         self.assertEqual(formatted_date.month, 5)
         self.assertEqual(formatted_date.day, 22)
         
+    def test_getDates_swaps_dates_if_reverse_chronological(self):
+        response = self.client.post(reverse("website:purchases"), {"startdate":"06-02-2021", "enddate":"01-02-2021"})
+        startdate, enddate = response.context["startdate"], response.context["enddate"]
+        self.assertTrue(startdate < enddate)
+        
 class ConcessionTests(TestCase):
 
     def setUp(self):
@@ -146,14 +190,14 @@ class ConcessionTests(TestCase):
         login = self.client.login(username='customer0', password='1234')
         
     def test_concession_uses_correct_template(self):
-        response = self.client.get('/concessions/')
+        response = self.client.get(reverse("website:concessions"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'website/concessions.html')
         
     def test_concession_mode_filter(self):
         # Make an example request to the Concessions page
         context = {"mode":Mode.objects.get(short_desc="Bus")}
-        response = self.client.post('/concessions/', context)
+        response = self.client.post(reverse("website:concessions"), context)
         
         # Test that the mode filter works correctly
         concessions = response.context["concessions"]
@@ -161,8 +205,8 @@ class ConcessionTests(TestCase):
         
     def test_concession_displays_valid_concessions_by_default(self):
         # Test the concession page with no filters - should show valid concessions
-        get_response = self.client.get('/concessions/')
-        post_response = self.client.post('/concessions/', {"link":False})
+        get_response = self.client.get(reverse("website:concessions"))
+        post_response = self.client.post(reverse("website:concessions"), {"link":False})
 
         # concessions passed in the request
         shown_get_concessions = get_response.context["concessions"]
@@ -176,7 +220,7 @@ class ConcessionTests(TestCase):
         self.assertEqual(list(shown_post_concessions), list(filtered_concessions), "Not all Concessions shown by default from a POST request with no filters are valid")
         
     def test_concession_valid_filter(self):
-        response = self.client.post('/concessions/', {"status":"valid", "link":False})
+        response = self.client.post(reverse("website:concessions"), {"status":"valid", "link":False})
 
         # concessions passed in the request
         shown_concessions = response.context["concessions"]
@@ -188,7 +232,7 @@ class ConcessionTests(TestCase):
         self.assertEqual(list(shown_concessions), list(filtered_concessions), "Valid filter does not display the correct Concessions")
         
     def test_concession_expired_filter(self):
-        response = self.client.post('/concessions/', {"status":"past", "link":False})
+        response = self.client.post(reverse("website:concessions"), {"status":"past", "link":False})
 
         # concessions passed in the request
         shown_concessions = response.context["concessions"]
@@ -206,12 +250,12 @@ class UsageTests(TestCase):
         login = self.client.login(username='customer0', password='1234')
         
     def test_usage_uses_correct_template(self):
-        response = self.client.get('/usage/')
+        response = self.client.get(reverse("website:usage"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'website/usage.html')
         
     def test_usage_mode_filter(self):
-        response = self.client.post('/usage/', {"mode":Mode.objects.get(short_desc="Bus"), "startdate":(timezone.now()-timedelta(days=750)).strftime("%d-%m-%Y"), "enddate":timezone.now().strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:usage"), {"mode":Mode.objects.get(short_desc="Bus"), "startdate":(timezone.now()-timedelta(days=750)).strftime("%d-%m-%Y"), "enddate":timezone.now().strftime("%d-%m-%Y"), "link":False})
 
         # Usages passed in the request
         shown_usage = list(response.context.get("usages", []))
@@ -232,7 +276,7 @@ class UsageTests(TestCase):
         self.assertEqual(shown_usage, list(filtered_usages), "Filtering by mode does not display the correct Usages")
         
     def test_usage_date_filters(self):
-        response = self.client.post('/usage/', {"startdate":(timezone.now()-timedelta(days=1000)).strftime("%d-%m-%Y"), "enddate":(timezone.now()-timedelta(days=500)).strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:usage"), {"startdate":(timezone.now()-timedelta(days=1000)).strftime("%d-%m-%Y"), "enddate":(timezone.now()-timedelta(days=500)).strftime("%d-%m-%Y"), "link":False})
 
         # Usages passed in the request
         shown_usage = list(response.context.get("usages", []))
