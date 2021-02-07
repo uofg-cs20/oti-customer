@@ -92,7 +92,7 @@ def getPurchases(user, filters):
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
-    linked_purchases = getPCU('http://127.0.0.1:8000/api/', 'purchase/?format=json')
+    linked_purchases = getPCU(user, 'http://127.0.0.1:8000/api/', 'purchase/?format=json')
     local_purchases = list(local_purchases)
     if linked_purchases:
         for purchase in linked_purchases:
@@ -110,7 +110,7 @@ def getConcessions(user, context):
     expired = context.get('expired')
     mode = context.get('mode')
 
-    linked_conc = getPCU('http://127.0.0.1:8000/api/', 'concession/?format=json')
+    linked_conc = getPCU(user, 'http://127.0.0.1:8000/api/', 'concession/?format=json')
 
     if not expired and mode:
         # return valid concessions
@@ -171,7 +171,7 @@ def getUsage(user, filters=None):
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
-    linked_usages = getPCU('http://127.0.0.1:8000/api/', 'usage/?format=json')
+    linked_usages = getPCU(user, 'http://127.0.0.1:8000/api/', 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
         for usage in linked_usages:
@@ -192,18 +192,21 @@ def getOperators():
         return {"operators": {"null": "null"}}
 
 
-def getPCU(url, pcu, token=None):
+def getPCU(user, url, pcu, token=None):
     try:
-        cust = Customer.objects.get(user=User.objects.get(username='customer2'))
-        r = requests.get(url + pcu)
+        cust = Customer.objects.get(user=user)
+        r = requestData(user, pcu)
+        #r = requests.get(url + pcu)
         catalogue = r.json()
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
         objs = []
         for ticket in out_list:
             mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
-            operator = Operator(name='RETRIEVED OP', homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
+            print(mode)
+            operator = Operator(name=ticket['operator']['name'], homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
             recordid = RecordID(id=ticket['id'])
             latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
+            print(latlongfrom, loc_from, latlongto, loc_to)
 
             if pcu == "concession/?format=json":
                 price = MonetaryValue(amount=ticket['transaction']['price']['amount'], currency=ticket['transaction']['price']['currency'])
@@ -239,8 +242,10 @@ def getPCU(url, pcu, token=None):
                 objs.append(usage)
         return objs
     except ConnectionError:
+        print("hi")
         return []
     except TypeError:
+        print("hi2")
         return []
 
 
@@ -253,10 +258,15 @@ def getLocs(pcu, ticket):
         latlongto = LatitudeLongitude(latitude=ticket['travel_to']['location']['lat_long']['latitude'], longitude=ticket['travel_to']['location']['lat_long']['longitude'])
         loc_to = Location(lat_long=latlongto, NaPTAN=ticket['travel_to']['location']['NaPTAN'])
     else:
+        print("1")
         latlongfrom = LatitudeLongitude(latitude=ticket['location_from']['lat_long']['latitude'], longitude=ticket['location_from']['lat_long']['longitude'])
+        print("2")
         loc_from = Location(lat_long=latlongfrom, NaPTAN=ticket['location_from']['NaPTAN'])
+        print("3")
         latlongto = LatitudeLongitude(latitude=ticket['location_to']['lat_long']['latitude'], longitude=ticket['location_to']['lat_long']['longitude'])
+        print("4")
         loc_to = Location(lat_long=latlongto, NaPTAN=ticket['location_to']['NaPTAN'])
+        print("5")
     return [latlongfrom, loc_from, latlongto, loc_to]
 
 def formatdt(time, nano=True):
@@ -266,3 +276,20 @@ def formatdt(time, nano=True):
         return time.replace(microsecond=0)
     else:
         return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
+
+def requestData(user, pcu):
+    try: 
+        cust = Customer.objects.get(user=user)
+        connectedAccount = ConnectedAccount.objects.get(customer=cust)
+        token = connectedAccount.access_token
+        url = connectedAccount.api_url
+        r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+        return r
+        
+        #print(connectedAccount.api_url)
+        #print(connectedAccount.auth_url)
+        #print(connectedAccount.access_token)
+        #print(connectedAccount.refresh_token)
+
+    except:
+        print("not found")
