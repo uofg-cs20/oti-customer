@@ -59,6 +59,9 @@ class RecordIDAdmin(admin.ModelAdmin):
 class ModeAdmin(admin.ModelAdmin):
     list_display = ('id', 'short_desc', 'long_desc')
 
+class ConnectedAccountAdmin(admin.ModelAdmin):
+    list_display = ('customer', 'api_url', 'auth_url', 'access_token', 'refresh_token')
+
 
 admin.site.register(Customer, CustomerAdmin)
 admin.site.register(Operator, OperatorAdmin)
@@ -78,6 +81,7 @@ admin.site.register(TravelClass, TravelClassAdmin)
 admin.site.register(Ticket, TicketAdmin)
 admin.site.register(RecordID, RecordIDAdmin)
 admin.site.register(Mode, ModeAdmin)
+admin.site.register(ConnectedAccount, ConnectedAccountAdmin)
 
 
 

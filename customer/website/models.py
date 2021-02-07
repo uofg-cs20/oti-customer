@@ -25,6 +25,14 @@ class Customer(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+class ConnectedAccount(models.Model):
+    customer = models.ForeignKey("Customer", on_delete=models.CASCADE)
+    api_url = models.URLField()
+    auth_url = models.URLField()
+    access_token = models.CharField(max_length=100)
+    refresh_token = models.CharField(max_length=100)
+
         
 class Purchase(models.Model):
     # id is a unique identifier of this Purchase record,
