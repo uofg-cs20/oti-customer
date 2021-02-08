@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .models import Mode, Purchase, Concession, Usage
+from .models import Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
 from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
 from datetime import date
 from rest_framework import viewsets, permissions
@@ -11,6 +11,11 @@ from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
 from .forms import LoginForm
 from customer.pagination import LimitSkipPagination
+import requests, json
+from requests.auth import HTTPBasicAuth
+
+client_id = "jCkPA1s32EXHlXKQgrJi2Cu9hXRLbpI2bVaLzTvM"
+client_secret = "dZxFGpFPD6IDwxxbSjlQxxsgxff9kQNqJUWGPn74i8y7kUXBoLoeDBelBopdkUL1X8nbXkqEmnr80OAkDTQrQehKNS0lMqJ3qj7V7P3vJqlfbjHjmHz3yVcEKuX67SQr"
 
 
 # The ViewSet automatically handles API URLs
@@ -160,6 +165,26 @@ def connect(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
+    if request.method == 'POST':
+        if request.POST.get("username") and request.POST.get("password"):
+            print("in process")
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            print(username, password)
+            url = "https://cs20team.pythonanywhere.com/o/token/"
+            r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
+                data={"username" : username, "password" : password, "grant_type" : "password"})
+            print(r.text)
+            if r.status_code == 200:
+                print("woooo")
+                user = request.user
+                data = json.loads(r.text)
+                print(data["access_token"])
+                cust = Customer.objects.get(user=user)
+                connectedAccount = ConnectedAccount.objects.get_or_create(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/", 
+                    auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
+                    refresh_token=data["refresh_token"])
+
 
     operators = getOperators()
     context = {"operators": operators}
