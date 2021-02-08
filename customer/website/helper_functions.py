@@ -197,6 +197,8 @@ def getPCU(user, url, pcu, token=None):
         cust = Customer.objects.get(user=user)
         r = requestData(user, pcu)
         #r = requests.get(url + pcu)
+        if not r:
+            return
         catalogue = r.json()
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
         objs = []
