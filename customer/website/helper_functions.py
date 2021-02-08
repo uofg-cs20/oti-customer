@@ -242,10 +242,8 @@ def getPCU(user, url, pcu, token=None):
                 objs.append(usage)
         return objs
     except ConnectionError:
-        print("hi")
         return []
     except TypeError:
-        print("hi2")
         return []
 
 
@@ -258,15 +256,10 @@ def getLocs(pcu, ticket):
         latlongto = LatitudeLongitude(latitude=ticket['travel_to']['location']['lat_long']['latitude'], longitude=ticket['travel_to']['location']['lat_long']['longitude'])
         loc_to = Location(lat_long=latlongto, NaPTAN=ticket['travel_to']['location']['NaPTAN'])
     else:
-        print("1")
         latlongfrom = LatitudeLongitude(latitude=ticket['location_from']['lat_long']['latitude'], longitude=ticket['location_from']['lat_long']['longitude'])
-        print("2")
         loc_from = Location(lat_long=latlongfrom, NaPTAN=ticket['location_from']['NaPTAN'])
-        print("3")
         latlongto = LatitudeLongitude(latitude=ticket['location_to']['lat_long']['latitude'], longitude=ticket['location_to']['lat_long']['longitude'])
-        print("4")
         loc_to = Location(lat_long=latlongto, NaPTAN=ticket['location_to']['NaPTAN'])
-        print("5")
     return [latlongfrom, loc_from, latlongto, loc_to]
 
 def formatdt(time, nano=True):
