@@ -44,11 +44,12 @@
 </div>
 
 <div class="loginWindow">
-  <form class="connectForm">
+  <form class="connectForm" method="POST" action="/connect/">
+    {% csrf_token %}
     <label>Email</label><br>
-    <input placeholder="Email"><br>
+    <input placeholder="Email" type="text" name="username"><br>
     <label>Password</label><br>
-    <input placeholder="Password"><br>
+    <input placeholder="Password" type="password" name="password"><br>
     <button type="submit">Connect</button><br>
   </form>
 <button onclick="closewindow()">Close</button><br>
