@@ -207,7 +207,6 @@ def getPCU(user, pcu, token=None):
         objs = []
         for ticket in out_list:
             mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
-            print(mode)
             operator = Operator(name=ticket['operator']['name'], homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
             recordid = RecordID(id=ticket['id'])
             latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
@@ -291,6 +290,8 @@ def requestData(user, pcu):
                 connectedAccount.access_token = token
                 connectedAccount.refresh_token = data["refresh_token"]
                 r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+            else:
+                return None
 
         return r
         
