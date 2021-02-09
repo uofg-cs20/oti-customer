@@ -92,7 +92,7 @@ def getPurchases(user, filters):
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
-    linked_purchases = getPCU(user, 'http://127.0.0.1:8000/api/', 'purchase/?format=json')
+    linked_purchases = getPCU(user, 'purchase/?format=json')
     local_purchases = list(local_purchases)
     if linked_purchases:
         for purchase in linked_purchases:
@@ -110,7 +110,7 @@ def getConcessions(user, context):
     expired = context.get('expired')
     mode = context.get('mode')
 
-    linked_conc = getPCU(user, 'http://127.0.0.1:8000/api/', 'concession/?format=json')
+    linked_conc = getPCU(user, 'concession/?format=json')
 
     if not expired and mode:
         # return valid concessions
@@ -171,7 +171,7 @@ def getUsage(user, filters=None):
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
-    linked_usages = getPCU(user, 'http://127.0.0.1:8000/api/', 'usage/?format=json')
+    linked_usages = getPCU(user, 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
         for usage in linked_usages:
@@ -192,11 +192,10 @@ def getOperators():
         return {"operators": {"null": "null"}}
 
 
-def getPCU(user, url, pcu, token=None):
+def getPCU(user, pcu, token=None):
     try:
         cust = Customer.objects.get(user=user)
         r = requestData(user, pcu)
-        #r = requests.get(url + pcu)
         if not r:
             return
         catalogue = r.json()
