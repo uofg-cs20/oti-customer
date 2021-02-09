@@ -7,7 +7,11 @@ import pytz
 import requests
 from requests.exceptions import ConnectionError
 import ast
+from requests.auth import HTTPBasicAuth
+import json
 
+client_id = "jCkPA1s32EXHlXKQgrJi2Cu9hXRLbpI2bVaLzTvM"
+client_secret = "dZxFGpFPD6IDwxxbSjlQxxsgxff9kQNqJUWGPn74i8y7kUXBoLoeDBelBopdkUL1X8nbXkqEmnr80OAkDTQrQehKNS0lMqJ3qj7V7P3vJqlfbjHjmHz3yVcEKuX67SQr"
 
 # Returns the available modes of transport
 def getModes():
@@ -275,8 +279,19 @@ def requestData(user, pcu):
         cust = Customer.objects.get(user=user)
         connectedAccount = ConnectedAccount.objects.get(customer=cust)
         token = connectedAccount.access_token
+        refresh_token = connectedAccount.refresh_token
         url = connectedAccount.api_url
         r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+        if r.status_code != 200:
+            r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
+                data={"grant_type" : refresh_token})
+            if r.status_code == 200:
+                data = json.loads(r.text)
+                token = data["access_token"]
+                connectedAccount.access_token = token
+                connectedAccount.refresh_token = data["refresh_token"]
+                r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+
         return r
         
     except:
