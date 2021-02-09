@@ -207,7 +207,6 @@ def getPCU(user, pcu, token=None):
             operator = Operator(name=ticket['operator']['name'], homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
             recordid = RecordID(id=ticket['id'])
             latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
-            print(latlongfrom, loc_from, latlongto, loc_to)
 
             if pcu == "concession/?format=json":
                 price = MonetaryValue(amount=ticket['transaction']['price']['amount'], currency=ticket['transaction']['price']['currency'])
