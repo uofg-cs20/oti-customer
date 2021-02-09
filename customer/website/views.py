@@ -167,25 +167,18 @@ def connect(request):
         return redirect(reverse('website:login'))
     if request.method == 'POST':
         if request.POST.get("username") and request.POST.get("password"):
-            print("in process")
             username = request.POST.get("username")
             password = request.POST.get("password")
-            print(username, password)
             url = "https://cs20team.pythonanywhere.com/o/token/"
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
                 data={"username" : username, "password" : password, "grant_type" : "password"})
-            print(r.text)
             if r.status_code == 200:
-                print("woooo")
                 user = request.user
                 data = json.loads(r.text)
-                print(data["access_token"])
                 cust = Customer.objects.get(user=user)
                 try: 
-                    print("try")
                     ConnectedAccount.objects.get(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/")
                 except:
-                    print("except")
                     connectedAccount = ConnectedAccount.objects.create(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/", 
                         auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
                         refresh_token=data["refresh_token"])

@@ -280,10 +280,5 @@ def requestData(user, pcu):
         r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
         return r
         
-        #print(connectedAccount.api_url)
-        #print(connectedAccount.auth_url)
-        #print(connectedAccount.access_token)
-        #print(connectedAccount.refresh_token)
-
     except:
         print("not found")
