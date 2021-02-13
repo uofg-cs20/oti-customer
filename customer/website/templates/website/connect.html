@@ -7,6 +7,19 @@
 
 {% block content %}
 
+<style type="text/css">
+  
+.loginWindow {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  background-color: white;
+  }
+</style>
+
 <!--div class="d-flex justify-content-md-center align-items-center vh-100"-->
 <div>
     <div class="table-responsive-xl">
@@ -23,11 +36,37 @@
               <td>{{ operator.item_metadata.1.val }}</td>
               <td>{{ operator.item_metadata.2.val }}</td>
               <td>{{ operator.item_metadata.3.val }}</td>
-                <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider"></td>
+                <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login()"></td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
 </div>
+
+<div class="loginWindow">
+  <form class="connectForm" method="POST" action="/connect/">
+    {% csrf_token %}
+    <label>Email</label><br>
+    <input placeholder="Email" type="text" name="username"><br>
+    <label>Password</label><br>
+    <input placeholder="Password" type="password" name="password"><br>
+    <button type="submit">Connect</button><br>
+  </form>
+<button onclick="closewindow()">Close</button><br>
+</div>
+
+
+
+<script type="text/javascript">
+
+function login() {
+  $(".loginWindow").css("display", "block");
+}
+
+function closewindow() {
+  $(".loginWindow").css("display", "none");
+}
+
+</script>
 
 {% endblock %}

@@ -7,7 +7,11 @@ import pytz
 import requests
 from requests.exceptions import ConnectionError
 import ast
+from requests.auth import HTTPBasicAuth
+import json
 
+client_id = "jCkPA1s32EXHlXKQgrJi2Cu9hXRLbpI2bVaLzTvM"
+client_secret = "dZxFGpFPD6IDwxxbSjlQxxsgxff9kQNqJUWGPn74i8y7kUXBoLoeDBelBopdkUL1X8nbXkqEmnr80OAkDTQrQehKNS0lMqJ3qj7V7P3vJqlfbjHjmHz3yVcEKuX67SQr"
 
 # Returns the available modes of transport
 def getModes():
@@ -92,7 +96,7 @@ def getPurchases(user, filters):
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
-    linked_purchases = getPCU('http://127.0.0.1:8000/api/', 'purchase/?format=json')
+    linked_purchases = getPCU(user, 'purchase/?format=json')
     local_purchases = list(local_purchases)
     if linked_purchases:
         for purchase in linked_purchases:
@@ -110,7 +114,7 @@ def getConcessions(user, context):
     expired = context.get('expired')
     mode = context.get('mode')
 
-    linked_conc = getPCU('http://127.0.0.1:8000/api/', 'concession/?format=json')
+    linked_conc = getPCU(user, 'concession/?format=json')
 
     if not expired and mode:
         # return valid concessions
@@ -171,7 +175,7 @@ def getUsage(user, filters=None):
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
-    linked_usages = getPCU('http://127.0.0.1:8000/api/', 'usage/?format=json')
+    linked_usages = getPCU(user, 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
         for usage in linked_usages:
@@ -192,16 +196,18 @@ def getOperators():
         return {"operators": {"null": "null"}}
 
 
-def getPCU(url, pcu, token=None):
+def getPCU(user, pcu, token=None):
     try:
-        cust = Customer.objects.get(user=User.objects.get(username='customer2'))
-        r = requests.get(url + pcu)
+        cust = Customer.objects.get(user=user)
+        r = requestData(user, pcu)
+        if not r:
+            return
         catalogue = r.json()
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
         objs = []
         for ticket in out_list:
             mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
-            operator = Operator(name='RETRIEVED OP', homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
+            operator = Operator(name=ticket['operator']['name'], homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
             recordid = RecordID(id=ticket['id'])
             latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
 
@@ -266,3 +272,28 @@ def formatdt(time, nano=True):
         return time.replace(microsecond=0)
     else:
         return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
+
+def requestData(user, pcu):
+    try: 
+        cust = Customer.objects.get(user=user)
+        connectedAccount = ConnectedAccount.objects.get(customer=cust)
+        token = connectedAccount.access_token
+        refresh_token = connectedAccount.refresh_token
+        url = connectedAccount.api_url
+        r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+        if r.status_code != 200:
+            r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
+                data={"grant_type" : refresh_token})
+            if r.status_code == 200:
+                data = json.loads(r.text)
+                token = data["access_token"]
+                connectedAccount.access_token = token
+                connectedAccount.refresh_token = data["refresh_token"]
+                r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+            else:
+                return None
+
+        return r
+        
+    except:
+        print("not found")
