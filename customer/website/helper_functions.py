@@ -296,4 +296,4 @@ def requestData(user, pcu):
         return r
         
     except:
-        print("not found")
+        pass
