@@ -46,11 +46,12 @@
 <div class="loginWindow">
   <form class="connectForm" method="POST" action="/connect/">
     {% csrf_token %}
+    <p>Connect to provider</p>
     <label>Email</label><br>
     <input placeholder="Email" type="text" name="username"><br>
     <label>Password</label><br>
     <input placeholder="Password" type="password" name="password"><br>
-    <imput id="operator_id" type="hidden" name="id">
+    <input id="o_id" type="hidden" name="id">
     <button type="submit">Connect</button><br>
   </form>
 <button onclick="closewindow()">Close</button><br>
@@ -64,8 +65,9 @@ function login(node) {
   nodeParent = node.parentNode;
   data1_node = nodeParent.previousSibling;
   data_1 = data1_node.previousSibling.innerHTML;
-  $("#operator_id").val(data_1);
+  $("#o_id").val(data_1);
   $(".loginWindow").css("display", "block");
+
 }
 
 function closewindow() {
