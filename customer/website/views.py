@@ -14,8 +14,8 @@ from customer.pagination import LimitSkipPagination
 import requests, json
 from requests.auth import HTTPBasicAuth
 
-client_id = "jCkPA1s32EXHlXKQgrJi2Cu9hXRLbpI2bVaLzTvM"
-client_secret = "dZxFGpFPD6IDwxxbSjlQxxsgxff9kQNqJUWGPn74i8y7kUXBoLoeDBelBopdkUL1X8nbXkqEmnr80OAkDTQrQehKNS0lMqJ3qj7V7P3vJqlfbjHjmHz3yVcEKuX67SQr"
+client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
+client_secret = "5EUIoebBH2SxgjANJ6KL1q1GcGZn924OCQbhbysqQ9kb79W3i9YBDGbMGlYw1NPee40fI3t0OYFW2zaghGl5buKfUzGQc7XuibqpbA296LKNiWWuF02RUUBaDAydV7t9"
 
 
 # The ViewSet automatically handles API URLs
@@ -166,22 +166,31 @@ def connect(request):
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
     if request.method == 'POST':
-        if request.POST.get("username") and request.POST.get("password"):
+        if request.POST.get("username") and request.POST.get("password") and request.POST.get("id"):
             username = request.POST.get("username")
             password = request.POST.get("password")
+            operator_id = request.POST.get("id")
+            print(username, password, operator_id)
             url = "https://cs20team.pythonanywhere.com/o/token/"
+            
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
                 data={"username" : username, "password" : password, "grant_type" : "password"})
             if r.status_code == 200:
+                print("200")
                 user = request.user
                 data = json.loads(r.text)
                 cust = Customer.objects.get(user=user)
+                connectedAccount = ConnectedAccount.objects.create(customer=cust, operator_id=operator_id, 
+                        auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
+                        refresh_token=data["refresh_token"])
+                """
                 try: 
                     ConnectedAccount.objects.get(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/")
                 except:
                     connectedAccount = ConnectedAccount.objects.create(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/", 
                         auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
                         refresh_token=data["refresh_token"])
+                """
 
 
     operators = getOperators()
