@@ -307,4 +307,4 @@ def requestData(linked_account, pcu):
         return r
         
     except:
-        print("not found")
+        pass
