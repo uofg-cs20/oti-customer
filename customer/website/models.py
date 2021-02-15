@@ -28,8 +28,8 @@ class Customer(models.Model):
 
 class ConnectedAccount(models.Model):
     customer = models.ForeignKey("Customer", on_delete=models.CASCADE)
-    operator_id = models.IntegerField()
-    auth_url = models.URLField()
+    operator_id = models.IntegerField(default=None)
+    auth_url = models.URLField(default=None)
     access_token = models.CharField(max_length=100)
     refresh_token = models.CharField(max_length=100)
 
