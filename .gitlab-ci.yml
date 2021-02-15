@@ -4,5 +4,6 @@ test_app:
     - cd customer
     - python manage.py migrate
     - python manage.py makemigrations
+    - 1
     - python manage.py test
     - echo test!
