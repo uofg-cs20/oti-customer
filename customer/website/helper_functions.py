@@ -209,6 +209,7 @@ def getPCU(user, pcu, token=None):
             catalogue = r.json()
             out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
             for ticket in out_list:
+                print("found")
                 mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
                 operator = Operator(name=ticket['operator']['name'], homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
                 recordid = RecordID(id=ticket['id'])
@@ -292,15 +293,19 @@ def requestData(linked_account, pcu):
                 api_url = op["href"]      
 
         r = requests.get(api_url + pcu, headers={"Authorization" : "Bearer " + token})
+
         if r.status_code != 200:
+            # possible refresh
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
-                data={"grant_type" : refresh_token})
+                data={"grant_type" : "refresh_token", "refresh_token" : refresh_token})
             if r.status_code == 200:
+                #refresh worked
+                print("refresh")
                 data = json.loads(r.text)
-                token = data["access_token"]
-                linked_account.access_token = token
+                linked_account.access_token = data["access_token"]
                 linked_account.refresh_token = data["refresh_token"]
-                r = requests.get(url + pcu, headers={"Authorization" : "Bearer " + token})
+                linked_account.save()
+                r = requests.get(api_url + pcu, headers={"Authorization" : "Bearer " + linked_account.access_token})
             else:
                 return None
 
