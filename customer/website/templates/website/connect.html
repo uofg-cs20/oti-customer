@@ -36,7 +36,7 @@
               <td>{{ operator.item_metadata.1.val }}</td>
               <td>{{ operator.item_metadata.2.val }}</td>
               <td>{{ operator.item_metadata.3.val }}</td>
-                <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login()"></td>
+                <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login(this)"></td>
             </tr>
             {% endfor %}
           </tbody>
@@ -46,10 +46,12 @@
 <div class="loginWindow">
   <form class="connectForm" method="POST" action="/connect/">
     {% csrf_token %}
+    <p>Connect to provider</p>
     <label>Email</label><br>
     <input placeholder="Email" type="text" name="username"><br>
     <label>Password</label><br>
     <input placeholder="Password" type="password" name="password"><br>
+    <input id="o_id" type="hidden" name="id">
     <button type="submit">Connect</button><br>
   </form>
 <button onclick="closewindow()">Close</button><br>
@@ -59,11 +61,17 @@
 
 <script type="text/javascript">
 
-function login() {
+function login(node) {
+  nodeParent = node.parentNode;
+  data1_node = nodeParent.previousSibling;
+  data_1 = data1_node.previousSibling.innerHTML;
+  $("#o_id").val(data_1);
   $(".loginWindow").css("display", "block");
+
 }
 
 function closewindow() {
+  console.log("done")
   $(".loginWindow").css("display", "none");
 }
 
