@@ -170,27 +170,17 @@ def connect(request):
             username = request.POST.get("username")
             password = request.POST.get("password")
             operator_id = request.POST.get("id")
-            print(username, password, operator_id)
             url = "https://cs20team.pythonanywhere.com/o/token/"
-            
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
                 data={"username" : username, "password" : password, "grant_type" : "password"})
+
             if r.status_code == 200:
-                print("200")
                 user = request.user
                 data = json.loads(r.text)
                 cust = Customer.objects.get(user=user)
                 connectedAccount = ConnectedAccount.objects.create(customer=cust, operator_id=operator_id, 
                         auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
                         refresh_token=data["refresh_token"])
-                """
-                try: 
-                    ConnectedAccount.objects.get(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/")
-                except:
-                    connectedAccount = ConnectedAccount.objects.create(customer=cust, api_url="https://cs20team.pythonanywhere.com/api/", 
-                        auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
-                        refresh_token=data["refresh_token"])
-                """
 
 
     operators = getOperators()
