@@ -200,7 +200,6 @@ def getPCU(user, pcu, token=None):
     try:
         cust = Customer.objects.get(user=user)
         linked_accounts = ConnectedAccount.objects.filter(customer=cust)
-        print(linked_accounts)
         objs = []
         for linked_account in linked_accounts:
             r = requestData(linked_account, pcu)
@@ -209,7 +208,6 @@ def getPCU(user, pcu, token=None):
             catalogue = r.json()
             out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
             for ticket in out_list:
-                print("found")
                 mode = Mode(id=ticket['mode']['id'], short_desc=ticket['mode']['short_desc'])
                 operator = Operator(name=ticket['operator']['name'], homepage=ticket['operator']['homepage'], api_url=ticket['operator']['api_url'], phone=ticket['operator']['phone'], email=ticket['operator']['email'])
                 recordid = RecordID(id=ticket['id'])
@@ -281,15 +279,12 @@ def requestData(linked_account, pcu):
     try: 
         token = linked_account.access_token
         refresh_token = linked_account.refresh_token
-        print(linked_account.operator_id)
-        
         r = requests.get('https://cs20operator.herokuapp.com/api/operator/')
         catalogue = r.json()[0]["items"]
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
 
         for op in out_list:
             if op["item_metadata"][3]["val"] == linked_account.operator_id:
-                print(op["href"])
                 api_url = op["href"]      
 
         r = requests.get(api_url + pcu, headers={"Authorization" : "Bearer " + token})
@@ -300,7 +295,6 @@ def requestData(linked_account, pcu):
                 data={"grant_type" : "refresh_token", "refresh_token" : refresh_token})
             if r.status_code == 200:
                 #refresh worked
-                print("refresh")
                 data = json.loads(r.text)
                 linked_account.access_token = data["access_token"]
                 linked_account.refresh_token = data["refresh_token"]
