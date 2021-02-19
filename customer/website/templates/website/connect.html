@@ -17,6 +17,9 @@
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   background-color: white;
+  border-style: solid;
+  border-color: rgb(33,37,41);
+  padding: : 10px;
   }
 </style>
 
@@ -46,13 +49,13 @@
 <div class="loginWindow">
   <form class="connectForm" method="POST" action="/connect/">
     {% csrf_token %}
-    <p>Connect to provider</p>
+    <p id="login-p">Connect to</p>
     <label>Email</label><br>
     <input placeholder="Email" type="text" name="username"><br>
     <label>Password</label><br>
     <input placeholder="Password" type="password" name="password"><br>
     <input id="o_id" type="hidden" name="id">
-    <button type="submit">Connect</button><br>
+    <button type="submit" style="position: absolute; text-align: center;">Connect</button><br>
   </form>
 <button onclick="closewindow()">Close</button><br>
 </div>
@@ -62,16 +65,19 @@
 <script type="text/javascript">
 
 function login(node) {
+  $("#login-p").html("Connect to");
   nodeParent = node.parentNode;
   data1_node = nodeParent.previousSibling;
   data_1 = data1_node.previousSibling.innerHTML;
+  info = $(nodeParent).siblings();
+  message = $("#login-p").html();
+  $("#login-p").html(message + " " + info.html());
   $("#o_id").val(data_1);
   $(".loginWindow").css("display", "block");
-
 }
 
 function closewindow() {
-  console.log("done")
+  $("#login-p").html("Connect to");
   $(".loginWindow").css("display", "none");
 }
 
