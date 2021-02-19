@@ -60,7 +60,7 @@ class ModeAdmin(admin.ModelAdmin):
     list_display = ('id', 'short_desc', 'long_desc')
 
 class ConnectedAccountAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'api_url', 'auth_url', 'access_token', 'refresh_token')
+    list_display = ('customer', 'operator_id', 'auth_url', 'access_token', 'refresh_token')
 
 
 admin.site.register(Customer, CustomerAdmin)
