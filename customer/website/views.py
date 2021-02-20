@@ -13,6 +13,7 @@ from .forms import LoginForm
 from customer.pagination import LimitSkipPagination
 import requests, json
 from requests.auth import HTTPBasicAuth
+from django.core.paginator import Paginator
 
 client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
 client_secret = "5EUIoebBH2SxgjANJ6KL1q1GcGZn924OCQbhbysqQ9kb79W3i9YBDGbMGlYw1NPee40fI3t0OYFW2zaghGl5buKfUzGQc7XuibqpbA296LKNiWWuF02RUUBaDAydV7t9"
@@ -184,7 +185,12 @@ def connect(request):
 
 
     operators = getOperators()
-    context = {"operators": operators}
+
+    paginator = Paginator(operators, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = { "operators": page_obj }
     return render(request, 'website/connect.html', context)
 
 

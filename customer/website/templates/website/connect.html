@@ -20,13 +20,12 @@
   border-style: solid;
   border-color: rgb(33,37,41);
   border-radius: 10px;
-  padding: : 10px;
   }
 </style>
 
 <div class="container" >
   <h3 class="text-center my-4">Connect a Provider</h3>
-
+  
   <!--div class="d-flex justify-content-md-center align-items-center vh-100"-->
   <div class="table-responsive-xl">
     <table class="table table-striped table-hover">
@@ -66,8 +65,28 @@
         <button onclick="closewindow()" class="btn btn-light">Close</button><br>
     </form>
   </div>
-</div>
 
+  <div class="mx-auto" style="width: 300px;">
+    <div class="pagination pt-2 pb-5">
+      <span class="step-links">
+          {% if operators.has_previous %}
+              <a href="?page=1">&laquo; first</a>
+              <a href="?page={{ operators.previous_page_number }}">previous</a>
+          {% endif %}
+  
+          <span class="current">
+              Page {{ operators.number }} of {{ operators.paginator.num_pages }}.
+          </span>
+  
+          {% if operators.has_next %}
+              <a href="?page={{ operators.next_page_number }}">next</a>
+              <a href="?page={{ operators.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+      </span>
+    </div>
+  </div>
+
+</div>
 
 
 <script type="text/javascript">
