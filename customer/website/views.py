@@ -186,12 +186,28 @@ def connect(request):
 
     operators = getOperators()
 
+
+
     paginator = Paginator(operators, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = { "operators": page_obj }
+    connectedAccs = ConnectedAccount.objects.filter(customer=Customer.objects.get(user=request.user))
+    connectedAccs = [x.operator_id for x in connectedAccs]
+
+    context = {"operators": page_obj, "connected": connectedAccs}
     return render(request, 'website/connect.html', context)
+
+
+def disconnect(request, pk):
+    cust = Customer.objects.get(user=request.user)
+    connected = ConnectedAccount.objects.get(customer=cust, operator_id=pk)
+
+    if request.method == 'POST':
+        connected.delete()
+        return redirect('website:connect')
+
+    return connect(request)
 
 
 def purchases(request):
@@ -261,3 +277,4 @@ def usage(request):
     context['usages'] = usages
     
     return render(request, 'website/usage.html', context)
+

@@ -25,7 +25,7 @@
 
 <div class="container" >
   <h3 class="text-center my-4">Connect a Provider</h3>
-  
+
   <!--div class="d-flex justify-content-md-center align-items-center vh-100"-->
   <div class="table-responsive-xl">
     <table class="table table-striped table-hover">
@@ -41,7 +41,14 @@
           <td>{{ operator.item_metadata.1.val }}</td>
           <td>{{ operator.item_metadata.2.val }}</td>
           <td>{{ operator.item_metadata.3.val }}</td>
-            <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login(this)"></td>
+            {% if operator.item_metadata.3.val not in connected %}
+                    <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login(this)"></td>
+                {% else %}
+                <form action="{% url 'website:disconnect' operator.item_metadata.3.val %}" method="post">
+                    {% csrf_token %}
+                    <td><input  class="btn btn-md btn-danger" type="submit" style="width:100%" value="Disconnect"></td>
+                </form>
+                {% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -73,11 +80,11 @@
               <a href="?page=1">&laquo; first</a>
               <a href="?page={{ operators.previous_page_number }}">previous</a>
           {% endif %}
-  
+
           <span class="current">
               Page {{ operators.number }} of {{ operators.paginator.num_pages }}.
           </span>
-  
+
           {% if operators.has_next %}
               <a href="?page={{ operators.next_page_number }}">next</a>
               <a href="?page={{ operators.paginator.num_pages }}">last &raquo;</a>
