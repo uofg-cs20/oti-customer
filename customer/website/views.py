@@ -14,6 +14,7 @@ from .forms import LoginForm, RegisterForm
 from customer.pagination import LimitSkipPagination
 import requests, json
 from requests.auth import HTTPBasicAuth
+from django.core.paginator import Paginator
 
 client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
 client_secret = "5EUIoebBH2SxgjANJ6KL1q1GcGZn924OCQbhbysqQ9kb79W3i9YBDGbMGlYw1NPee40fI3t0OYFW2zaghGl5buKfUzGQc7XuibqpbA296LKNiWWuF02RUUBaDAydV7t9"
@@ -205,8 +206,29 @@ def connect(request):
 
 
     operators = getOperators()
-    context = {"operators": operators}
+
+
+
+    paginator = Paginator(operators, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    connectedAccs = ConnectedAccount.objects.filter(customer=Customer.objects.get(user=request.user))
+    connectedAccs = [x.operator_id for x in connectedAccs]
+
+    context = {"operators": page_obj, "connected": connectedAccs}
     return render(request, 'website/connect.html', context)
+
+
+def disconnect(request, pk):
+    cust = Customer.objects.get(user=request.user)
+    connected = ConnectedAccount.objects.get(customer=cust, operator_id=pk)
+
+    if request.method == 'POST':
+        connected.delete()
+        return redirect('website:connect')
+
+    return connect(request)
 
 
 def purchases(request):
@@ -276,3 +298,4 @@ def usage(request):
     context['usages'] = usages
     
     return render(request, 'website/usage.html', context)
+

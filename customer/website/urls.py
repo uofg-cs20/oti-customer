@@ -1,4 +1,5 @@
 from django.urls import include, path
+from django.conf.urls import url
 from . import views
 from rest_framework import routers
 
@@ -20,5 +21,6 @@ urlpatterns = [
     path('purchases/', views.purchases, name='purchases'),
     path('concessions/', views.concessions, name='concessions'),
     path('usage/', views.usage, name='usage'),
+    url(r'^delete/(?P<pk>[0-9]+)/$', views.disconnect, name='disconnect')
     #path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

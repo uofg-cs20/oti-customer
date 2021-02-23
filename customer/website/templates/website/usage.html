@@ -26,19 +26,10 @@
 						{% endfor %}
 					</select>
 				</div>
+				<div class="text-center px-1">
+					<p><input  class="btn btn-md btn-primary" type="submit" value="Filter"></p>
+				</div>
 			</div>
-
-			<!--p>Mode of Transport: <select name="mode" id="mode">
-				<option value="None">Any</option>
-				{% for m in modes %}
-					<option id="mode" value="{% autoescape off %}{{ m.id }}{% endautoescape %}">{{m.short_desc}}</option>
-				{% endfor %}
-			</select></p-->
-
-			<div class="text-center px-4">
-				<p><input  class="btn btn-md btn-primary" type="submit" value="Filter"></p>
-			</div>
-		
 		</form>
 	</div>
 
