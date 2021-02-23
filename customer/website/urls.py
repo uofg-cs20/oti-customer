@@ -13,7 +13,7 @@ router.register(r'usage', views.UsageViewSet)
 
 urlpatterns = [
     #path('', views.index, name='index'),
-    #path('register/', views.register, name='register'),
+    path('register/', views.register, name='register'),
     path('api/', include(router.urls)),
     path('', views.customer_login, name='login'),
     path('logout/', views.customer_logout, name='logout'),

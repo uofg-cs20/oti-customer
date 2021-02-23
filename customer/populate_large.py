@@ -13,7 +13,6 @@ import datetime
 from django.contrib.auth.models import User
 from website.models import *
 from django.utils.timezone import make_aware
-from rest_framework.authtoken.models import Token
 
 times = [random.randint(-90,90) for i in range(1000)]
 
@@ -186,8 +185,6 @@ def populate():
     usages = list(Usage.objects.all())
     Service.objects.bulk_create([Service(service_type="Charging", unit="KwH", amount=20, price=mvns.pop(), usage_id=usages[i]) for i in range(recordno//6)])
 
-    for user in User.objects.all():
-        Token.objects.get_or_create(user=user)
 
 if __name__ == '__main__':
     print('Starting population script...', end="")

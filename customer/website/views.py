@@ -3,13 +3,14 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .models import Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
+from django.contrib.messages import success
+from .models import Operator, Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
 from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
 from datetime import date
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
-from .forms import LoginForm
+from .forms import LoginForm, RegisterForm
 from customer.pagination import LimitSkipPagination
 import requests, json
 from requests.auth import HTTPBasicAuth
@@ -133,8 +134,28 @@ def index(request):
 
 
 def register(request):
-    # TODO
-    return render(request, 'website/register.html')
+    if request.method == 'POST':
+        user_form = RegisterForm(request.POST)
+        if user_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user.password)
+            user.save()
+
+            zebras = Operator.objects.get(name='Zebras')
+            customer = Customer.objects.create(user=user, operator=zebras)
+
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            success(request, f"Congratulations, {user.first_name}! You've registered successfully!")
+            return redirect(reverse('website:purchases'))
+        else:
+            print(user_form.errors)
+    else:
+        user_form = RegisterForm()
+
+    context = {
+        'registration_form': user_form,
+    }
+    return render(request, 'website/register.html', context)
 
 
 def customer_login(request):
