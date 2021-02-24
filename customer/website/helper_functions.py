@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 from .models import *
 from datetime import timedelta
 import datetime
@@ -9,6 +12,8 @@ from requests.exceptions import ConnectionError
 import ast
 from requests.auth import HTTPBasicAuth
 import json
+
+import extra.reverse_geocode as reverse_geocode
 
 client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
 client_secret = "5EUIoebBH2SxgjANJ6KL1q1GcGZn924OCQbhbysqQ9kb79W3i9YBDGbMGlYw1NPee40fI3t0OYFW2zaghGl5buKfUzGQc7XuibqpbA296LKNiWWuF02RUUBaDAydV7t9"
@@ -256,15 +261,25 @@ def getLocs(pcu, ticket):
     if pcu == 'concession':
         return [None, None, None, None]
     if pcu == 'usage':
-        latlongfrom = LatitudeLongitude(latitude=ticket['travel_from']['location']['lat_long']['latitude'], longitude=ticket['travel_from']['location']['lat_long']['longitude'])
-        loc_from = Location(lat_long=latlongfrom, NaPTAN=ticket['travel_from']['location']['NaPTAN'])
-        latlongto = LatitudeLongitude(latitude=ticket['travel_to']['location']['lat_long']['latitude'], longitude=ticket['travel_to']['location']['lat_long']['longitude'])
-        loc_to = Location(lat_long=latlongto, NaPTAN=ticket['travel_to']['location']['NaPTAN'])
+        ticketfrom = ticket['travel_from']['location']
+        ticketto = ticket['travel_to']['location']
     else:
-        latlongfrom = LatitudeLongitude(latitude=ticket['location_from']['lat_long']['latitude'], longitude=ticket['location_from']['lat_long']['longitude'])
-        loc_from = Location(lat_long=latlongfrom, NaPTAN=ticket['location_from']['NaPTAN'])
-        latlongto = LatitudeLongitude(latitude=ticket['location_to']['lat_long']['latitude'], longitude=ticket['location_to']['lat_long']['longitude'])
-        loc_to = Location(lat_long=latlongto, NaPTAN=ticket['location_to']['NaPTAN'])
+        ticketfrom = ticket['location_from']
+        ticketto = ticket['location_to']
+    ticketfrom = ast.literal_eval(repr(ticketfrom).replace('_', '-'))
+    ticketto = ast.literal_eval(repr(ticketto).replace('_', '-'))
+
+    latfrom = ticketfrom['lat-long']['latitude']
+    longfrom = ticketfrom['lat-long']['longitude']
+    latlongfrom = LatitudeLongitude(latitude=latfrom, longitude=longfrom)
+    name = reverse_geocode.search([(float(latfrom), float(longfrom))])[0]['city']
+    loc_from = Location(lat_long=latlongfrom, NaPTAN=ticketfrom['NaPTAN'], name=name)
+
+    latto = ticketto['lat-long']['latitude']
+    longto = ticketto['lat-long']['longitude']
+    latlongto = LatitudeLongitude(latitude=latto, longitude=longto)
+    name = reverse_geocode.search([(float(latto), float(longto))])[0]['city']
+    loc_to = Location(lat_long=latlongto, NaPTAN=ticketto['NaPTAN'], name=name)
     return [latlongfrom, loc_from, latlongto, loc_to]
 
 def formatdt(time, nano=True):

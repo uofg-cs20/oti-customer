@@ -12,3 +12,4 @@ django-mutpy==0.1.2
 django-oauth-toolkit
 django-nose
 coverage
+scipy==1.6.1
