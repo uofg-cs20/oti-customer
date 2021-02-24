@@ -241,63 +241,18 @@ def getendpoints(user, endpoint):
 
                 latlongfrom, loc_from, latlongto, loc_to = getLocs(api_endpoint, ticket)
 
-                if (api_endpoint == "concession") or (api_endpoint == "purchase"):
-                    # These models are specific to concession and purchases
-                    price = getMonetaryValue(ticket['transaction']['price'])
-                    trans = getTransaction(ticket['transaction'], price)
-
-                if (api_endpoint == "purchase") or (api_endpoint == "usage"):
-                    # These models are specific to purchases and usages
-                    tc = TravelClass(travel_class=ticket['travel_class'])
-                    tick = getTicket(ticket['ticket'])
-
-                # These next if statements are for creating the actual endpoint models
-                # They are appended to a list of objects when they are created
-                if api_endpoint == "concession":
-                    # These models are specific to concessions
-                    disc = getDiscount(ticket['discount'])
-
-                    valid_from_date_time = formatdt(ticket['valid_from_date_time'])
-                    valid_to_date_time = formatdt(ticket['valid_to_date_time'])
-                    conditions = ticket['conditions']
-                    concession = Concession(id=recordid, mode=mode, operator=operator, name=mode.short_desc,
-                                            price=price, conditions=conditions, customer=cust, discount=disc,
-                                            transaction=trans, valid_from_date_time=valid_from_date_time,
-                                            valid_to_date_time=valid_to_date_time)
+                if (api_endpoint == "concession"):
+                    concession = getTicketConcession(ticket)
                     objs.append(concession)
 
-                if api_endpoint == "purchase":
-                    # These models are specific to purchases
-                    balance = getMonetaryValue(ticket['account_balance'])
-                    vehicle = getVehicle(ticket['vehicle'])
-
-                    booking_date_time = formatdt(ticket['booking_date_time'])
-                    travel_from_date_time = formatdt(ticket['travel_from_date_time'])
-                    travel_to_date_time = formatdt(ticket['travel_to_date_time'])
-                    purchase = Purchase(id=recordid, mode=mode, operator=operator, travel_class=tc,
-                                        booking_date_time=booking_date_time, transaction=trans, account_balance=balance,
-                                        vehicle=vehicle, travel_from_date_time=travel_from_date_time,
-                                        travel_to_date_time=travel_to_date_time, ticket=tick,
-                                        location_from=loc_from, location_to=loc_to, customer=cust)
+                elif (api_endpoint == "purchase"):
+                    purchase = getTicketPurchase(ticket, loc_from, loc_to)
                     objs.append(purchase)
 
-                if api_endpoint == "usage":
-                    # These models are specific to usages
-                    price = getMonetaryValue(ticket['price'])
-
-                    date_time = formatdt(ticket['travel_from']['date_time'], False)
-                    reference = ticket['travel_from']['reference']
-                    uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
-
-                    date_time = formatdt(ticket['travel_to']['date_time'], False)
-                    reference = ticket['travel_from']['reference']
-                    uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
-
-                    ur = getReference(ticket['reference'])
-
-                    usage = Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
-                                  travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
+                elif (api_endpoint == "usage"):    
+                    usage = getTicketUsage(ticket, loc_from, loc_to)
                     objs.append(usage)
+
         return objs
     except ConnectionError:
         return []
@@ -378,6 +333,56 @@ def requestData(linked_account, endpoint):
 
     except:
         pass
+
+
+def getTicketPurchase(ticket):
+    price = getMonetaryValue(ticket['transaction']['price'])
+    trans = getTransaction(ticket['transaction'], price)
+    tc = TravelClass(travel_class=ticket['travel_class'])
+    tick = getTicket(ticket['ticket'])
+    balance = getMonetaryValue(ticket['account_balance'])
+    vehicle = getVehicle(ticket['vehicle'])
+
+    booking_date_time = formatdt(ticket['booking_date_time'])
+    travel_from_date_time = formatdt(ticket['travel_from_date_time'])
+    travel_to_date_time = formatdt(ticket['travel_to_date_time'])
+    return Purchase(id=recordid, mode=mode, operator=operator, travel_class=tc,
+                        booking_date_time=booking_date_time, transaction=trans, account_balance=balance,
+                        vehicle=vehicle, travel_from_date_time=travel_from_date_time,
+                        travel_to_date_time=travel_to_date_time, ticket=tick,
+                        location_from=loc_from, location_to=loc_to, customer=cust)
+
+
+def getTicketConcession(ticket):
+    price = getMonetaryValue(ticket['transaction']['price'])
+    trans = getTransaction(ticket['transaction'], price)
+    disc = getDiscount(ticket['discount'])
+    valid_from_date_time = formatdt(ticket['valid_from_date_time'])
+    valid_to_date_time = formatdt(ticket['valid_to_date_time'])
+    conditions = ticket['conditions']
+    concession = Concession(id=recordid, mode=mode, operator=operator, name=mode.short_desc,
+                            price=price, conditions=conditions, customer=cust, discount=disc,
+                            transaction=trans, valid_from_date_time=valid_from_date_time,
+                            valid_to_date_time=valid_to_date_time)
+
+
+def getTicketUsage(ticket):
+    tc = TravelClass(travel_class=ticket['travel_class'])
+    tick = getTicket(ticket['ticket'])
+    price = getMonetaryValue(ticket['price'])
+
+    date_time = formatdt(ticket['travel_from']['date_time'], False)
+    reference = ticket['travel_from']['reference']
+    uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
+
+    date_time = formatdt(ticket['travel_to']['date_time'], False)
+    reference = ticket['travel_from']['reference']
+    uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
+
+    ur = getReference(ticket['reference'])
+
+    return Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
+                    travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
 
 
 def getMode(ticket):
