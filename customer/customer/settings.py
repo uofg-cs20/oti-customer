@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     'website',
     'rest_framework',
-    'django_mutpy',
     'oauth2_provider',
 
 ]
