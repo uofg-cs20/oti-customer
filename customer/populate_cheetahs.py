@@ -6,20 +6,23 @@ django.setup()
 
 import decimal 
 import datetime
-
 from django.contrib.auth.models import User
 from website.models import *
 from django.utils.timezone import make_aware
+from website.helper_functions import emptyDatabase
 
 def populate():  
 
-    # superuser account - use this to log into the django admin page
+    emptyDatabase()
+
+    # create superuser account - use this to log into the django admin page
     dev = User.objects.create_user(username='dev2', password='1234', is_superuser=True, is_staff=True, email="dev2@project.com", first_name='dev2')
 
-    # general stuff
+    # create modes
     train, created = Mode.objects.get_or_create(id="train", short_desc="Train")
     bus, created = Mode.objects.get_or_create(id="bus", short_desc="Bus")
     tram, created = Mode.objects.get_or_create(id="tram", short_desc="Tram")
+    
     first_class, created = TravelClass.objects.get_or_create(travel_class="First Class")
     vehicle_type, created = Vehicle.objects.get_or_create(reference="train 4001", vehicle_type="train")
     
@@ -32,14 +35,14 @@ def populate():
     user1 = User.objects.create_user(username='customer1.1', password='1234', email='customer@cheetahs.co.uk.', first_name='Cheetahs Customer')
     customer1, created = Customer.objects.get_or_create(user=user1, operator=cheetahs)
 
-    # add a concession purchase to the customer1 account
+    # add a concession to the customer1 account
     record1, created = RecordID.objects.get_or_create(id="0000100")
     price1, created = MonetaryValue.objects.get_or_create(amount="30.00", currency="GBP", symbol="£")
     transaction1, created = Transaction.objects.get_or_create(payment_type="Card", payment_method="Visa Debit", price=price1)
     discount1, created = Discount.objects.get_or_create(discount_type="Amount", discount_value="5.00", discount_description="16-25 Railcard")
     concession1, created = Concession.objects.get_or_create(id=record1, mode=train, operator=cheetahs, name="16-25 Railcard", price=price1, discount=discount1, transaction=transaction1, valid_from_date_time=django.utils.timezone.now(), valid_to_date_time=django.utils.timezone.now()+datetime.timedelta(days=728), conditions="Below 25", customer=customer1)
 
-    # add a second concession purchase to the customer1 account
+    # add a second concession to the customer1 account
     record7, created = RecordID.objects.get_or_create(id="0000107")
     price7, created = MonetaryValue.objects.get_or_create(amount="7.00", currency="GBP", symbol="£")
     transaction7, created = Transaction.objects.get_or_create(payment_type="Card", payment_method="Visa Debit", price=price7)
@@ -106,7 +109,7 @@ def populate():
     travel_to10, created = UsageFromTo.objects.get_or_create(location=location_to10, date_time=django.utils.timezone.now(), reference="reference usage")
 
     coordinates_from10, created = LatitudeLongitude.objects.get_or_create(latitude=decimal.Decimal(56.3905), longitude=decimal.Decimal(4.6184))
-    location_from10, created = Location.objects.get_or_create(lat_long=coordinates_from10, NaPTAN="idk", other="Ciranlarich", name="Ciranlarich")
+    location_from10, created = Location.objects.get_or_create(lat_long=coordinates_from10, NaPTAN="idk", other="Crianlarich", name="Ciranlarich")
     travel_from10, created = UsageFromTo.objects.get_or_create(location=location_from10, date_time=django.utils.timezone.now()-datetime.timedelta(days=10), reference="reference usage")
 
     usage10, created = Usage.objects.get_or_create(id=record10, mode=bus, operator=cheetahs, reference=usage_reference10, travel_class=first_class, travel_from=travel_from10, travel_to=travel_to10, purchase_id=purchase8, ticket=ticket8, price=price8, customer=customer1)
@@ -115,7 +118,7 @@ def populate():
     user2 = User.objects.create_user(username='customer2.1', password='1234', email='cheetahs2@scotrail.co.uk.', first_name='Cheetahs Customer Two')
     customer2, created = Customer.objects.get_or_create(user=user2, operator=cheetahs)
 
-    # add a concession purchase to the customer2 account
+    # add a concession to the customer2 account
     record6, created = RecordID.objects.get_or_create(id="00000106")
     price6, created = MonetaryValue.objects.get_or_create(amount="10.30", currency="GBP", symbol="£")
     transaction6, created = Transaction.objects.get_or_create(payment_type="Card", payment_method="Visa Debit", price=price6)

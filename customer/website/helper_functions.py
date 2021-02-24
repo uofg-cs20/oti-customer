@@ -307,3 +307,43 @@ def requestData(linked_account, pcu):
         
     except:
         pass
+        
+def emptyDatabase():
+    # Delete data if the database is already populated
+    if User.objects.all():
+        User.objects.all().delete()
+    if Customer.objects.all():
+        Customer.objects.all().delete()
+    if Operator.objects.all():
+        Operator.objects.all().delete()
+    if MonetaryValue.objects.all():
+        MonetaryValue.objects.all().delete()
+    if Discount.objects.all():
+        Discount.objects.all().delete()
+    if Concession.objects.all():
+        Concession.objects.all().delete()
+    if Purchase.objects.all():
+        Purchase.objects.all().delete()
+    if Location.objects.all():
+        Location.objects.all().delete()
+    if Vehicle.objects.all():
+        Vehicle.objects.all().delete()
+    if LatitudeLongitude.objects.all():
+        LatitudeLongitude.objects.all().delete()
+    if Usage.objects.all():
+        Usage.objects.all().delete()
+    if UsageReference.objects.all():
+        UsageReference.objects.all().delete()
+    if UsageFromTo.objects.all():
+        UsageFromTo.objects.all().delete()
+    if Service.objects.all():
+        Service.objects.all().delete()
+    if TravelClass.objects.all():
+        TravelClass.objects.all().delete()
+    if Ticket.objects.all():
+        Ticket.objects.all().delete()
+    if RecordID.objects.all():
+        RecordID.objects.all().delete()
+    if Mode.objects.all():
+        Mode.objects.all().delete()
+        

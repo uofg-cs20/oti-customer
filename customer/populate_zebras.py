@@ -2,20 +2,19 @@ import os, random, csv, datetime, pytz
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'customer.settings')
 from django.contrib.auth.hashers import make_password
 
-
-
 import django
 django.setup()
 
 import decimal
 import datetime
-
 from django.contrib.auth.models import User
 from website.models import *
 from django.utils.timezone import make_aware
+from website.helper_functions import emptyDatabase
 
 times = [random.randint(-90,90) for i in range(1000)]
 
+# Returns a random time within a certain interval depending on the arguments
 def randtime(order, no, pos=None):
     if pos:
         if order == 1:
@@ -30,57 +29,24 @@ def randtime(order, no, pos=None):
 
 def populate():
 
-    # delete data if the database is already populated
-    if User.objects.filter(username='dev').exists():
-        User.objects.all().delete()
-    if Customer.objects.all():
-        Customer.objects.all().delete()
-    if Operator.objects.all():
-        Operator.objects.delete()
-    if MonetaryValue.objects.all():
-        MonetaryValue.objects.all().delete()
-    if Discount.objects.all():
-        Discount.objects.all().delete()
-    if Concession.objects.all():
-        Concession.objects.all().delete()
-    if Purchase.objects.all():
-        Purchase.objects.all().delete()
-    if Location.objects.all():
-        Location.objects.all().delete()
-    if Vehicle.objects.all():
-        Vehicle.objects.all().delete()
-    if LatitudeLongitude.objects.all():
-        LatitudeLongitude.objects.all().delete()
-    if Usage.objects.all():
-        Usage.objects.all().delete()
-    if UsageReference.objects.all():
-        UsageReference.objects.all().delete()
-    if UsageFromTo.objects.all():
-        UsageFromTo.objects.all().delete()
-    if Service.objects.all():
-        Service.objects.all().delete()
-    if TravelClass.objects.all():
-        TravelClass.objects.all().delete()
-    if Ticket.objects.all():
-        Ticket.objects.all().delete()
-    if RecordID.objects.all():
-        RecordID.objects.all().delete()
-    if Mode.objects.all():
-        Mode.objects.all().delete()
+    emptyDatabase()
 
-    # superuser account - use this to log into the django admin page
+    # create superuser account - use this to log into the django admin page
     dev = User.objects.create_user(username='dev', password='1234', is_superuser=True, is_staff=True, email="dev@project.com", first_name='dev')
 
-    # general stuff
+    # create modes
     train, created = Mode.objects.get_or_create(id="train", short_desc="Train")
     bus, created = Mode.objects.get_or_create(id="bus", short_desc="Bus")
     tram, created = Mode.objects.get_or_create(id="tram", short_desc="Tram")
+    
     vehicle_type, created = Vehicle.objects.get_or_create(reference="train 3001", vehicle_type="train")
+    
+    # create Zebras operator
     zebras, created = Operator.objects.get_or_create(admin=dev, name="Zebras", homepage="http://127.0.0.1:8000/", api_url="http://127.0.0.1:8000/api/", phone="0394098748", email="bigemail@domain.com")
     modes = [train, bus, tram]
     zebras.modes.set(modes)
 
-    #create latlongs and location
+    # create latlongs and location, read from a csv file containing UK location details
     locsnum = 400
     exists = []
     with open('extra/gb.csv') as csvfile:
@@ -98,8 +64,8 @@ def populate():
     Location.objects.bulk_create([Location(lat_long=latlongs[i], NaPTAN="idk", name=exists[i][0]) for i in range(locsnum)])
     locations = list(Location.objects.all())
     locations2 = list(Location.objects.all())
-    print(len(locations2))
-    #create usagefromto
+    
+    # create usagefromto
     usagetimes = []
     for i in range(locsnum//2):
         time1 = random.randint(1420070400, 1577836800)
@@ -110,48 +76,48 @@ def populate():
     UFT = list(UsageFromTo.objects.all())
     UFT.reverse()
 
-    #create usagereference
+    # create usagereference
     UsageReference.objects.bulk_create([UsageReference(reference=i, reference_type='usage type') for i in range(locsnum)])
     URs = list(UsageReference.objects.all())
 
-    #create discount
+    # create discount
     Discount.objects.get_or_create(discount_type="Young person", discount_value="0.20", discount_description="16-25 Railcard")
     Discount.objects.get_or_create(discount_type="Pensioner", discount_value="0.40", discount_description="Pensioner Travelcard")
     Discount.objects.get_or_create(discount_type="Middle person", discount_value="0.30", discount_description="Middle-age Buspass")
     discounts = list(Discount.objects.all())
 
-
+    # create customers and users
     customerno = 6
-    #create customers and users
     User.objects.bulk_create([User(username='customer'+str(i), password=make_password('1234', None, 'md5'), email='customer'+str(i)+'customer'+str(i)+'.co.uk.', first_name='Customer '+ str(i)) for i in range(customerno)])
     users = User.objects.all()
     Customer.objects.bulk_create([Customer(user=i, operator=zebras) for i in users])
     customers = Customer.objects.all()
 
-    #create travelclass
+    # create travelclass
     TravelClass.objects.get_or_create(travel_class="First Class")
     TravelClass.objects.get_or_create(travel_class="Second Class")
     TravelClass.objects.get_or_create(travel_class="Economy")
     classes = TravelClass.objects.all()
 
+    # create monetary value
     mvn = 800
-    #create monetary value
     MonetaryValue.objects.bulk_create([MonetaryValue(amount=random.randint(0,10), currency="GBP", symbol="£") for i in range(mvn)])
     mvns = list(MonetaryValue.objects.all())
 
-    #create transactions
+    # create transactions
     Transaction.objects.bulk_create([Transaction(date_time=random.choice(usagetimes), reference="Ref"+str(i), payment_type="Card", payment_method="Visa Debit", price=mvns[i]) for i in range(mvn)])
     trans = list(Transaction.objects.all())
 
-    #create recordID
+    # create recordID
     recordno = 180
     RecordID.objects.bulk_create([RecordID(id=str(i)) for i in range(recordno)])
     records = list(RecordID.objects.all())
 
-    #create ticket
+    # create tickets
     Ticket.objects.bulk_create([Ticket(reference="Ticket Reference " + str(i), number_usages="0", reference_type="Idk", medium="Idk 2") for i in range(locsnum)])
     tickets = Ticket.objects.all()
-    #create concessions
+    
+    # create concessions
     modelist = [modes[i%3] for i in range(0, recordno)]
     random.shuffle(modelist)
     Concession.objects.bulk_create([Concession(id=records.pop(), mode=modelist[i], operator=zebras, name=modelist[i].short_desc,
@@ -163,7 +129,7 @@ def populate():
 
     cons = list(Concession.objects.all())
 
-    #create purchases
+    # create purchases
     curtime = django.utils.timezone.now()
     Purchase.objects.bulk_create([Purchase(id=records.pop(), mode=random.choice(modes), operator=zebras, travel_class=random.choice(classes), booking_date_time=django.utils.timezone.now(),
                                  transaction=trans.pop(),
@@ -175,13 +141,14 @@ def populate():
                                  location_from=locations.pop(), location_to=locations.pop(), customer=customers[i%len(customers)]) for i in range(recordno//3, 2*recordno//3)])
     purchases = list(Purchase.objects.all())
 
+    # create usages
     Usage.objects.bulk_create([Usage(id=records.pop(), mode=random.choice(modes), operator=zebras, reference=URs[i],
                                       travel_class=random.choice(classes), travel_from=UFT.pop(),
                                       travel_to=UFT.pop(), purchase_id=purchases.pop(),
                                       ticket=tickets[i], price=mvns.pop(),
                                       customer=customers[i%len(customers)]) for i in range(2*recordno//3, recordno)])
 
-    # Add some services
+    # add some services
     usages = list(Usage.objects.all())
     Service.objects.bulk_create([Service(service_type="Charging", unit="KwH", amount=20, price=mvns.pop(), usage_id=usages[i]) for i in range(recordno//6)])
 
