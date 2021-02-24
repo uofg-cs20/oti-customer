@@ -35,6 +35,10 @@ def getDates(request):
     startdate = request.POST.get("startdate")
     enddate = request.POST.get("enddate")
 
+    # None given
+    if not startdate and not enddate:
+        return None
+
     # Both given
     if startdate and enddate:
         startdate = formatDate(startdate)
@@ -47,23 +51,14 @@ def getDates(request):
     # Only startdate given
     if startdate and not enddate:
         startdate = formatDate(startdate)
-        enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
+        enddate = None
 
     # Only enddate given
     if not startdate and enddate:
-        startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
+        startdate = None
         enddate = formatDate(enddate)
 
-    # None given
-    if not startdate and not enddate:
-        if request.POST.get("usages"):
-            startdate = timezone.now() - timedelta(days=30)
-            enddate = timezone.now()
-        else:
-            startdate = timezone.now()
-            enddate = timezone.now() + timedelta(days=30)
-
-    return (startdate, enddate)
+    return {"startdate":startdate, "enddate":enddate}
 
 
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
@@ -173,8 +168,8 @@ def getUsage(user, filters=None):
 
     # Get the filters
     mode = filters.get("mode")
-    startdate = filters.get("startdate")
-    enddate = filters.get("enddate")
+    startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
+    enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
     # Filter with the mode if given
     if (mode != 'None') and (mode is not None):
         usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
