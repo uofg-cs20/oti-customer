@@ -75,32 +75,34 @@ def getPurchases(user, filters):
     # Get the Customer object of the given user
     customer = Customer.objects.get(user=user)
 
+    # Filter by user
+    local_purchases = Purchase.objects.filter(customer_id=customer.id)
+
+    # Here we get the Purchases from linked Operator accounts
+    if not filters.get("link") == False:
+        linked_purchases = getPCU(user, 'purchase/?format=json')
+        local_purchases = list(local_purchases)
+        if linked_purchases:
+            for purchase in linked_purchases:
+                local_purchases.append(purchase)
+                
     # Get the filters
     mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
     enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
 
-    # Filter by the user and mode
+    # Filter by mode
     if mode:
-        local_purchases = Purchase.objects.filter(customer_id=customer.id, mode=Mode.objects.get(short_desc=mode))
-    else:
-        local_purchases = Purchase.objects.filter(customer_id=customer.id)
+        local_purchases = [p for p in local_purchases if p.mode == mode]
 
     # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
     # First include those whose "from" date is within the filter range
     # Then include those whose "to" date is within the filter range
     # Finally include the special cases whose filter range is entirely within the "from-to" validity range
-    local_purchases = local_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
-        .union(local_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
-        .union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
-
-    # Here we get the Purchases from linked Operator accounts
-    linked_purchases = Purchase.objects.none()
-    linked_purchases = getPCU(user, 'purchase/?format=json')
-    local_purchases = list(local_purchases)
-    if linked_purchases:
-        for purchase in linked_purchases:
-            local_purchases.append(purchase)
+    local_purchases = [p for p in local_purchases if \
+                        (p.travel_to_date_time >= startdate and p.travel_to_date_time <= enddate) \
+                        or (p.travel_from_date_time >= startdate and p.travel_from_date_time <= enddate) \
+                        or (p.travel_from_date_time <= startdate and p.travel_to_date_time >= enddate)]
 
     # Return all the user's Purchases sorted by travel_to_date_time
     return sorted(local_purchases, key=lambda x: x.travel_to_date_time)
