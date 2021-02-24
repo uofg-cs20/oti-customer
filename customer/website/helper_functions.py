@@ -103,7 +103,7 @@ def getPurchases(user, filters):
 
     ### Here we would also get the Purchases from linked Operator accounts ###
     linked_purchases = Purchase.objects.none()
-    linked_purchases = getPCU(user, 'purchase/?format=json')
+    linked_purchases = getendpoints(user, 'purchase/?format=json')
     local_purchases = list(local_purchases)
     if linked_purchases:
         for purchase in linked_purchases:
@@ -121,7 +121,7 @@ def getConcessions(user, context):
     expired = context.get('expired')
     mode = context.get('mode')
 
-    linked_conc = getPCU(user, 'concession/?format=json')
+    linked_conc = getendpoints(user, 'concession/?format=json')
 
     if not expired and mode:
         # return valid concessions
@@ -185,7 +185,7 @@ def getUsage(user, filters=None):
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
-    linked_usages = getPCU(user, 'usage/?format=json')
+    linked_usages = getendpoints(user, 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
         for usage in linked_usages:
@@ -206,27 +206,26 @@ def getOperators():
         return {"operators": {"null": "null"}}
 
 
-# PCU stands for purchase, concession usage
-# This function takes a user and the pcu and then proceeds to find the connected accounts tickets
+# This function takes a user and the endpoint and then proceeds to find the connected accounts tickets
 # The function connects to an exposed API through authentication methods, and then creates Django models based on the
 # data it interprets from the API. These models aren't saved in the database and are called every time a user connects
 # to a page.
-def getPCU(user, pcu):
+def getendpoints(user, endpoint):
     try:
         cust = Customer.objects.get(user=user)
         linked_accounts = ConnectedAccount.objects.filter(customer=cust)
         objs = []
         # Loop through all the linked accounts
         for linked_account in linked_accounts:
-            r = requestData(linked_account, pcu)
+            r = requestData(linked_account, endpoint)
             if not r:
                 continue
             catalogue = r.json()
             out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
             # Loop through every ticket in the santizied list
             for ticket in out_list:
-                # This section is for parts of each PCU that they all share
-                # These are abstracted from the specific PCU to avoid repetition
+                # This section is for parts of each endpoint that they all share
+                # These are abstracted from the specific endpoint to avoid repetition
                 modeid = ticket['mode']['id']
                 short_desc = ticket['mode']['short_desc']
                 mode = Mode(id=modeid, short_desc=short_desc)
@@ -240,9 +239,16 @@ def getPCU(user, pcu):
                 operator = Operator(name=opname, homepage=homepage, api_url=api_url, phone=phone, email=email)
 
                 recordid = RecordID(id=ticket['id'])
-                latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
 
-                if (pcu == "concession/?format=json") or (pcu == "purchase/?format=json"):
+                endpoints = ['purchase', 'concession', 'usage']
+                api_endpoint = ""
+                for i in endpoint.split('/'):
+                    if i in endpoints:
+                        api_endpoint = i
+
+                latlongfrom, loc_from, latlongto, loc_to = getLocs(api_endpoint, ticket)
+
+                if (api_endpoint == "concession") or (api_endpoint == "purchase"):
                     # These models are specific to concession and purchases
                     amount = ticket['transaction']['price']['amount']
                     currency = ticket['transaction']['price']['currency']
@@ -255,7 +261,7 @@ def getPCU(user, pcu):
                     trans = Transaction(date_time=date_time, reference=reference, payment_type=payment_type,
                                         payment_method=payment_method, price=price)
 
-                if (pcu == "purchase/?format=json") or (pcu == "usage/?format=json"):
+                if (api_endpoint == "purchase") or (api_endpoint == "usage"):
                     # These models are specific to purchases and usages
                     tc = TravelClass(travel_class=ticket['travel_class'])
                     reference = ticket['ticket']['reference']
@@ -265,9 +271,9 @@ def getPCU(user, pcu):
                     tick = Ticket(reference=reference, number_usages=number_usages, reference_type=reference_type,
                                   medium=medium)
 
-                # These next if statements are for creating the actual PCU models
+                # These next if statements are for creating the actual endpoint models
                 # They are appended to a list of objects when they are created
-                if pcu == "concession/?format=json":
+                if api_endpoint == "concession":
                     # These models are specific to concessions
                     discount_type = ticket['discount']['discount_type']
                     discount_value = ticket['discount']['discount_value']
@@ -283,7 +289,7 @@ def getPCU(user, pcu):
                                             valid_to_date_time=valid_to_date_time)
                     objs.append(concession)
 
-                if pcu == "purchase/?format=json":
+                if api_endpoint == "purchase":
                     # These models are specific to purchases
                     amount = ticket['account_balance']['amount']
                     currency = ticket['account_balance']['currency']
@@ -303,7 +309,7 @@ def getPCU(user, pcu):
                                         location_from=loc_from, location_to=loc_to, customer=cust)
                     objs.append(purchase)
 
-                if pcu == "usage/?format=json":
+                if api_endpoint == "usage":
                     # These models are specific to usages
                     amount = ticket['price']['amount']
                     currency = ticket['price']['currency']
@@ -330,13 +336,13 @@ def getPCU(user, pcu):
         return []
 
 
-# This function is for creating the location data for each PCU. It has been abstracted because each object uses this
-# function and keeping it in the getPCU() function created bloat. It runs through the ticket dictionary it is passed
+# This function is for creating the location data for each endpoint. It has been abstracted because each object uses this
+# function and keeping it in the getendpoints() function created bloat. It runs through the ticket dictionary it is passed
 # and created LatitudeLongitude and Location models. It also uses reverse geolocation to find the location of the ticket.
-def getLocs(pcu, ticket):
-    if pcu == 'concession':
+def getLocs(endpoint, ticket):
+    if endpoint == 'concession':
         return [None, None, None, None]
-    if pcu == 'usage':
+    if endpoint == 'usage':
         ticketfrom = ticket['travel_from']['location']
         ticketto = ticket['travel_to']['location']
     else:
@@ -370,7 +376,7 @@ def formatdt(time, nano=True):
         return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
 
 
-def requestData(linked_account, pcu):
+def requestData(linked_account, endpoint):
     try:
         token = linked_account.access_token
         refresh_token = linked_account.refresh_token
@@ -382,7 +388,7 @@ def requestData(linked_account, pcu):
             if op["item_metadata"][3]["val"] == linked_account.operator_id:
                 api_url = op["href"]
 
-        r = requests.get(api_url + pcu, headers={"Authorization": "Bearer " + token})
+        r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + token})
 
         if r.status_code != 200:
             # possible refresh
@@ -395,7 +401,7 @@ def requestData(linked_account, pcu):
                 linked_account.access_token = data["access_token"]
                 linked_account.refresh_token = data["refresh_token"]
                 linked_account.save()
-                r = requests.get(api_url + pcu, headers={"Authorization": "Bearer " + linked_account.access_token})
+                r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + linked_account.access_token})
             else:
                 return None
 
