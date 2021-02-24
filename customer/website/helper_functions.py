@@ -1,5 +1,4 @@
 import sys
-
 sys.path.append("..")
 
 from .models import *
@@ -13,7 +12,6 @@ from requests.exceptions import ConnectionError
 import ast
 from requests.auth import HTTPBasicAuth
 import json
-
 import extra.reverse_geocode as reverse_geocode
 
 client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
@@ -101,7 +99,7 @@ def getPurchases(user, filters):
         .union(local_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
         .union(local_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
 
-    ### Here we would also get the Purchases from linked Operator accounts ###
+    # Here we get the Purchases from linked Operator accounts
     linked_purchases = Purchase.objects.none()
     linked_purchases = getPCU(user, 'purchase/?format=json')
     local_purchases = list(local_purchases)
@@ -124,7 +122,7 @@ def getConcessions(user, context):
     linked_conc = getPCU(user, 'concession/?format=json')
 
     if not expired and mode:
-        # return valid concessions
+        # return valid concessions, filtered by mode
         # i.e. concessions with expiry date in the future
         if linked_conc:
             curmode = Mode.objects.get(short_desc=mode)
@@ -137,7 +135,7 @@ def getConcessions(user, context):
                                          mode=Mode.objects.get(short_desc=mode))
 
     elif expired and mode:
-        # return expired concessions
+        # return expired concessions, filtered by mode
         # i.e. concessions with expiry date in the past
         if linked_conc:
             curmode = Mode.objects.get(short_desc=mode)
@@ -150,6 +148,7 @@ def getConcessions(user, context):
                                          mode=Mode.objects.get(short_desc=mode))
 
     elif not expired and not mode:
+        # return all valid concessions
         if linked_conc:
             concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today))
             for conc in linked_conc:
@@ -159,6 +158,7 @@ def getConcessions(user, context):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
 
     else:
+        # return all expired concessions
         if linked_conc:
             concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today))
             for conc in linked_conc:
@@ -181,10 +181,12 @@ def getUsage(user, filters=None):
     else:
         usages = Usage.objects.filter(customer=cust.id)
 
+    # Filter usages by date & time
     usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
+    # Here we get the linked usages from other operators
     linked_usages = getPCU(user, 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
@@ -196,6 +198,7 @@ def getUsage(user, filters=None):
         return usages
 
 
+# Returns a list of operators that can be linked
 def getOperators():
     try:
         r = requests.get('https://cs20operator.herokuapp.com/api/operator/')
@@ -370,6 +373,7 @@ def formatdt(time, nano=True):
         return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
 
 
+# Requests access to a linked operator site using a token
 def requestData(linked_account, pcu):
     try:
         token = linked_account.access_token

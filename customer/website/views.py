@@ -129,13 +129,12 @@ class UsageViewSet(viewsets.ModelViewSet):
             serializer = UsageSerializer(queryset, many=True)
         return Response(serializer.data)
 
-def index(request):
-    return render(request, 'website/index.html')
 
-
+# Register view
 def register(request):
     if request.method == 'POST':
         user_form = RegisterForm(request.POST)
+        # Validate form
         if user_form.is_valid():
             user = user_form.save(commit=False)
             user.set_password(user.password)
@@ -158,6 +157,7 @@ def register(request):
     return render(request, 'website/register.html', context)
 
 
+# Login view
 def customer_login(request):
     # If the user is logged in, redirect to the purchases page
     if request.user.is_authenticated:
@@ -166,6 +166,7 @@ def customer_login(request):
     form = LoginForm()
     if request.method == 'POST':
         form = LoginForm(request.POST)
+        # Validate form
         if form.is_valid():
             loginName = form.cleaned_data['username']
             loginPass = form.cleaned_data['password']
@@ -178,20 +179,24 @@ def customer_login(request):
     return render(request, 'website/login.html', {"form": form})
 
 
+# Logout - redirect to login page
 def customer_logout(request):
     logout(request)
     return redirect(reverse('website:login'))
 
 
+# Connect view - allows logged in users to link accounts with other operators
 def connect(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
+        
     if request.method == 'POST':
         if request.POST.get("username") and request.POST.get("password") and request.POST.get("id"):
             username = request.POST.get("username")
             password = request.POST.get("password")
             operator_id = request.POST.get("id")
+            # Obtain a token for linking
             url = "https://cs20team.pythonanywhere.com/o/token/"
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
                 data={"username" : username, "password" : password, "grant_type" : "password"})
@@ -204,15 +209,14 @@ def connect(request):
                         auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
                         refresh_token=data["refresh_token"])
 
-
     operators = getOperators()
 
-
-
+    # Paginate operators
     paginator = Paginator(operators, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Get accounts that are already linked
     connectedAccs = ConnectedAccount.objects.filter(customer=Customer.objects.get(user=request.user))
     connectedAccs = [x.operator_id for x in connectedAccs]
 
@@ -220,6 +224,7 @@ def connect(request):
     return render(request, 'website/connect.html', context)
 
 
+# Disconnect - lets users unlink accounts to not see tickets from certain operators
 def disconnect(request, pk):
     cust = Customer.objects.get(user=request.user)
     connected = ConnectedAccount.objects.get(customer=cust, operator_id=pk)
@@ -231,6 +236,7 @@ def disconnect(request, pk):
     return connect(request)
 
 
+# Display the user's purchases
 def purchases(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
@@ -253,6 +259,7 @@ def purchases(request):
     return render(request, 'website/purchases.html', context)
 
 
+# Display the user's concessions
 def concessions(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
@@ -280,6 +287,7 @@ def concessions(request):
     return render(request, 'website/concessions.html', context)
 
 
+# Display the user's usages
 def usage(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
@@ -294,6 +302,7 @@ def usage(request):
     context['enddate'] = enddate
     context['mode'] = mode
 
+    # Obtain a list of the user's usages, filtered or unfiltered
     usages = getUsage(request.user, context)
     context['usages'] = usages
     

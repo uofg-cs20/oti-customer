@@ -7,7 +7,7 @@ import pytz
 import json
 from django.utils import timezone
 
-from .test_fixtures_large import populate
+from .fixtures import populate
 
 # --- TEST PARAMETERS -------------------
 api_url = "/api/"
