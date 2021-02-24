@@ -7,6 +7,7 @@
 
 {% block content %}
 
+<!-- Login window JS -->
 <style type="text/css">
   
 .loginWindow {
@@ -23,10 +24,11 @@
   }
 </style>
 
+
+<!-- Operator table -->
 <div class="container" >
   <h3 class="text-center my-4">Connect a Provider</h3>
 
-  <!--div class="d-flex justify-content-md-center align-items-center vh-100"-->
   <div class="table-responsive-xl">
     <table class="table table-striped table-hover">
       <tbody>
@@ -55,6 +57,7 @@
     </table>
   </div>
 
+  <!-- Login window -->
   <div class="loginWindow p-3">
     <form class="connectForm" method="POST" action="/connect/">
         {% csrf_token %}
@@ -72,7 +75,8 @@
         <button onclick="closewindow()" class="btn btn-light">Close</button><br>
     </form>
   </div>
-
+  
+  <!-- Pagination -->
   <div class="mx-auto" style="width: 300px;">
     <div class="pagination pt-2 pb-5">
       <span class="step-links">
@@ -96,6 +100,7 @@
 </div>
 
 
+<!-- JS functions for the login window -->
 <script type="text/javascript">
 
 function login(node) {

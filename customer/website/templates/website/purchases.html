@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block content %}
+	<!-- Filters -->
 	<div class="container" >
 		<h3 class="text-center my-4">Filter Purchases</h3>
 
@@ -34,7 +35,8 @@
 			</div>
 		</form>
 	</div>
-
+	
+	<!-- Heading changes with applied filters -->
 	<div class="container my-4 mb-5">
 		{% if mode and mode != "None" %}
 			{% if startdate and enddate %}
@@ -58,6 +60,7 @@
 			{% endif %}
 		{% endif %}
 
+		<!-- Display the user's purchases -->
 		{% for p in purchases %}
 			<div class="card p-4 my-4" style="width: 40rem;">
 				<h5>{{ p.mode.short_desc }} Ticket</h5>

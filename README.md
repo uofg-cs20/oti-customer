@@ -16,7 +16,7 @@ Ensure database structure is up to date:
 ## Viewing the Website
 
 Run the population script:  
-`python populate_cheetahs.py` or `python populate_zebras.py`
+`python populate.py`
 
 Run the server:  
 `python manage.py runserver`  
