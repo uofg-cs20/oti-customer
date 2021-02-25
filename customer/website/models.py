@@ -209,7 +209,6 @@ class RecordID(models.Model):
     def __str__(self):
         return self.id
 
-# The Mode table stores the modes of transport this operator provides
 class Mode(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
     short_desc = models.CharField(max_length=50)

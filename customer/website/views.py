@@ -5,8 +5,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import success
 from .models import Operator, Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
-from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
-from datetime import date
+from .linking_functions import getModes, getPurchases, getConcessions, getUsage, getOperators
+from .helper_functions import getDates, formatDate, generateTicketHeading
+from datetime import date, timedelta
+from django.utils import timezone
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
@@ -129,13 +131,12 @@ class UsageViewSet(viewsets.ModelViewSet):
             serializer = UsageSerializer(queryset, many=True)
         return Response(serializer.data)
 
-def index(request):
-    return render(request, 'website/index.html')
 
-
+# Register view
 def register(request):
     if request.method == 'POST':
         user_form = RegisterForm(request.POST)
+        # Validate form
         if user_form.is_valid():
             user = user_form.save(commit=False)
             user.set_password(user.password)
@@ -158,6 +159,7 @@ def register(request):
     return render(request, 'website/register.html', context)
 
 
+# Login view
 def customer_login(request):
     # If the user is logged in, redirect to the purchases page
     if request.user.is_authenticated:
@@ -166,6 +168,7 @@ def customer_login(request):
     form = LoginForm()
     if request.method == 'POST':
         form = LoginForm(request.POST)
+        # Validate form
         if form.is_valid():
             loginName = form.cleaned_data['username']
             loginPass = form.cleaned_data['password']
@@ -178,20 +181,24 @@ def customer_login(request):
     return render(request, 'website/login.html', {"form": form})
 
 
+# Logout - redirect to login page
 def customer_logout(request):
     logout(request)
     return redirect(reverse('website:login'))
 
 
+# Connect view - allows logged in users to link accounts with other operators
 def connect(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
+        
     if request.method == 'POST':
         if request.POST.get("username") and request.POST.get("password") and request.POST.get("id"):
             username = request.POST.get("username")
             password = request.POST.get("password")
             operator_id = request.POST.get("id")
+            # Obtain a token for linking
             url = "https://cs20team.pythonanywhere.com/o/token/"
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
                 data={"username" : username, "password" : password, "grant_type" : "password"})
@@ -204,15 +211,14 @@ def connect(request):
                         auth_url="https://cs20team.pythonanywhere.com/o/token/", access_token=data["access_token"],
                         refresh_token=data["refresh_token"])
 
-
     operators = getOperators()
 
-
-
+    # Paginate operators
     paginator = Paginator(operators, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Get accounts that are already linked
     connectedAccs = ConnectedAccount.objects.filter(customer=Customer.objects.get(user=request.user))
     connectedAccs = [x.operator_id for x in connectedAccs]
 
@@ -220,6 +226,7 @@ def connect(request):
     return render(request, 'website/connect.html', context)
 
 
+# Disconnect - lets users unlink accounts to not see tickets from certain operators
 def disconnect(request, pk):
     cust = Customer.objects.get(user=request.user)
     connected = ConnectedAccount.objects.get(customer=cust, operator_id=pk)
@@ -231,21 +238,27 @@ def disconnect(request, pk):
     return connect(request)
 
 
+# Display the user's purchases
 def purchases(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
     
-    context = {"purchases":[], "modes":[]}
+    context = {}
+    ticket_type = "purchase"
+    context["ticket_type"] = ticket_type
     context["modes"] = getModes()
-    startdate, enddate = getDates(request)
-    mode = request.POST.get("mode")
-
+    
+    startdate, enddate = getDates(request, ticket_type)
     context['startdate'] = startdate
     context['enddate'] = enddate
         
+    mode = request.POST.get("mode")
     if mode and mode != "None":
         context.update({"mode":mode})
+        
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading(ticket_type, mode, startdate=startdate, enddate=enddate)
 
     # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)
@@ -253,49 +266,59 @@ def purchases(request):
     return render(request, 'website/purchases.html', context)
 
 
+# Display the user's concessions
 def concessions(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
 
     context = {}
-    context["expired"] = False
+    ticket_type = "concession"
+    context["ticket_type"] = ticket_type
     context["modes"] = getModes()
 
-    if request.method == "POST":
-        status = request.POST.get("status")
-        mode = request.POST.get("mode")
+    status = request.POST.get("status", "valid")
+    context["status"] = status
+    
+    mode = request.POST.get("mode")
+    if mode and mode != "None":
+        context["mode"] = mode
 
-        # check if the customer wants to see expired concessions
-        if status == 'past':
-            context['expired'] = True
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading(ticket_type, mode, status=status)
 
-        if mode and mode != "None":
-            context["mode"] = mode
-
-    # obtain either current or past concessions for user 
+    # Obtain either current or past concessions for user 
     concessions = getConcessions(request.user, context)
     context['concessions'] = concessions
 
     return render(request, 'website/concessions.html', context)
 
 
+# Display the user's usages
 def usage(request):
     # If the user is not logged in, redirect to the login page
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
 
     context = {}
+    ticket_type = "usage"
+    context["ticket_type"] = ticket_type
     context["modes"] = getModes()
-    startdate, enddate = getDates(request)
-    mode = request.POST.get("mode")
-
+    
+    startdate, enddate = getDates(request, ticket_type)
     context['startdate'] = startdate
     context['enddate'] = enddate
-    context['mode'] = mode
+    
+    mode = request.POST.get("mode")
+    if mode and mode != "None":
+        context.update({"mode":mode})
+        
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading(ticket_type, mode, startdate=startdate, enddate=enddate)
 
+    # Obtain a list of usages for the user, possibly filtered
     usages = getUsage(request.user, context)
     context['usages'] = usages
     
     return render(request, 'website/usage.html', context)
-
+    

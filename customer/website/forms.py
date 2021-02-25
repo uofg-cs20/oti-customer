@@ -47,5 +47,3 @@ class LoginForm(forms.Form):
 
         return self.cleaned_data
 
-class ConnectForm(forms.Form):
-    pass
