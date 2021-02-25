@@ -232,12 +232,7 @@ def getendpoints(user, endpoint):
                 operator = getOperator(ticket['operator'])
                 recordid = RecordID(id=ticket['id'])
 
-                endpoints = ['purchase', 'concession', 'usage']
-                api_endpoint = ""
-
-                for i in endpoint.split('/'):
-                    if i in endpoints:
-                        api_endpoint = i
+                api_endpoint = getApi(endpoint)
 
                 latlongfrom, loc_from, latlongto, loc_to = getLocs(api_endpoint, ticket)
 
@@ -442,3 +437,11 @@ def getReference(ticket):
     reference = ticket['reference']['reference']
     reference_type = ticket['reference']['reference_type']
     return UsageReference(reference=reference, reference_type=reference_type)
+
+def getApi(endpoint):
+    endpoints = ['purchase', 'concession', 'usage']
+
+    for i in endpoint.split('/'):
+        if i in endpoints:
+            return i
+    
