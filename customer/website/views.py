@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import success
 from .models import Operator, Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
-from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators
+from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators, generateTicketHeading
 from datetime import date, timedelta
 from django.utils import timezone
 from rest_framework import viewsets, permissions
@@ -253,6 +253,9 @@ def purchases(request):
         
     if mode and mode != "None":
         context.update({"mode":mode})
+        
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading("purchase", startdate, enddate, mode)
 
     # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)

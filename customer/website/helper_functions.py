@@ -64,6 +64,38 @@ def getDates(request):
             enddate = timezone.now() + timedelta(days=30)
 
     return (startdate, enddate)
+    
+
+# Generates the message for displaying tickets when a filter is applied
+# ticket_type is a string, e.g. "purchase"
+# startdate & enddate are datetime objects
+# mode is a string, e.g. "Train"
+def generateTicketHeading(ticket_type, startdate, enddate, mode):
+    message = "Displaying "
+    if mode and mode != "None":
+        message = message + mode.capitalize() + " "
+    else:
+        message = message + "all "
+    message = message + ticket_type + "s "
+    
+    # Handle the dates
+    default_days = 30
+    datetime_diff = enddate - startdate
+    if datetime_diff > timedelta(days=default_days-1) and datetime_diff < timedelta(days=default_days+1):
+        if startdate == timezone.now():
+            message = message + "for the next " + str(default_days) + " days"
+        elif enddate == timezone.now():
+            message = message + "for the last " + str(default_days) + " days"
+        else:
+            message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
+    elif startdate == datetime.datetime.min.replace(tzinfo=pytz.UTC):
+        message = message + "before " + str(enddate.date())
+    elif enddate == datetime.datetime.max.replace(tzinfo=pytz.UTC):
+        message = message + "after " + str(startdate.date())
+    else:
+        message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
+        
+    return message
 
 
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
@@ -97,8 +129,8 @@ def getPurchases(user, filters):
     enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
 
     # Filter by mode
-    if mode:
-        local_purchases = [p for p in local_purchases if p.mode == mode]
+    if mode and mode != "None":
+        local_purchases = [p for p in local_purchases if p.mode.short_desc == mode]
 
     # Filter by date, including all purchases whose "from-to" validity date range overlaps the filtered date range
     # First include those whose "from" date is within the filter range
