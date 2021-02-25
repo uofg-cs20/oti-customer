@@ -70,32 +70,42 @@ def getDates(request):
 # ticket_type is a string, e.g. "purchase"
 # startdate & enddate are datetime objects
 # mode is a string, e.g. "Train"
-def generateTicketHeading(ticket_type, startdate, enddate, mode):
+def generateTicketHeading(ticket_type, mode, startdate=None, enddate=None, status=None):
     message = "Displaying "
-    if mode and mode != "None":
-        message = message + mode.capitalize() + " "
-    else:
-        message = message + "all "
-    message = message + ticket_type + "s "
     
-    # Handle the dates
-    default_days = 30
-    datetime_diff = enddate - startdate
-    if datetime_diff > timedelta(days=default_days-1) and datetime_diff < timedelta(days=default_days+1):
-        if startdate == timezone.now():
-            message = message + "for the next " + str(default_days) + " days"
-        elif enddate == timezone.now():
-            message = message + "for the last " + str(default_days) + " days"
+    # Concessions have a different message as they don't have a date filter
+    if ticket_type == "concession":
+        message = message + status + " "
+        if mode and mode!= "None":
+            message = message + mode.capitalize()
+        message = message + " concessions"
+        return message
+        
+    else:
+        if mode and mode != "None":
+            message = message + mode.capitalize() + " "
+        else:
+            message = message + "all "
+        message = message + ticket_type + "s "
+        
+        # Handle the dates
+        default_days = 30
+        datetime_diff = enddate - startdate
+        if datetime_diff > timedelta(days=default_days-1) and datetime_diff < timedelta(days=default_days+1):
+            if startdate == timezone.now():
+                message = message + "for the next " + str(default_days) + " days"
+            elif enddate == timezone.now():
+                message = message + "for the last " + str(default_days) + " days"
+            else:
+                message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
+        elif startdate == datetime.datetime.min.replace(tzinfo=pytz.UTC):
+            message = message + "before " + str(enddate.date())
+        elif enddate == datetime.datetime.max.replace(tzinfo=pytz.UTC):
+            message = message + "after " + str(startdate.date())
         else:
             message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
-    elif startdate == datetime.datetime.min.replace(tzinfo=pytz.UTC):
-        message = message + "before " + str(enddate.date())
-    elif enddate == datetime.datetime.max.replace(tzinfo=pytz.UTC):
-        message = message + "after " + str(startdate.date())
-    else:
-        message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
-        
-    return message
+            
+        return message
 
 
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
@@ -145,17 +155,18 @@ def getPurchases(user, filters):
     return sorted(local_purchases, key=lambda x: x.travel_to_date_time)
 
 
+# Returns the Concessions of the given user, filtered by the given status and mode of transport
 def getConcessions(user, context):
     customer = Customer.objects.get(user=user)
     today = timezone.now()
 
     # Get the filters
-    expired = context.get('expired')
+    status = context.get('status')
     mode = context.get('mode')
 
     linked_conc = getendpoints(user, 'concession/?format=json')
 
-    if not expired and mode:
+    if status != "past" and mode:
         # return valid concessions, filtered by mode
         # i.e. concessions with expiry date in the future
         if linked_conc:
@@ -168,7 +179,7 @@ def getConcessions(user, context):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today,
                                          mode=Mode.objects.get(short_desc=mode))
 
-    elif expired and mode:
+    elif status == "past" and mode:
         # return expired concessions, filtered by mode
         # i.e. concessions with expiry date in the past
         if linked_conc:
@@ -181,7 +192,7 @@ def getConcessions(user, context):
         return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today,
                                          mode=Mode.objects.get(short_desc=mode))
 
-    elif not expired and not mode:
+    elif status != "past" and not mode:
         # return all valid concessions
         if linked_conc:
             concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today))

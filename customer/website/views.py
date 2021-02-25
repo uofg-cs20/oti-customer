@@ -246,16 +246,16 @@ def purchases(request):
     context = {"purchases":[], "modes":[]}
     context["modes"] = getModes()
     startdate, enddate = getDates(request)
-    mode = request.POST.get("mode")
 
     context['startdate'] = startdate
     context['enddate'] = enddate
         
+    mode = request.POST.get("mode")
     if mode and mode != "None":
         context.update({"mode":mode})
         
     # Pass the message to display depending on the selected filters
-    context["heading"] = generateTicketHeading("purchase", startdate, enddate, mode)
+    context["heading"] = generateTicketHeading("purchase", mode, startdate=startdate, enddate=enddate)
 
     # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)
@@ -270,23 +270,21 @@ def concessions(request):
         return redirect(reverse('website:login'))
 
     context = {}
-    context["expired"] = False
     context["modes"] = getModes()
 
-    if request.method == "POST":
-        status = request.POST.get("status")
-        mode = request.POST.get("mode")
+    status = request.POST.get("status", "valid")
+    context["status"] = status
+    
+    mode = request.POST.get("mode")
+    if mode and mode != "None":
+        context["mode"] = mode
 
-        # check if the customer wants to see expired concessions
-        if status == 'past':
-            context['expired'] = True
-
-        if mode and mode != "None":
-            context["mode"] = mode
-
-    # obtain either current or past concessions for user 
+    # Obtain either current or past concessions for user 
     concessions = getConcessions(request.user, context)
     context['concessions'] = concessions
+    
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading("concession", mode, status=status)
 
     return render(request, 'website/concessions.html', context)
 
