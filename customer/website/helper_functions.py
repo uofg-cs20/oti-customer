@@ -35,10 +35,6 @@ def getDates(request):
     startdate = request.POST.get("startdate")
     enddate = request.POST.get("enddate")
 
-    # None given
-    if not startdate and not enddate:
-        return None
-
     # Both given
     if startdate and enddate:
         startdate = formatDate(startdate)
@@ -51,14 +47,23 @@ def getDates(request):
     # Only startdate given
     if startdate and not enddate:
         startdate = formatDate(startdate)
-        enddate = None
+        enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
 
     # Only enddate given
     if not startdate and enddate:
-        startdate = None
+        startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
         enddate = formatDate(enddate)
 
-    return {"startdate":startdate, "enddate":enddate}
+    # None given
+    if not startdate and not enddate:
+        if request.POST.get("usages"):
+            startdate = timezone.now() - timedelta(days=30)
+            enddate = timezone.now()
+        else:
+            startdate = timezone.now()
+            enddate = timezone.now() + timedelta(days=30)
+
+    return (startdate, enddate)
 
 
 # Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"

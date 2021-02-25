@@ -243,33 +243,19 @@ def purchases(request):
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
     
-    context = {}
-    filters = {}
+    context = {"purchases":[], "modes":[]}
     context["modes"] = getModes()
+    startdate, enddate = getDates(request)
     mode = request.POST.get("mode")
+
+    context['startdate'] = startdate
+    context['enddate'] = enddate
+        
     if mode and mode != "None":
         context.update({"mode":mode})
-        filters.update({"mode":mode})
-    
-    # Get the dates to filter by from the request
-    dates = getDates(request)
-    if not dates:
-        startdate = timezone.now()
-        enddate = timezone.now() + timedelta(days=30)
-        filters['startdate'] = startdate
-        filters['enddate'] = enddate
-    else:
-        startdate = dates.get("startdate")
-        enddate = dates.get("enddate")
-        if startdate:
-            context['startdate'] = startdate
-            filters['startdate'] = startdate
-        if enddate:
-            context['enddate'] = enddate
-            filters['enddate'] = enddate
-            
-    # Retrieve a list of Purchases filtered by date and mode if given
-    context["purchases"] = getPurchases(request.user, filters)
+
+    # Retrieve a list of Purchases filtered by the given fields in the context dictionary
+    context["purchases"] = getPurchases(request.user, context)
 
     return render(request, 'website/purchases.html', context)
 
@@ -309,33 +295,16 @@ def usage(request):
         return redirect(reverse('website:login'))
 
     context = {}
-    filters = {}
     context["modes"] = getModes()
+    startdate, enddate = getDates(request)
     mode = request.POST.get("mode")
-    if mode and mode != "None":
-        context["mode"] = mode
-        filters["mode"] = mode
 
-    # Get the dates to filter by from the request
-    dates = getDates(request)
-    if not dates:
-        startdate = timezone.now() - timedelta(days=30)
-        enddate = timezone.now()
-        filters['startdate'] = startdate
-        filters['enddate'] = enddate
-    else:
-        startdate = dates.get("startdate")
-        enddate = dates.get("enddate")
-        if startdate:
-            context['startdate'] = startdate
-            filters['startdate'] = startdate
-        if enddate:
-            context['enddate'] = enddate
-            filters['enddate'] = enddate
-            
-    # Obtain a list of the user's usages, filtered or unfiltered
-    usages = getUsage(request.user, filters)
+    context['startdate'] = startdate
+    context['enddate'] = enddate
+    context['mode'] = mode
+
+    usages = getUsage(request.user, context)
     context['usages'] = usages
     
     return render(request, 'website/usage.html', context)
-
+    
