@@ -34,23 +34,25 @@
 		</form>
 	</div>
 
-	<!-- Display the user's usages -->
 	<div class="container my-4 mb-5">
-		<h3>Usages</h3>
-			{% if usages %}
-				{% for ticket in usages %}
-					<div class="card p-4 my-4" style="width: 40rem;">
-					<tr>
-						<h5> {{ ticket.mode }} Ticket</h5>
-						<p> <b>{{ ticket.operator }}</b> </p>
-						<p>{{ ticket.travel_from.location.name }} to {{ ticket.travel_to.location.name }}</p>
-						<p> {{ ticket.travel_from.date_time }} - {{ ticket.travel_to.date_time }}</p>
-					</div>
-				{% endfor %}
-			{% else %}
-				<td>No usages found</td>
-			{% endif %}
-			</tr>
+		<!-- Heading changes with applied filters -->
+		<h4 >{{ heading }}</h4>
+		
+		<!-- Display the user's usages -->
+		{% if usages %}
+			{% for ticket in usages %}
+				<div class="card p-4 my-4" style="width: 40rem;">
+				<tr>
+					<h5> {{ ticket.mode }} Ticket</h5>
+					<p> <b>{{ ticket.operator }}</b> </p>
+					<p>{{ ticket.travel_from.location.name }} to {{ ticket.travel_to.location.name }}</p>
+					<p> {{ ticket.travel_from.date_time }} - {{ ticket.travel_to.date_time }}</p>
+				</div>
+			{% endfor %}
+		{% else %}
+			<td>No usages found</td>
+		{% endif %}
+		</tr>
 	</div>
 
 {% endblock content %}

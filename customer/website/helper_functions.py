@@ -30,8 +30,8 @@ def getModes():
     return modes
 
 
-# Returns date filters
-def getDates(request):
+# Returns date filters for the given ticket request
+def getDates(request, ticket_type):
     startdate = request.POST.get("startdate")
     enddate = request.POST.get("enddate")
 
@@ -56,7 +56,7 @@ def getDates(request):
 
     # None given
     if not startdate and not enddate:
-        if request.POST.get("usages"):
+        if ticket_type == "usage":
             startdate = timezone.now() - timedelta(days=30)
             enddate = timezone.now()
         else:
@@ -187,35 +187,42 @@ def getConcessions(user, context):
     return sorted(local_concessions, key=lambda x: x.valid_from_date_time)
 
 
+# Returns the Usages of the given user, filtered by the given dates and mode of transport
 def getUsage(user, filters=None):
-    cust = Customer.objects.get(user=user)
+    # Get the Customer object of the given user
+    customer = Customer.objects.get(user=user)
 
+    # Filter by user
+    local_usages = list(Usage.objects.filter(customer_id=customer.id))
+
+    # Here we get the Usages from linked Operator accounts
+    if not filters.get("link") == False:
+        linked_usages = getendpoints(user, 'usage/?format=json')
+        if linked_usages:
+            for usage in linked_usages:
+                local_usages.append(usage)
+                
     # Get the filters
     mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
     enddate = filters.get("enddate", datetime.datetime.max.replace(tzinfo=pytz.UTC))
-    # Filter with the mode if given
-    if (mode != 'None') and (mode is not None):
-        usages = Usage.objects.filter(customer=cust.id, mode=Mode.objects.get(short_desc=mode))
-    else:
-        usages = Usage.objects.filter(customer=cust.id)
 
-    # Filter usages by date & time
-    usages = usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
-        .union(usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
-        .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+    # Filter by mode
+    if mode and mode != "None":
+        local_usages = [u for u in local_usages if u.mode.short_desc == mode]
 
-    # Here we get the linked usages from other operators
-    linked_usages = getendpoints(user, 'usage/?format=json')
-    usages = list(usages)
-    if linked_usages:
-        for usage in linked_usages:
-            if (usage.travel_from.date_time < enddate) and (usage.travel_to.date_time >= startdate):
-                usages.append(usage)
-        return sorted(usages, key=lambda x: x.travel_from.date_time)
-    else:
-        return usages
+    # Filter by date, including all usages whose "from-to" validity date range overlaps the filtered date range
+    # First include those whose "from" date is within the filter range
+    # Then include those whose "to" date is within the filter range
+    # Finally include the special cases whose filter range is entirely within the "from-to" validity range
+    local_usages = [u for u in local_usages if \
+                        (u.travel_to.date_time >= startdate and u.travel_to.date_time <= enddate) \
+                        or (u.travel_from.date_time >= startdate and u.travel_from.date_time <= enddate) \
+                        or (u.travel_from.date_time <= startdate and u.travel_to.date_time >= enddate)]
 
+    # Return the user's Usages sorted by travel_from.date_time
+    return sorted(local_usages, key=lambda x: x.travel_from.date_time)
+    
 
 # Returns a list of operators that can be linked
 def getOperators():

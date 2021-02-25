@@ -252,8 +252,9 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        filtered_usages = sorted(list(filtered_usages), key=lambda x: x.travel_from.date_time)
         
-        self.assertEqual(shown_usage, list(filtered_usages), "Filtering by mode does not display the correct Usages")
+        self.assertEqual(shown_usage, filtered_usages, "Filtering by mode does not display the correct Usages")
         
     def test_usage_date_filters(self):
         response = self.client.post(reverse("website:usage"), {"startdate":(timezone.now()-timedelta(days=1000)).strftime("%d-%m-%Y"), "enddate":(timezone.now()-timedelta(days=500)).strftime("%d-%m-%Y"), "link":False})
@@ -269,7 +270,8 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
+        filtered_usages = sorted(list(filtered_usages), key=lambda x: x.travel_from.date_time)
         
-        self.assertEqual(shown_usage,list(filtered_usages), "Filtering between given dates does not display the correct Usages")
+        self.assertEqual(shown_usage, filtered_usages, "Filtering between given dates does not display the correct Usages")
         
 

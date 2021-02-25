@@ -243,10 +243,12 @@ def purchases(request):
     if not request.user.is_authenticated:
         return redirect(reverse('website:login'))
     
-    context = {"purchases":[], "modes":[]}
+    context = {}
+    ticket_type = "purchase"
+    context["ticket_type"] = ticket_type
     context["modes"] = getModes()
-    startdate, enddate = getDates(request)
-
+    
+    startdate, enddate = getDates(request, ticket_type)
     context['startdate'] = startdate
     context['enddate'] = enddate
         
@@ -255,7 +257,7 @@ def purchases(request):
         context.update({"mode":mode})
         
     # Pass the message to display depending on the selected filters
-    context["heading"] = generateTicketHeading("purchase", mode, startdate=startdate, enddate=enddate)
+    context["heading"] = generateTicketHeading(ticket_type, mode, startdate=startdate, enddate=enddate)
 
     # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)
@@ -270,6 +272,8 @@ def concessions(request):
         return redirect(reverse('website:login'))
 
     context = {}
+    ticket_type = "concession"
+    context["ticket_type"] = ticket_type
     context["modes"] = getModes()
 
     status = request.POST.get("status", "valid")
@@ -279,12 +283,12 @@ def concessions(request):
     if mode and mode != "None":
         context["mode"] = mode
 
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading(ticket_type, mode, status=status)
+
     # Obtain either current or past concessions for user 
     concessions = getConcessions(request.user, context)
     context['concessions'] = concessions
-    
-    # Pass the message to display depending on the selected filters
-    context["heading"] = generateTicketHeading("concession", mode, status=status)
 
     return render(request, 'website/concessions.html', context)
 
@@ -296,14 +300,22 @@ def usage(request):
         return redirect(reverse('website:login'))
 
     context = {}
+    ticket_type = "usage"
+    context["ticket_type"] = ticket_type
     context["modes"] = getModes()
-    startdate, enddate = getDates(request)
-    mode = request.POST.get("mode")
-
+    
+    startdate, enddate = getDates(request, ticket_type)
     context['startdate'] = startdate
     context['enddate'] = enddate
-    context['mode'] = mode
+    
+    mode = request.POST.get("mode")
+    if mode and mode != "None":
+        context.update({"mode":mode})
+        
+    # Pass the message to display depending on the selected filters
+    context["heading"] = generateTicketHeading(ticket_type, mode, startdate=startdate, enddate=enddate)
 
+    # Obtain a list of usages for the user, possibly filtered
     usages = getUsage(request.user, context)
     context['usages'] = usages
     
