@@ -80,7 +80,7 @@ def getPurchases(user, filters):
 
     # Here we get the Purchases from linked Operator accounts
     if not filters.get("link") == False:
-        linked_purchases = getPCU(user, 'purchase/?format=json')
+        linked_purchases = getendpoints(user, 'purchase/?format=json')
         local_purchases = list(local_purchases)
         if linked_purchases:
             for purchase in linked_purchases:
@@ -116,7 +116,7 @@ def getConcessions(user, context):
     expired = context.get('expired')
     mode = context.get('mode')
 
-    linked_conc = getPCU(user, 'concession/?format=json')
+    linked_conc = getendpoints(user, 'concession/?format=json')
 
     if not expired and mode:
         # return valid concessions, filtered by mode
@@ -184,7 +184,7 @@ def getUsage(user, filters=None):
         .union(usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
 
     # Here we get the linked usages from other operators
-    linked_usages = getPCU(user, 'usage/?format=json')
+    linked_usages = getendpoints(user, 'usage/?format=json')
     usages = list(usages)
     if linked_usages:
         for usage in linked_usages:
@@ -206,123 +206,48 @@ def getOperators():
         return {"operators": {"null": "null"}}
 
 
-# PCU stands for purchase, concession usage
-# This function takes a user and the pcu and then proceeds to find the connected accounts tickets
+# This function takes a user and the endpoint and then proceeds to find the connected accounts tickets
 # The function connects to an exposed API through authentication methods, and then creates Django models based on the
 # data it interprets from the API. These models aren't saved in the database and are called every time a user connects
 # to a page.
-def getPCU(user, pcu):
+def getendpoints(user, endpoint):
     try:
         cust = Customer.objects.get(user=user)
         linked_accounts = ConnectedAccount.objects.filter(customer=cust)
         objs = []
+
         # Loop through all the linked accounts
         for linked_account in linked_accounts:
-            r = requestData(linked_account, pcu)
+            r = requestData(linked_account, endpoint)
             if not r:
                 continue
             catalogue = r.json()
             out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
+
             # Loop through every ticket in the santizied list
             for ticket in out_list:
-                # This section is for parts of each PCU that they all share
-                # These are abstracted from the specific PCU to avoid repetition
-                modeid = ticket['mode']['id']
-                short_desc = ticket['mode']['short_desc']
-                mode = Mode(id=modeid, short_desc=short_desc)
-
-                optick = ticket['operator']
-                opname = optick['name']
-                homepage = optick['homepage']
-                api_url = optick['api_url']
-                phone = optick['phone']
-                email = optick['email']
-                operator = Operator(name=opname, homepage=homepage, api_url=api_url, phone=phone, email=email)
-
+                # This section is for parts of each endpoint that they all share
+                # These are abstracted from the specific endpoint to avoid repetition
+                mode = getMode(ticket['mode'])
+                operator = getOperator(ticket['operator'])
                 recordid = RecordID(id=ticket['id'])
-                latlongfrom, loc_from, latlongto, loc_to = getLocs(pcu.split('/')[0], ticket)
 
-                if (pcu == "concession/?format=json") or (pcu == "purchase/?format=json"):
-                    # These models are specific to concession and purchases
-                    amount = ticket['transaction']['price']['amount']
-                    currency = ticket['transaction']['price']['currency']
-                    price = MonetaryValue(amount=amount, currency=currency)
+                api_endpoint = getApi(endpoint)
 
-                    date_time = formatdt(ticket['transaction']['date_time'])
-                    reference = ticket['transaction']['reference']
-                    payment_type = ticket['transaction']['payment_type']
-                    payment_method = ticket['transaction']['payment_method']
-                    trans = Transaction(date_time=date_time, reference=reference, payment_type=payment_type,
-                                        payment_method=payment_method, price=price)
+                latlongfrom, loc_from, latlongto, loc_to = getLocs(api_endpoint, ticket)
 
-                if (pcu == "purchase/?format=json") or (pcu == "usage/?format=json"):
-                    # These models are specific to purchases and usages
-                    tc = TravelClass(travel_class=ticket['travel_class'])
-                    reference = ticket['ticket']['reference']
-                    number_usages = ticket['ticket']['number_usages']
-                    reference_type = ticket['ticket']['reference_type']
-                    medium = ticket['ticket']['medium']
-                    tick = Ticket(reference=reference, number_usages=number_usages, reference_type=reference_type,
-                                  medium=medium)
-
-                # These next if statements are for creating the actual PCU models
-                # They are appended to a list of objects when they are created
-                if pcu == "concession/?format=json":
-                    # These models are specific to concessions
-                    discount_type = ticket['discount']['discount_type']
-                    discount_value = ticket['discount']['discount_value']
-                    discount_description = ticket['discount']['discount_description']
-                    valid_from_date_time = formatdt(ticket['valid_from_date_time'])
-                    valid_to_date_time = formatdt(ticket['valid_to_date_time'])
-                    conditions = ticket['conditions']
-                    disc = Discount(discount_type=discount_type, discount_value=discount_value,
-                                    discount_description=discount_description)
-                    concession = Concession(id=recordid, mode=mode, operator=operator, name=mode.short_desc,
-                                            price=price, conditions=conditions, customer=cust, discount=disc,
-                                            transaction=trans, valid_from_date_time=valid_from_date_time,
-                                            valid_to_date_time=valid_to_date_time)
+                if (api_endpoint == "concession"):
+                    concession = getTicketConcession(ticket)
                     objs.append(concession)
 
-                if pcu == "purchase/?format=json":
-                    # These models are specific to purchases
-                    amount = ticket['account_balance']['amount']
-                    currency = ticket['account_balance']['currency']
-                    balance = MonetaryValue(amount=amount, currency=currency)
-
-                    reference = ticket['vehicle']['reference']
-                    vehicle_type = ticket['vehicle']['vehicle_type']
-                    vehicle = Vehicle(reference=reference, vehicle_type=vehicle_type)
-
-                    booking_date_time = formatdt(ticket['booking_date_time'])
-                    travel_from_date_time = formatdt(ticket['travel_from_date_time'])
-                    travel_to_date_time = formatdt(ticket['travel_to_date_time'])
-                    purchase = Purchase(id=recordid, mode=mode, operator=operator, travel_class=tc,
-                                        booking_date_time=booking_date_time, transaction=trans, account_balance=balance,
-                                        vehicle=vehicle, travel_from_date_time=travel_from_date_time,
-                                        travel_to_date_time=travel_to_date_time, ticket=tick,
-                                        location_from=loc_from, location_to=loc_to, customer=cust)
+                elif (api_endpoint == "purchase"):
+                    purchase = getTicketPurchase(ticket, loc_from, loc_to)
                     objs.append(purchase)
 
-                if pcu == "usage/?format=json":
-                    # These models are specific to usages
-                    amount = ticket['price']['amount']
-                    currency = ticket['price']['currency']
-                    price = MonetaryValue(amount=amount, currency=currency)
-
-                    date_time = formatdt(ticket['travel_from']['date_time'], False)
-                    reference = ticket['travel_from']['reference']
-                    uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
-
-                    date_time = formatdt(ticket['travel_to']['date_time'], False)
-                    reference = ticket['travel_from']['reference']
-                    uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
-
-                    reference = ticket['reference']['reference']
-                    reference_type = ticket['reference']['reference_type']
-                    ur = UsageReference(reference=reference, reference_type=reference_type)
-                    usage = Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
-                                  travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
+                elif (api_endpoint == "usage"):    
+                    usage = getTicketUsage(ticket, loc_from, loc_to)
                     objs.append(usage)
+
         return objs
     except ConnectionError:
         return []
@@ -330,13 +255,13 @@ def getPCU(user, pcu):
         return []
 
 
-# This function is for creating the location data for each PCU. It has been abstracted because each object uses this
-# function and keeping it in the getPCU() function created bloat. It runs through the ticket dictionary it is passed
+# This function is for creating the location data for each endpoint. It has been abstracted because each object uses this
+# function and keeping it in the getendpoints() function created bloat. It runs through the ticket dictionary it is passed
 # and created LatitudeLongitude and Location models. It also uses reverse geolocation to find the location of the ticket.
-def getLocs(pcu, ticket):
-    if pcu == 'concession':
+def getLocs(endpoint, ticket):
+    if endpoint == 'concession':
         return [None, None, None, None]
-    if pcu == 'usage':
+    if endpoint == 'usage':
         ticketfrom = ticket['travel_from']['location']
         ticketto = ticket['travel_to']['location']
     else:
@@ -371,7 +296,7 @@ def formatdt(time, nano=True):
 
 
 # Requests access to a linked operator site using a token
-def requestData(linked_account, pcu):
+def requestData(linked_account, endpoint):
     try:
         token = linked_account.access_token
         refresh_token = linked_account.refresh_token
@@ -383,7 +308,7 @@ def requestData(linked_account, pcu):
             if op["item_metadata"][3]["val"] == linked_account.operator_id:
                 api_url = op["href"]
 
-        r = requests.get(api_url + pcu, headers={"Authorization": "Bearer " + token})
+        r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + token})
 
         if r.status_code != 200:
             # possible refresh
@@ -396,7 +321,7 @@ def requestData(linked_account, pcu):
                 linked_account.access_token = data["access_token"]
                 linked_account.refresh_token = data["refresh_token"]
                 linked_account.save()
-                r = requests.get(api_url + pcu, headers={"Authorization": "Bearer " + linked_account.access_token})
+                r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + linked_account.access_token})
             else:
                 return None
 
@@ -444,3 +369,119 @@ def emptyDatabase():
     if Mode.objects.all():
         Mode.objects.all().delete()
         
+
+def getTicketPurchase(ticket):
+    price = getMonetaryValue(ticket['transaction']['price'])
+    trans = getTransaction(ticket['transaction'], price)
+    tc = TravelClass(travel_class=ticket['travel_class'])
+    tick = getTicket(ticket['ticket'])
+    balance = getMonetaryValue(ticket['account_balance'])
+    vehicle = getVehicle(ticket['vehicle'])
+
+    booking_date_time = formatdt(ticket['booking_date_time'])
+    travel_from_date_time = formatdt(ticket['travel_from_date_time'])
+    travel_to_date_time = formatdt(ticket['travel_to_date_time'])
+    return Purchase(id=recordid, mode=mode, operator=operator, travel_class=tc,
+                        booking_date_time=booking_date_time, transaction=trans, account_balance=balance,
+                        vehicle=vehicle, travel_from_date_time=travel_from_date_time,
+                        travel_to_date_time=travel_to_date_time, ticket=tick,
+                        location_from=loc_from, location_to=loc_to, customer=cust)
+
+
+def getTicketConcession(ticket):
+    price = getMonetaryValue(ticket['transaction']['price'])
+    trans = getTransaction(ticket['transaction'], price)
+    disc = getDiscount(ticket['discount'])
+    valid_from_date_time = formatdt(ticket['valid_from_date_time'])
+    valid_to_date_time = formatdt(ticket['valid_to_date_time'])
+    conditions = ticket['conditions']
+    concession = Concession(id=recordid, mode=mode, operator=operator, name=mode.short_desc,
+                            price=price, conditions=conditions, customer=cust, discount=disc,
+                            transaction=trans, valid_from_date_time=valid_from_date_time,
+                            valid_to_date_time=valid_to_date_time)
+
+
+def getTicketUsage(ticket):
+    tc = TravelClass(travel_class=ticket['travel_class'])
+    tick = getTicket(ticket['ticket'])
+    price = getMonetaryValue(ticket['price'])
+
+    date_time = formatdt(ticket['travel_from']['date_time'], False)
+    reference = ticket['travel_from']['reference']
+    uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
+
+    date_time = formatdt(ticket['travel_to']['date_time'], False)
+    reference = ticket['travel_from']['reference']
+    uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
+
+    ur = getReference(ticket['reference'])
+
+    return Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
+                    travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
+
+
+def getMode(ticket):
+    modeid = ticket['id']
+    short_desc = ticket['short_desc']
+    return Mode(id=modeid, short_desc=short_desc)
+
+
+def getOperator(ticket):
+    opname = ticket['name']
+    homepage = ticket['homepage']
+    api_url = ticket['api_url']
+    phone = ticket['phone']
+    email = ticket['email']
+    return Operator(name=opname, homepage=homepage, api_url=api_url, phone=phone, email=email)
+
+
+def getMonetaryValue(ticket):
+    amount = ticket['amount']
+    currency = ticket['currency']
+    return MonetaryValue(amount=amount, currency=currency)
+
+
+def getTransaction(ticket, price):
+    date_time = formatdt(ticket['date_time'])
+    reference = ticket['reference']
+    payment_type = ticket['payment_type']
+    payment_method = ticket['payment_method']
+    return Transaction(date_time=date_time, reference=reference, payment_type=payment_type,
+                        payment_method=payment_method, price=price)
+
+
+def getTicket(ticket):
+    reference = ticket['reference']
+    number_usages = ticket['number_usages']
+    reference_type = ticket['reference_type']
+    medium = ticket['medium']
+    tick = Ticket(reference=reference, number_usages=number_usages, reference_type=reference_type,
+                    medium=medium)
+
+
+def getDiscount(ticket):
+    discount_type = ticket['discount_type']
+    discount_value = ticket['discount_value']
+    discount_description = ticket['discount_description']
+    disc = Discount(discount_type=discount_type, discount_value=discount_value,
+                    discount_description=discount_description)
+
+
+def getVehicle(ticket):
+    reference = ticket['reference']
+    vehicle_type = ticket['vehicle_type']
+    return Vehicle(reference=reference, vehicle_type=vehicle_type)
+
+
+def getReference(ticket):
+    reference = ticket['reference']['reference']
+    reference_type = ticket['reference']['reference_type']
+    return UsageReference(reference=reference, reference_type=reference_type)
+
+def getApi(endpoint):
+    endpoints = ['purchase', 'concession', 'usage']
+
+    for i in endpoint.split('/'):
+        if i in endpoints:
+            return i
+    
