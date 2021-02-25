@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from website.models import *
 from website.apps import WebsiteConfig
-from website.helper_functions import getModes, getPurchases, getConcessions, getUsage, formatDate
+from website.linking_functions import getModes, getPurchases, getConcessions, getUsage
+from website.helper_functions import formatDate
 from datetime import timedelta
 import datetime
 import pytz

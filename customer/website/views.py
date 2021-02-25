@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import success
 from .models import Operator, Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
-from .helper_functions import getDates, getModes, formatDate, getPurchases, getConcessions, getUsage, getOperators, generateTicketHeading
+from .linking_functions import getModes, getPurchases, getConcessions, getUsage, getOperators
+from .helper_functions import getDates, formatDate, generateTicketHeading
 from datetime import date, timedelta
 from django.utils import timezone
 from rest_framework import viewsets, permissions
