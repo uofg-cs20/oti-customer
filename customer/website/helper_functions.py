@@ -123,12 +123,11 @@ def getPurchases(user, filters):
     customer = Customer.objects.get(user=user)
 
     # Filter by user
-    local_purchases = Purchase.objects.filter(customer_id=customer.id)
+    local_purchases = list(Purchase.objects.filter(customer_id=customer.id))
 
     # Here we get the Purchases from linked Operator accounts
     if not filters.get("link") == False:
         linked_purchases = getendpoints(user, 'purchase/?format=json')
-        local_purchases = list(local_purchases)
         if linked_purchases:
             for purchase in linked_purchases:
                 local_purchases.append(purchase)
@@ -151,7 +150,7 @@ def getPurchases(user, filters):
                         or (p.travel_from_date_time >= startdate and p.travel_from_date_time <= enddate) \
                         or (p.travel_from_date_time <= startdate and p.travel_to_date_time >= enddate)]
 
-    # Return all the user's Purchases sorted by travel_to_date_time
+    # Return the user's Purchases sorted by travel_to_date_time
     return sorted(local_purchases, key=lambda x: x.travel_to_date_time)
 
 
@@ -159,58 +158,33 @@ def getPurchases(user, filters):
 def getConcessions(user, context):
     customer = Customer.objects.get(user=user)
     today = timezone.now()
+    
+    # Filter by user
+    local_concessions = list(Concession.objects.filter(customer_id=customer.id))
 
+    # Here we get the Concessions from linked Operator accounts
+    if not context.get("link") == False:
+        linked_concessions = getendpoints(user, 'concession/?format=json')
+        if linked_concessions:
+            for c in linked_concessions:
+                local_concessions.append(c)
+                
     # Get the filters
     status = context.get('status')
     mode = context.get('mode')
-
-    linked_conc = getendpoints(user, 'concession/?format=json')
-
-    if status != "past" and mode:
-        # return valid concessions, filtered by mode
-        # i.e. concessions with expiry date in the future
-        if linked_conc:
-            curmode = Mode.objects.get(short_desc=mode)
-            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today, mode=curmode))
-            for conc in linked_conc:
-                if (conc.valid_to_date_time > today) and (conc.mode == curmode):
-                    concs.append(conc)
-            return sorted(concs, key=lambda x: x.valid_from_date_time)
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today,
-                                         mode=Mode.objects.get(short_desc=mode))
-
-    elif status == "past" and mode:
-        # return expired concessions, filtered by mode
-        # i.e. concessions with expiry date in the past
-        if linked_conc:
-            curmode = Mode.objects.get(short_desc=mode)
-            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today, mode=curmode))
-            for conc in linked_conc:
-                if (conc.valid_to_date_time < today) and (conc.mode == curmode):
-                    concs.append(conc)
-            return sorted(concs, key=lambda x: x.valid_from_date_time)
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today,
-                                         mode=Mode.objects.get(short_desc=mode))
-
-    elif status != "past" and not mode:
-        # return all valid concessions
-        if linked_conc:
-            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today))
-            for conc in linked_conc:
-                if conc.valid_to_date_time > today:
-                    concs.append(conc)
-            return sorted(concs, key=lambda x: x.valid_from_date_time)
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__gt=today)
-
+    
+    # Filter by mode
+    if mode and mode != "None":
+        local_concessions = [c for c in local_concessions if c.mode.short_desc == mode]
+        
+    # Filter by status (valid or expired)
+    if status == "past":
+        local_concessions = [c for c in local_concessions if c.valid_to_date_time < today]
     else:
-        # return all expired concessions
-        if linked_conc:
-            concs = list(Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today))
-            for conc in linked_conc:
-                if conc.valid_to_date_time < today:
-                    concs.append(conc)
-            return sorted(concs, key=lambda x: x.valid_from_date_time)
-        return Concession.objects.filter(customer_id=customer.id, valid_to_date_time__lt=today)
+        local_concessions = [c for c in local_concessions if c.valid_to_date_time > today]
+        
+    # Return the user's Concessions sorted by valid_from_date_time
+    return sorted(local_concessions, key=lambda x: x.valid_from_date_time)
 
 
 def getUsage(user, filters=None):

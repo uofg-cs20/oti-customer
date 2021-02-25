@@ -196,9 +196,10 @@ class ConcessionTests(TestCase):
         # Concessions that should have been filtered by the request
         customer = Customer.objects.get(user=get_response.context["user"])
         filtered_concessions = Concession.objects.filter(valid_to_date_time__gt=timezone.now(), customer_id=customer.id)
+        filtered_concessions = sorted(list(filtered_concessions), key=lambda x: x.valid_from_date_time)
         
-        self.assertEqual(list(shown_get_concessions), list(filtered_concessions), "Not all Concessions shown by default from a GET request are valid")
-        self.assertEqual(list(shown_post_concessions), list(filtered_concessions), "Not all Concessions shown by default from a POST request with no filters are valid")
+        self.assertEqual(list(shown_get_concessions), filtered_concessions, "Not all Concessions shown by default from a GET request are valid")
+        self.assertEqual(list(shown_post_concessions), filtered_concessions, "Not all Concessions shown by default from a POST request with no filters are valid")
         
     def test_concession_valid_filter(self):
         response = self.client.post(reverse("website:concessions"), {"status":"valid", "link":False})
@@ -209,8 +210,9 @@ class ConcessionTests(TestCase):
         # Concessions that should have been filtered by the request
         customer = Customer.objects.get(user=response.context["user"])
         filtered_concessions = Concession.objects.filter(valid_to_date_time__gt=timezone.now(), customer_id=customer.id)
+        filtered_concessions = sorted(list(filtered_concessions), key=lambda x: x.valid_from_date_time)
         
-        self.assertEqual(list(shown_concessions), list(filtered_concessions), "Valid filter does not display the correct Concessions")
+        self.assertEqual(list(shown_concessions), filtered_concessions, "Valid filter does not display the correct Concessions")
         
     def test_concession_expired_filter(self):
         response = self.client.post(reverse("website:concessions"), {"status":"past", "link":False})
@@ -221,8 +223,9 @@ class ConcessionTests(TestCase):
         # Concessions that should have been filtered by the request
         customer = Customer.objects.get(user=response.context["user"])
         filtered_concessions = Concession.objects.filter(valid_to_date_time__lt=timezone.now(), customer_id=customer.id)
+        filtered_concessions = sorted(list(filtered_concessions), key=lambda x: x.valid_from_date_time)
         
-        self.assertEqual(list(shown_concessions), list(filtered_concessions), "Expired filter does not display the correct Concessions")
+        self.assertEqual(list(shown_concessions), filtered_concessions, "Expired filter does not display the correct Concessions")
         
 class UsageTests(TestCase):
 
