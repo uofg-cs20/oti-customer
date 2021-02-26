@@ -141,10 +141,31 @@ def getOperators():
         r = requests.get('https://cs20operator.herokuapp.com/api/operator/')
         catalogue = r.json()[0]["items"]
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
-        return out_list
+        operators = []
+        for operator in out_list:
+            op = {'href': operator['href']}
+            metadata = operator['item_metadata']
+            op['name'] = getRelValue(metadata, 'hasDescription')
+            op['homepage'] = getRelValue(metadata, 'hasHomepage')
+            op['id'] = getRelValue(metadata, 'hasID')
+            op['email'] = getRelValue(metadata, 'hasEmail')
+            op['phone'] = getRelValue(metadata, 'hasPhone')
+            op['language'] = getRelValue(metadata, 'hasDefaultLanguage')
+            op['numbermodes'] = int(getRelValue(metadata, 'hasNumberModes'))
+            modeDict = {}
+            for modeNo in range(op['numbermodes']):
+                modeNo+= 1
+                modeDict['mode'+str(modeNo)+'id'] = getRelValue(metadata, 'hasNumberMode'+str(modeNo)+'#Code')
+                modeDict['mode' + str(modeNo) + 'desc'] = getRelValue(metadata, 'hasNumberMode' + str(modeNo) + '#Description')
+            op['modes'] = modeDict
+            operators.append(op)
+        return operators
     except ConnectionError:
         return {"operators": {"null": "null"}}
 
+
+def getRelValue(operatorData, relation):
+    return [field['val'] for field in operatorData if relation in field['rel']][0]
 
 # This function takes a user and the endpoint and then proceeds to find the connected accounts tickets
 # The function connects to an exposed API through authentication methods, and then creates Django models based on the
@@ -163,7 +184,6 @@ def getendpoints(user, endpoint):
                 continue
             catalogue = r.json()
             out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
-
             # Loop through every ticket in the santizied list
             for ticket in out_list:
                 # This section is for parts of each endpoint that they all share
@@ -171,23 +191,21 @@ def getendpoints(user, endpoint):
                 mode = getMode(ticket['mode'])
                 operator = getOperator(ticket['operator'])
                 recordid = RecordID(id=ticket['id'])
-
                 api_endpoint = getApi(endpoint)
 
                 latlongfrom, loc_from, latlongto, loc_to = getLocs(api_endpoint, ticket)
 
                 if (api_endpoint == "concession"):
-                    concession = getTicketConcession(ticket)
+                    concession = getTicketConcession(ticket, mode, operator, recordid, cust)
                     objs.append(concession)
 
                 elif (api_endpoint == "purchase"):
-                    purchase = getTicketPurchase(ticket, loc_from, loc_to)
+                    purchase = getTicketPurchase(ticket, mode, operator, recordid, cust, loc_from, loc_to)
                     objs.append(purchase)
 
-                elif (api_endpoint == "usage"):    
-                    usage = getTicketUsage(ticket, loc_from, loc_to)
+                elif (api_endpoint == "usage"):
+                    usage = getTicketUsage(ticket, mode, operator, recordid, cust, loc_from, loc_to)
                     objs.append(usage)
-
         return objs
     except ConnectionError:
         return []
@@ -271,7 +289,7 @@ def requestData(linked_account, endpoint):
         pass
         
 
-def getTicketPurchase(ticket):
+def getTicketPurchase(ticket, mode, operator, recordid, cust, loc_from, loc_to):
     price = getMonetaryValue(ticket['transaction']['price'])
     trans = getTransaction(ticket['transaction'], price)
     tc = TravelClass(travel_class=ticket['travel_class'])
@@ -289,7 +307,7 @@ def getTicketPurchase(ticket):
                         location_from=loc_from, location_to=loc_to, customer=cust)
 
 
-def getTicketConcession(ticket):
+def getTicketConcession(ticket, mode, operator, recordid, cust):
     price = getMonetaryValue(ticket['transaction']['price'])
     trans = getTransaction(ticket['transaction'], price)
     disc = getDiscount(ticket['discount'])
@@ -300,23 +318,20 @@ def getTicketConcession(ticket):
                             price=price, conditions=conditions, customer=cust, discount=disc,
                             transaction=trans, valid_from_date_time=valid_from_date_time,
                             valid_to_date_time=valid_to_date_time)
+    return concession
 
 
-def getTicketUsage(ticket):
+def getTicketUsage(ticket, mode, operator, recordid, cust, loc_from, loc_to):
     tc = TravelClass(travel_class=ticket['travel_class'])
     tick = getTicket(ticket['ticket'])
     price = getMonetaryValue(ticket['price'])
-
     date_time = formatdt(ticket['travel_from']['date_time'], False)
     reference = ticket['travel_from']['reference']
     uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
-
     date_time = formatdt(ticket['travel_to']['date_time'], False)
     reference = ticket['travel_from']['reference']
     uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
-
     ur = getReference(ticket['reference'])
-
     return Usage(id=recordid, mode=mode, operator=operator, reference=ur, travel_class=tc,
                     travel_from=uft1, travel_to=uft2, ticket=tick, price=price, customer=cust)
 
@@ -358,6 +373,7 @@ def getTicket(ticket):
     medium = ticket['medium']
     tick = Ticket(reference=reference, number_usages=number_usages, reference_type=reference_type,
                     medium=medium)
+    return tick
 
 
 def getDiscount(ticket):
@@ -366,7 +382,7 @@ def getDiscount(ticket):
     discount_description = ticket['discount_description']
     disc = Discount(discount_type=discount_type, discount_value=discount_value,
                     discount_description=discount_description)
-
+    return disc
 
 def getVehicle(ticket):
     reference = ticket['reference']
@@ -375,8 +391,8 @@ def getVehicle(ticket):
 
 
 def getReference(ticket):
-    reference = ticket['reference']['reference']
-    reference_type = ticket['reference']['reference_type']
+    reference = ticket['reference']
+    reference_type = ticket ['reference_type']
     return UsageReference(reference=reference, reference_type=reference_type)
 
 def getApi(endpoint):

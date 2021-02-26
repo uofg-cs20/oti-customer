@@ -40,13 +40,13 @@
         </tr>
         {% for operator in operators %}
         <tr>
-          <td>{{ operator.item_metadata.1.val }}</td>
-          <td>{{ operator.item_metadata.2.val }}</td>
-          <td>{{ operator.item_metadata.3.val }}</td>
-            {% if operator.item_metadata.3.val not in connected %}
+          <td>{{ operator.name }}</td>
+          <td>{{ operator.homepage }}</td>
+          <td>{{ operator.id }}</td>
+            {% if operator.id not in connected %}
                     <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login(this)"></td>
                 {% else %}
-                <form action="{% url 'website:disconnect' operator.item_metadata.3.val %}" method="post">
+                <form action="{% url 'website:disconnect' operator.id %}" method="post">
                     {% csrf_token %}
                     <td><input  class="btn btn-md btn-danger" type="submit" style="width:100%" value="Disconnect"></td>
                 </form>
