@@ -46,6 +46,10 @@ class DiscountSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     price = MonetaryValueSerializer()
 
+    def __init__(self, *args, **kwargs):
+        self.fields["date-time"] = serializers.DateTimeField(source="date_time", format=None)
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Transaction
         fields = ['date_time', 'reference', 'payment_type', 'payment_method', 'price']
@@ -69,6 +73,10 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class UsageFromToSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
+
+    def __init__(self, *args, **kwargs):
+        self.fields["date-time"] = serializers.DateTimeField(source="date_time", format=None)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = UsageFromTo
@@ -108,6 +116,11 @@ class ConcessionSerializer(serializers.ModelSerializer):
     discount = DiscountSerializer()
     transaction = TransactionSerializer()
 
+    def __init__(self, *args, **kwargs):
+        self.fields["valid-from-date-time"] = serializers.DateTimeField(source="valid_from_date_time", format=None)
+        self.fields["valid-to-date-time"] = serializers.DateTimeField(source="valid_to_date_time", format=None)
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Concession
         fields = ['id', 'mode', 'operator', 'name', 'price', 'discount', 'transaction', 'valid_from_date_time', 'valid_to_date_time', 'conditions']
@@ -125,6 +138,9 @@ class PurchaseSerializer(serializers.ModelSerializer):
         self.fields["account-balance"] = MonetaryValueSerializer(source="account_balance")
         self.fields["location-from"] = LocationSerializer(source="location_from")
         self.fields["location-to"] = LocationSerializer(source="location_to")
+        self.fields["booking-date-time"] = serializers.DateTimeField(source="booking_date_time", format=None)
+        self.fields["travel-from-date-time"] = serializers.DateTimeField(source="travel_from_date_time", format=None)
+        self.fields["travel-to-date-time"] = serializers.DateTimeField(source="travel_to_date_time", format=None)
         super().__init__(*args, **kwargs)
 
     class Meta:

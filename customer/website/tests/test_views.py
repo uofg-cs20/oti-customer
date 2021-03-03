@@ -3,7 +3,7 @@ from django.urls import reverse
 from website.models import *
 from website.apps import WebsiteConfig
 from website.linking_functions import getModes, getPurchases, getConcessions, getUsage
-from website.helper_functions import formatDate
+from website.helper_functions import formatdt
 from datetime import timedelta
 import datetime
 import pytz
@@ -158,8 +158,8 @@ class PurchaseTests(TestCase):
         
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering between two given dates does not display the correct Purchases")
         
-    def test_formatDate_correctly_formats_dates(self):
-        formatted_date = formatDate("22-05-2017")
+    def test_formatdt_correctly_formats_dates(self):
+        formatted_date = formatdt("22-05-2017", format='%d-%m-%Y')
         self.assertEqual(formatted_date.year, 2017)
         self.assertEqual(formatted_date.month, 5)
         self.assertEqual(formatted_date.day, 22)

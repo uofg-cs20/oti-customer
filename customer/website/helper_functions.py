@@ -15,8 +15,8 @@ def getDates(request, ticket_type):
 
     # Both given
     if startdate and enddate:
-        startdate = formatDate(startdate)
-        enddate = formatDate(enddate)
+        startdate = formatdt(startdate, format='%d-%m-%Y')
+        enddate = formatdt(enddate, format='%d-%m-%Y')
 
     # Swap if start date > enddate
     if startdate and enddate and startdate > enddate:
@@ -24,13 +24,13 @@ def getDates(request, ticket_type):
 
     # Only startdate given
     if startdate and not enddate:
-        startdate = formatDate(startdate)
+        startdate = formatdt(startdate, format='%d-%m-%Y')
         enddate = datetime.datetime.max.replace(tzinfo=pytz.UTC)
 
     # Only enddate given
     if not startdate and enddate:
         startdate = datetime.datetime.min.replace(tzinfo=pytz.UTC)
-        enddate = formatDate(enddate)
+        enddate = formatdt(enddate, format='%d-%m-%Y')
 
     # None given
     if not startdate and not enddate:
@@ -86,25 +86,14 @@ def generateTicketHeading(ticket_type, mode, startdate=None, enddate=None, statu
         return message
 
 
-# Returns a datetime object corresponding to the given date string of format "dd-mm-yyyy"
-def formatDate(datestr):
-    year = int(datestr[-4:])
-    month = int(datestr[3:5])
-    day = int(datestr[:2])
-    # For timezone-awareness call .replace(tzinfo=pytz.UTC) on the created datetime object
-    return datetime.datetime(year, month, day).replace(tzinfo=pytz.UTC)
-
-
-# formatdt is used for making sure each datetime that is read in, is in the correct format and so can be turned into
-# a datetime object.
-def formatdt(time, nano=True):
+# Returns a datetime object corresponding to the given date string of the given format
+def formatdt(time, format='%Y-%m-%dT%H:%M:%S.%fZ'):
     time = time.replace('_', '-')
-    if nano and (len(time) > 20):
-        time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.UTC)
-        return time.replace(microsecond=0)
-    else:
-        return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
-
+    # For timezone-awareness call .replace(tzinfo=pytz.UTC) on the created datetime object
+    formatted_time = datetime.datetime.strptime(time, format).replace(tzinfo=pytz.UTC)
+    formatted_time = formatted_time.isoformat(timespec='milliseconds')
+    return formatted_time
+    
         
 def emptyDatabase():
     # Delete data if the database is already populated

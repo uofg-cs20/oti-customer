@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.messages import success
 from .models import Operator, Mode, Purchase, Concession, Usage, ConnectedAccount, Customer
 from .linking_functions import getModes, getPurchases, getConcessions, getUsage, getOperators
-from .helper_functions import getDates, formatDate, generateTicketHeading
+from .helper_functions import getDates, generateTicketHeading
 from datetime import date, timedelta
 from django.utils import timezone
 from rest_framework import viewsets, permissions
@@ -14,6 +14,8 @@ from rest_framework.response import Response
 from .serializers import PurchaseSerializer, ConcessionSerializer, UsageSerializer
 from .forms import LoginForm, RegisterForm
 from customer.pagination import LimitSkipPagination
+from customer.renderers import CustomJSONRenderer
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 import requests, json
 from requests.auth import HTTPBasicAuth
 from django.core.paginator import Paginator
@@ -29,6 +31,7 @@ class PurchaseViewSet(viewsets.ModelViewSet):
     serializer_class = PurchaseSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitSkipPagination
+    renderer_classes = [CustomJSONRenderer, BrowsableAPIRenderer, JSONRenderer]
     
     def list(self, request):
         queryset = Purchase.objects.filter(customer__user=request.user)
@@ -65,6 +68,7 @@ class ConcessionViewSet(viewsets.ModelViewSet):
     serializer_class = ConcessionSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitSkipPagination
+    renderer_classes = [CustomJSONRenderer, BrowsableAPIRenderer, JSONRenderer]
     
     def list(self, request):
         queryset = Concession.objects.filter(customer__user=request.user)
@@ -101,6 +105,7 @@ class UsageViewSet(viewsets.ModelViewSet):
     serializer_class = UsageSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitSkipPagination
+    renderer_classes = [CustomJSONRenderer, BrowsableAPIRenderer, JSONRenderer]
     
     def list(self, request):
         queryset = Usage.objects.filter(customer__user=request.user)

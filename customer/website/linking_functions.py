@@ -11,6 +11,7 @@ import ast
 from requests.auth import HTTPBasicAuth
 import json
 import extra.reverse_geocode as reverse_geocode
+from .helper_functions import formatdt
 
 client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
 client_secret = "5EUIoebBH2SxgjANJ6KL1q1GcGZn924OCQbhbysqQ9kb79W3i9YBDGbMGlYw1NPee40fI3t0OYFW2zaghGl5buKfUzGQc7XuibqpbA296LKNiWWuF02RUUBaDAydV7t9"
@@ -244,17 +245,6 @@ def getLocs(endpoint, ticket):
     name = reverse_geocode.search([(float(latto), float(longto))])[0]['city']
     loc_to = Location(lat_long=latlongto, NaPTAN=ticketto['NaPTAN'], name=name)
     return [latlongfrom, loc_from, latlongto, loc_to]
-
-
-# formatdt is used for making sure each datetime that is read in, is in the correct format and so can be turned into
-# a datetime object.
-def formatdt(time, nano=True):
-    time = time.replace('_', '-')
-    if nano and (len(time) > 20):
-        time = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=pytz.UTC)
-        return time.replace(microsecond=0)
-    else:
-        return datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=pytz.UTC)
 
 
 # Requests access to a linked operator site using a token
