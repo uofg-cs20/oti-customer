@@ -16,20 +16,20 @@ client_id = "ou9h2JlNWlch0Vj7N2AzK6qYANdNIl1Mo7gg1oZj"
 client_secret = "5EUIoebBH2SxgjANJ6KL1q1GcGZn924OCQbhbysqQ9kb79W3i9YBDGbMGlYw1NPee40fI3t0OYFW2zaghGl5buKfUzGQc7XuibqpbA296LKNiWWuF02RUUBaDAydV7t9"
 
 
-# Returns the available modes of transport
-def getModes():
-    local_modes = Mode.objects.all()
+# Returns all modes of transport in a given list of Purchases/Concessions/Usages
+def getModes(tickets=[]):
+    local_modes = set(Mode.objects.all())
 
-    ### Here we would also get the Modes offered by linked Operators ###
-    linked_modes = Mode.objects.none()
+    # Here we also get the unique Modes offered by linked Operators by extracting them from the tickets
+    linked_modes = set([t.mode for t in tickets])
 
     # Return all modes of transport offered by this Operator and linked Operators
-    modes = local_modes.union(linked_modes)
+    modes = list(local_modes.union(linked_modes))
     return modes
 
 
 # Returns the Purchases of the given user, filtered by the given dates and mode of transport
-def getPurchases(user, filters):
+def getPurchases(user, filters={}):
     # Get the Customer object of the given user
     customer = Customer.objects.get(user=user)
 
@@ -66,7 +66,7 @@ def getPurchases(user, filters):
 
 
 # Returns the Concessions of the given user, filtered by the given status and mode of transport
-def getConcessions(user, context):
+def getConcessions(user, context={}):
     customer = Customer.objects.get(user=user)
     today = timezone.now()
     
@@ -81,7 +81,7 @@ def getConcessions(user, context):
                 local_concessions.append(c)
                 
     # Get the filters
-    status = context.get('status')
+    status = context.get('status', "all")
     mode = context.get('mode')
     
     # Filter by mode
@@ -91,6 +91,8 @@ def getConcessions(user, context):
     # Filter by status (valid or expired)
     if status == "past":
         local_concessions = [c for c in local_concessions if c.valid_to_date_time < today]
+    elif status == "all":
+        pass
     else:
         local_concessions = [c for c in local_concessions if c.valid_to_date_time > today]
         
@@ -99,7 +101,7 @@ def getConcessions(user, context):
 
 
 # Returns the Usages of the given user, filtered by the given dates and mode of transport
-def getUsage(user, filters=None):
+def getUsage(user, filters={}):
     # Get the Customer object of the given user
     customer = Customer.objects.get(user=user)
 

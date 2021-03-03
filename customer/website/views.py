@@ -247,7 +247,6 @@ def purchases(request):
     context = {}
     ticket_type = "purchase"
     context["ticket_type"] = ticket_type
-    context["modes"] = getModes()
     
     startdate, enddate = getDates(request, ticket_type)
     context['startdate'] = startdate
@@ -262,6 +261,9 @@ def purchases(request):
 
     # Retrieve a list of Purchases filtered by the given fields in the context dictionary
     context["purchases"] = getPurchases(request.user, context)
+    
+    # Retreive all Modes from the user's unfiltered Purchases
+    context["modes"] = getModes(getPurchases(request.user))
 
     return render(request, 'website/purchases.html', context)
 
@@ -275,7 +277,6 @@ def concessions(request):
     context = {}
     ticket_type = "concession"
     context["ticket_type"] = ticket_type
-    context["modes"] = getModes()
 
     status = request.POST.get("status", "valid")
     context["status"] = status
@@ -290,6 +291,9 @@ def concessions(request):
     # Obtain either current or past concessions for user 
     concessions = getConcessions(request.user, context)
     context['concessions'] = concessions
+    
+    # Retreive all Modes from the user's unfiltered Concessions
+    context["modes"] = getModes(getConcessions(request.user))
 
     return render(request, 'website/concessions.html', context)
 
@@ -303,7 +307,6 @@ def usage(request):
     context = {}
     ticket_type = "usage"
     context["ticket_type"] = ticket_type
-    context["modes"] = getModes()
     
     startdate, enddate = getDates(request, ticket_type)
     context['startdate'] = startdate
@@ -319,6 +322,9 @@ def usage(request):
     # Obtain a list of usages for the user, possibly filtered
     usages = getUsage(request.user, context)
     context['usages'] = usages
+    
+    # Retreive all Modes from the user's unfiltered Usages
+    context["modes"] = getModes(getUsage(request.user))
     
     return render(request, 'website/usage.html', context)
     
