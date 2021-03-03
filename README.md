@@ -34,7 +34,7 @@ Run the server:
 Run tests:
 `python manage.py test`
 
-Log in as a customer (homepage):  
+Log in as a customer (homepage) / link account from another instance:  
 username: customer1 / customer2 (see population script)  
 password: 1234  
 
