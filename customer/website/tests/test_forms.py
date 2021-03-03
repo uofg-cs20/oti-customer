@@ -2,9 +2,10 @@ from django.test import TestCase
 from django.urls import reverse
 from django import forms
 from website.forms import *
-from .test_fixtures_large import populate
 from website.models import *
 from django.contrib.auth import authenticate
+
+from .fixtures import populate
 
 class LoginTests(TestCase):
     

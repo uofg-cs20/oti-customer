@@ -1,5 +1,4 @@
-from .models import Purchase, Concession, Usage, Mode, MonetaryValue, Discount, Transaction, Service
-from .models import TravelClass, UsageFromTo, Location, LatitudeLongitude, Vehicle, UsageReference, Ticket, Operator
+from .models import *
 from rest_framework import serializers
 
 
@@ -59,8 +58,6 @@ class LatitudeLongitudeSerializer(serializers.ModelSerializer):
         fields, extra_kwargs = formatFields(fields)
 
 class LocationSerializer(serializers.ModelSerializer):
-    #lat_long = LatitudeLongitudeSerializer()
-
     def __init__(self, *args, **kwargs):
         self.fields["lat-long"] = LatitudeLongitudeSerializer(source="lat_long")
         super().__init__(*args, **kwargs)
@@ -120,10 +117,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
     mode = ModeSerializer()
     operator = OperatorSerializer()
     concession = serializers.StringRelatedField()
-    #account_balance = MonetaryValueSerializer()
     vehicle = VehicleSerializer()
-    #location_from = LocationSerializer()
-    #location_to = LocationSerializer()
     transaction = TransactionSerializer()
     ticket = TicketSerializer()
     
@@ -142,8 +136,6 @@ class UsageSerializer(serializers.ModelSerializer):
     mode = ModeSerializer()
     operator = OperatorSerializer()
     reference = UsageReferenceSerializer()
-    #travel_from = UsageFromToSerializer()
-    #travel_to = UsageFromToSerializer()
     ticket = TicketSerializer()
     price = MonetaryValueSerializer()
     services = ServiceSerializer(many=True)
