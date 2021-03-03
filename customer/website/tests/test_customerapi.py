@@ -1,10 +1,6 @@
 from django.test import TestCase
-from django.urls import reverse
 from website.models import *
 from datetime import timedelta
-import datetime
-import pytz
-import json
 from django.utils import timezone
 
 from .fixtures import populate
@@ -14,8 +10,6 @@ api_url = "/api/"
 default_pagination = 5
 test_user_username = "customer0"
 test_user_password = "1234"
-datetime_parse_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-localtime = pytz.UTC
 # ---------------------------------------
     
 purchases_url = api_url + "purchase/"
@@ -31,9 +25,6 @@ def api_page_response(testobj, page_url, queryparams=None):
     response = testobj.client.get(page_url, queryparams)
     return response
     
-def format_query_datetime(datetimestr):
-    return localtime.localize(datetime.datetime.strptime(datetimestr, datetime_parse_format))
-
 # Unit tests for the Customer API
 class APIPurchaseTests(TestCase):
     def setUp(self):
@@ -55,7 +46,7 @@ class APIPurchaseTests(TestCase):
     def test_api_purchase_travel_valid_during(self):
         startdate = timezone.now() + timedelta(days=2)
         enddate = timezone.now() + timedelta(days=50)
-        self.assertTrue(all([format_query_datetime(p.get("travel-to-date-time"))>=startdate and format_query_datetime(p.get("travel-from-date-time"))<=enddate for p in api_page_response(self, purchases_url, {"travel_valid_during_from":startdate, "travel_valid_during_to":enddate}).data]), "Querying the API with travel_valid_during_from and travel_valid_during_to does not return the correct purchases")
+        self.assertTrue(all([p.get("travel-to-date-time")>=startdate and p.get("travel-from-date-time")<=enddate for p in api_page_response(self, purchases_url, {"travel_valid_during_from":startdate, "travel_valid_during_to":enddate}).data]), "Querying the API with travel_valid_during_from and travel_valid_during_to does not return the correct purchases")
         
 class APIConcessionTests(TestCase):
     def setUp(self):
@@ -77,7 +68,8 @@ class APIConcessionTests(TestCase):
     def test_api_concession_concession_valid_during(self):
         startdate = timezone.now() + timedelta(days=2)
         enddate = timezone.now() + timedelta(days=50)
-        self.assertTrue(all([format_query_datetime(c.get("valid-to-date-time"))>=startdate and format_query_datetime(c.get("valid-from-date-time"))<=enddate for c in api_page_response(self, concessions_url, {"concession_valid_during_from":startdate, "concession_valid_during_to":enddate}).data]), "Querying the API with concession_valid_during_from and concession_valid_during_to does not return the correct concessions")
+        #print([c.get("valid-to-date-time") for c in api_page_response(self, concessions_url, {"concession_valid_during_from":startdate, "concession_valid_during_to":enddate}).data])
+        self.assertTrue(all([c.get("valid-to-date-time")>=startdate and c.get("valid-from-date-time")<=enddate for c in api_page_response(self, concessions_url, {"concession_valid_during_from":startdate, "concession_valid_during_to":enddate}).data]), "Querying the API with concession_valid_during_from and concession_valid_during_to does not return the correct concessions")
         
 class APIUsageTests(TestCase):
     def setUp(self):
@@ -99,5 +91,5 @@ class APIUsageTests(TestCase):
     def test_api_usage_usage_occurred_during(self):
         startdate = timezone.now() - timedelta(days=100)
         enddate = timezone.now() - timedelta(days=2)
-        self.assertTrue(all([format_query_datetime(u.get("travel-to").get("date-time"))>=startdate and format_query_datetime(u.get("travel_from").get("date-time"))<=enddate for u in api_page_response(self, usages_url, {"usage_occurred_during_from":startdate, "usage_occurred_during_to":enddate}).data]), "Querying the API with usage_occurred_during_from and usage_occurred_during_to does not return the correct usages")
+        self.assertTrue(all([u.get("travel-to").get("date-time")>=startdate and u.get("travel_from").get("date-time")<=enddate for u in api_page_response(self, usages_url, {"usage_occurred_during_from":startdate, "usage_occurred_during_to":enddate}).data]), "Querying the API with usage_occurred_during_from and usage_occurred_during_to does not return the correct usages")
         

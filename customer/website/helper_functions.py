@@ -75,13 +75,13 @@ def generateTicketHeading(ticket_type, mode, startdate=None, enddate=None, statu
             elif enddate == timezone.now():
                 message = message + "for the last " + str(default_days) + " days"
             else:
-                message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
+                message = message + "between " + startdate.date().strftime('%d-%m-%Y') + " and " + enddate.date().strftime('%d-%m-%Y')
         elif startdate == datetime.datetime.min.replace(tzinfo=pytz.UTC):
-            message = message + "before " + str(enddate.date())
+            message = message + "before " + enddate.date().strftime('%d-%m-%Y')
         elif enddate == datetime.datetime.max.replace(tzinfo=pytz.UTC):
-            message = message + "after " + str(startdate.date())
+            message = message + "after " + startdate.date().strftime('%d-%m-%Y')
         else:
-            message = message + "between " + str(startdate.date()) + " and " + str(enddate.date())
+            message = message + "between " + startdate.date().strftime('%d-%m-%Y') + " and " + enddate.date().strftime('%d-%m-%Y')
             
         return message
 
@@ -91,7 +91,6 @@ def formatdt(time, format='%Y-%m-%dT%H:%M:%S.%fZ'):
     time = time.replace('_', '-')
     # For timezone-awareness call .replace(tzinfo=pytz.UTC) on the created datetime object
     formatted_time = datetime.datetime.strptime(time, format).replace(tzinfo=pytz.UTC)
-    formatted_time = formatted_time.isoformat(timespec='milliseconds')
     return formatted_time
     
         
