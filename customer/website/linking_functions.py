@@ -136,9 +136,11 @@ def getUsage(user, filters=None):
     
 
 # Returns a list of operators that can be linked
-def getOperators():
+def getOperators(opid=""):
     try:
-        r = requests.get('https://cs20operator.herokuapp.com/api/operator/')
+        if opid:
+            opid = ('?filterString=' + opid)
+        r = requests.get('https://cs20operator.herokuapp.com/api/operator/' + opid)
         catalogue = r.json()[0]["items"]
         out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
         operators = []
@@ -258,14 +260,9 @@ def requestData(linked_account, endpoint):
     try:
         token = linked_account.access_token
         refresh_token = linked_account.refresh_token
-        r = requests.get('https://cs20operator.herokuapp.com/api/operator/')
-        catalogue = r.json()[0]["items"]
-        out_list = ast.literal_eval(repr(catalogue).replace('-', '_'))
 
-        for op in out_list:
-            if op["item_metadata"][3]["val"] == linked_account.operator_id:
-                api_url = op["href"]
-
+        op = getOperators(str(linked_account.operator_id))[0]
+        api_url = op["href"]
         r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + token})
 
         if r.status_code != 200:
