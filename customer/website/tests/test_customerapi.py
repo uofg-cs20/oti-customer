@@ -68,7 +68,6 @@ class APIConcessionTests(TestCase):
     def test_api_concession_concession_valid_during(self):
         startdate = timezone.now() + timedelta(days=2)
         enddate = timezone.now() + timedelta(days=50)
-        #print([c.get("valid-to-date-time") for c in api_page_response(self, concessions_url, {"concession_valid_during_from":startdate, "concession_valid_during_to":enddate}).data])
         self.assertTrue(all([c.get("valid-to-date-time")>=startdate and c.get("valid-from-date-time")<=enddate for c in api_page_response(self, concessions_url, {"concession_valid_during_from":startdate, "concession_valid_during_to":enddate}).data]), "Querying the API with concession_valid_during_from and concession_valid_during_to does not return the correct concessions")
         
 class APIUsageTests(TestCase):
