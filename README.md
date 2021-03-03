@@ -4,6 +4,8 @@
 
 This project was to implement the Open Transport API and create a proof of concept of data sharing between two public transport operators. To do this we made two websites: Operator and Customer, both implementing their respective APIs. A user can log in to one instance of the Customer site, and link their account from another instance of the Customer site. This works by querying the Operator site to get the details of the second Customer instance, and then querying that Customer instance to retrieve the ticket data.
 
+## Main Functionality
+
 This repository contains the Customer website (aka Zebras), which implements the Customer API (https://app.swaggerhub.com/apis/open-transport/customer-account/1.0.1). It can be populated with dummy customer data, to illustrate the linking functionality. You can create an account on the Register page, or log in to your account on the Login page. Once logged in, there are 4 main pages:
 - Purchase - for viewing and filtering purchased tickets
 - Concession - for viewing and filtering purchased concessions
