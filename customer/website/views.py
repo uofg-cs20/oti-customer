@@ -269,7 +269,6 @@ def purchases(request):
     
     # Retreive all Modes from the user's unfiltered Purchases
     context["modes"] = getModes(getPurchases(request.user))
-
     return render(request, 'website/purchases.html', context)
 
 

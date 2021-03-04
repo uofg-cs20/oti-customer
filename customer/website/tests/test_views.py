@@ -99,7 +99,7 @@ class PurchaseTests(TestCase):
         filtered_purchases = filtered_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
-        filtered_purchases = filtered_purchases.order_by('travel_to_date_time')
+        filtered_purchases = filtered_purchases.order_by('travel_from_date_time')
         
         self.assertEqual(list(shown_get_purchases), list(filtered_purchases), "Purchases shown by default from a GET request are not valid within the next 30 days")
         self.assertEqual(list(shown_post_purchases), list(filtered_purchases), "Purchases shown by default from a POST request with no filters are not valid within the next 30 days")
@@ -118,7 +118,7 @@ class PurchaseTests(TestCase):
         filtered_purchases = filtered_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
-        filtered_purchases = filtered_purchases.order_by('travel_to_date_time')
+        filtered_purchases = filtered_purchases.order_by('travel_from_date_time')
         
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering after a given date does not display the correct Purchases")
                 
@@ -154,7 +154,7 @@ class PurchaseTests(TestCase):
         filtered_purchases = filtered_purchases.filter(travel_to_date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_purchases.filter(travel_from_date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_purchases.filter(travel_from_date_time__lte=startdate, travel_to_date_time__gte=enddate))
-        filtered_purchases = filtered_purchases.order_by('travel_to_date_time')
+        filtered_purchases = filtered_purchases.order_by('travel_from_date_time')
         
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering between two given dates does not display the correct Purchases")
         
@@ -253,7 +253,7 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
-        filtered_usages = sorted(list(filtered_usages), key=lambda x: x.travel_from.date_time)
+        filtered_usages = sorted(list(filtered_usages), key=lambda x: x.travel_to.date_time, reverse=True)
         
         self.assertEqual(shown_usage, filtered_usages, "Filtering by mode does not display the correct Usages")
         
@@ -271,7 +271,7 @@ class UsageTests(TestCase):
         filtered_usages = filtered_usages.filter(travel_to__date_time__range=[str(startdate), str(enddate)]) \
         .union(filtered_usages.filter(travel_from__date_time__range=[str(startdate), str(enddate)])) \
         .union(filtered_usages.filter(travel_from__date_time__lte=startdate, travel_to__date_time__gte=enddate))
-        filtered_usages = sorted(list(filtered_usages), key=lambda x: x.travel_from.date_time)
+        filtered_usages = sorted(list(filtered_usages), key=lambda x: x.travel_to.date_time, reverse=True)
         
         self.assertEqual(shown_usage, filtered_usages, "Filtering between given dates does not display the correct Usages")
         

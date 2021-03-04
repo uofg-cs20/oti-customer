@@ -39,7 +39,7 @@ def getPurchases(user, filters={}):
 
     # Here we get the Purchases from linked Operator accounts
     if not filters.get("link") == False:
-        linked_purchases = getendpoints(user, 'purchase/?format=json')
+        linked_purchases = getendpoints(user, 'purchase/?format=json&limit=20')
         if linked_purchases:
             for purchase in linked_purchases:
                 local_purchases.append(purchase)
@@ -63,7 +63,7 @@ def getPurchases(user, filters={}):
                         or (p.travel_from_date_time <= startdate and p.travel_to_date_time >= enddate)]
 
     # Return the user's Purchases sorted by travel_to_date_time
-    return sorted(local_purchases, key=lambda x: x.travel_to_date_time)
+    return sorted(local_purchases, key=lambda x: x.travel_from_date_time)
 
 
 # Returns the Concessions of the given user, filtered by the given status and mode of transport
@@ -76,7 +76,7 @@ def getConcessions(user, context={}):
 
     # Here we get the Concessions from linked Operator accounts
     if not context.get("link") == False:
-        linked_concessions = getendpoints(user, 'concession/?format=json')
+        linked_concessions = getendpoints(user, 'concession/?format=json&limit=20')
         if linked_concessions:
             for c in linked_concessions:
                 local_concessions.append(c)
@@ -111,7 +111,7 @@ def getUsage(user, filters={}):
 
     # Here we get the Usages from linked Operator accounts
     if not filters.get("link") == False:
-        linked_usages = getendpoints(user, 'usage/?format=json')
+        linked_usages = getendpoints(user, 'usage/?format=json&limit=20')
         if linked_usages:
             for usage in linked_usages:
                 local_usages.append(usage)
@@ -133,7 +133,7 @@ def getUsage(user, filters={}):
                         or (u.travel_from.date_time >= startdate and u.travel_from.date_time <= enddate) \
                         or (u.travel_from.date_time <= startdate and u.travel_to.date_time >= enddate)]
     # Return the user's Usages sorted by travel_from.date_time
-    return sorted(local_usages, key=lambda x: x.travel_from.date_time)
+    return sorted(local_usages, key=lambda x: x.travel_to.date_time, reverse=True)
 
 
 # Returns a list of operators that can be linked
@@ -258,9 +258,11 @@ def requestData(linked_account, endpoint):
         api_url = op["href"]
         r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + token})
 
-        if r.status_code != 200:
+        if r.status_code != 200 :
+            if op["name"] == "Zebras":
+                token_url = "https://cs20team.pythonanywhere.com/o/token/"
             # possible refresh
-            r = requests.post("https://cs20team.pythonanywhere.com/o/token/",
+            r = requests.post(token_url,
                               auth=HTTPBasicAuth(client_id, client_secret),
                               data={"grant_type": "refresh_token", "refresh_token": refresh_token})
             if r.status_code == 200:
