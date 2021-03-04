@@ -12,4 +12,3 @@ scipy==1.5.4
 django-heroku
 gunicorn
 dj-database-url
-python-dateutil

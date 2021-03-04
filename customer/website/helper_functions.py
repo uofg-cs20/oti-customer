@@ -3,7 +3,6 @@ sys.path.append("..")
 
 from .models import *
 from datetime import timedelta
-from dateutil.relativedelta import relativedelta
 import datetime
 from django.utils import timezone
 import pytz
@@ -36,11 +35,11 @@ def getDates(request, ticket_type):
     # None given
     if not startdate and not enddate:
         if ticket_type == "usage":
-            startdate = timezone.now() - relativedelta(days=30)
+            startdate = timezone.now() - timedelta(days=30)
             enddate = timezone.now()
         else:
             startdate = timezone.now()
-            enddate = timezone.now() + relativedelta(days=30)
+            enddate = timezone.now() + timedelta(days=30)
 
     return (startdate, enddate)
     
@@ -70,7 +69,8 @@ def generateTicketHeading(ticket_type, mode, startdate=None, enddate=None, statu
         # Handle the dates
         default_days = 30
         datetime_diff = enddate - startdate
-        if datetime_diff > timedelta(days=default_days-1) and datetime_diff < timedelta(days=default_days+1):
+        # Take into account response time when checking if the difference between the days is 30
+        if datetime_diff >= timedelta(days=default_days-1, seconds=-60) and datetime_diff <= timedelta(days=default_days+1, seconds=60):
             if startdate == timezone.now():
                 message = message + "for the next " + str(default_days) + " days"
             elif enddate == timezone.now():
