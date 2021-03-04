@@ -9,3 +9,6 @@ requests==2.25.1
 djangorestframework==3.12.2
 django-oauth-toolkit
 scipy==1.6.1
+django-heroku
+gunicorn
+dj-database-url

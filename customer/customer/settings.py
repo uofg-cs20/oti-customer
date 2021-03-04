@@ -24,9 +24,13 @@ STATIC_DIR = os.path.join(BASE_DIR,'static')
 SECRET_KEY = 'uy)d2cq=+&k8sofzuz7ebvktize@*%%(vxnh72kwbvxgg0nxyw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ.get('HEROKU') == 'YES':
+    DEBUG = False
+else:
+    DEBUG = True
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['cs20customer.herokuapp.com', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -163,6 +167,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
-STATICFILES_DIRS=[STATIC_DIR, ]
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+
+if 'HEROKU' in os.environ:
+    import django_heroku
+    django_heroku.settings(locals())
+
