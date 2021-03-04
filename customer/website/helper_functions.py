@@ -69,11 +69,10 @@ def generateTicketHeading(ticket_type, mode, startdate=None, enddate=None, statu
         # Handle the dates
         default_days = 30
         datetime_diff = enddate - startdate
-        # Take into account response time when checking if the difference between the days is 30
-        if datetime_diff >= timedelta(days=default_days-1, seconds=-60) and datetime_diff <= timedelta(days=default_days+1, seconds=60):
-            if startdate == timezone.now():
+        if datetime_diff >= timedelta(days=default_days-1) and datetime_diff <= timedelta(days=default_days+1):
+            if startdate.date() == timezone.now().date():
                 message = message + "for the next " + str(default_days) + " days"
-            elif enddate == timezone.now():
+            elif enddate.date() == timezone.now().date():
                 message = message + "for the last " + str(default_days) + " days"
             else:
                 message = message + "between " + startdate.date().strftime('%d-%m-%Y') + " and " + enddate.date().strftime('%d-%m-%Y')
