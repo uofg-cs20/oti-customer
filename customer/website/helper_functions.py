@@ -3,6 +3,7 @@ sys.path.append("..")
 
 from .models import *
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 import datetime
 from django.utils import timezone
 import pytz
@@ -35,11 +36,11 @@ def getDates(request, ticket_type):
     # None given
     if not startdate and not enddate:
         if ticket_type == "usage":
-            startdate = timezone.now() - timedelta(days=30)
+            startdate = timezone.now() - relativedelta(days=30)
             enddate = timezone.now()
         else:
             startdate = timezone.now()
-            enddate = timezone.now() + timedelta(days=30)
+            enddate = timezone.now() + relativedelta(days=30)
 
     return (startdate, enddate)
     
