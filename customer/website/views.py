@@ -330,6 +330,5 @@ def usage(request):
     
     # Retreive all Modes from the user's unfiltered Usages
     context["modes"] = getModes(getUsage(request.user))
-    
     return render(request, 'website/usage.html', context)
     

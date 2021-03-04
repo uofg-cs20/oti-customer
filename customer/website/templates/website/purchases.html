@@ -41,20 +41,30 @@
 		<h4 >{{ heading }}</h4>
 
 		<!-- Display the user's purchases -->
-		{% for p in purchases %}
-			<div class="card p-4 my-4" style="width: 40rem;">
-				<h5>{{ p.mode.short_desc }} Ticket</h5>
-				<p><b>{{ p.operator }}</b></p>
-				<p>{{ p.location_from }} to {{ p.location_to }}</p>
-				<p>Valid From: {{ p.travel_from_date_time }}</p>
-				<p>Expires: {{ p.travel_to_date_time }}</p>
-				{% if p.concession %}
-					<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
-				{% else %}
-					<p>{{ p.transaction.price }}</p>
-				{% endif %}
+		{% regroup purchases by travel_from_date_time as purchases %}
+		{% for date, purchase in purchases %}
+			<div class="card p-4 my-4" style="width: 50rem;">
+				<a data-toggle="collapse" href="#purchase{{ forloop.counter }}" role="button" aria-expanded="false" aria-controls="purchase{{ forloop.counter }}">
+					{{ date }}
+				</a>
+			{% for p in purchase %}
+				<div class="collapse" id="purchase{{ forloop.parentloop.counter }}">
+					<div class="card p-4 my-4" style="width: 40rem;">
+						<h5>{{ p.mode.short_desc }} Ticket</h5>
+						<p><b>{{ p.operator }}</b></p>
+						<p>{{ p.location_from }} to {{ p.location_to }}</p>
+						<p>Valid From: {{ p.travel_from_date_time }}</p>
+						<p>Expires: {{ p.travel_to_date_time }}</p>
+						{% if p.concession %}
+							<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
+						{% else %}
+							<p>{{ p.transaction.price }}</p>
+						{% endif %}
+					</div>
+				</div>
+				{% empty %}<p>No purchases to display.</p>
+			{% endfor %}
 			</div>
-			{% empty %}<p>No purchases to display.</p>
 		{% endfor %}
 	</div>
 

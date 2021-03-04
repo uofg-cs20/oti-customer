@@ -40,14 +40,24 @@
 		
 		<!-- Display the user's usages -->
 		{% if usages %}
-			{% for ticket in usages %}
-				<div class="card p-4 my-4" style="width: 40rem;">
-				<tr>
-					<h5> {{ ticket.mode }} Ticket</h5>
-					<p> <b>{{ ticket.operator }}</b> </p>
-					<p>{{ ticket.travel_from.location.name }} to {{ ticket.travel_to.location.name }}</p>
-					<p> {{ ticket.travel_from.date_time }} - {{ ticket.travel_to.date_time }}</p>
+			{% regroup usages by travel_from.date_time as usages %}
+			{% for date, usage in usages %}
+			<div class="card p-4 my-4" style="width: 50rem;">
+				<a data-toggle="collapse" href="#usage{{ forloop.counter }}" role="button" aria-expanded="false" aria-controls="usage{{ forloop.counter }}">
+					{{ date }}
+				</a>
+				{% for ticket in usage %}
+				<div class="collapse" id="usage{{ forloop.parentloop.counter }}">
+					<div class="card p-4 my-4" style="width: 40rem;">
+					<tr>
+						<h5> {{ ticket.mode }} Ticket</h5>
+						<p> <b>{{ ticket.operator }}</b> </p>
+						<p>{{ ticket.travel_from.location.name }} to {{ ticket.travel_to.location.name }}</p>
+						<p> {{ ticket.travel_from.date_time }} - {{ ticket.travel_to.date_time }}</p>
+					</div>
 				</div>
+				{% endfor %}
+			</div>
 			{% endfor %}
 		{% else %}
 			<td>No usages found</td>

@@ -43,7 +43,7 @@ def getPurchases(user, filters={}):
         if linked_purchases:
             for purchase in linked_purchases:
                 local_purchases.append(purchase)
-                
+
     # Get the filters
     mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
@@ -70,7 +70,7 @@ def getPurchases(user, filters={}):
 def getConcessions(user, context={}):
     customer = Customer.objects.get(user=user)
     today = timezone.now()
-    
+
     # Filter by user
     local_concessions = list(Concession.objects.filter(customer_id=customer.id))
 
@@ -80,15 +80,15 @@ def getConcessions(user, context={}):
         if linked_concessions:
             for c in linked_concessions:
                 local_concessions.append(c)
-                
+
     # Get the filters
     status = context.get('status', "all")
     mode = context.get('mode')
-    
+
     # Filter by mode
     if mode and mode != "None":
         local_concessions = [c for c in local_concessions if c.mode.short_desc == mode]
-        
+
     # Filter by status (valid or expired)
     if status == "past":
         local_concessions = [c for c in local_concessions if c.valid_to_date_time < today]
@@ -96,7 +96,7 @@ def getConcessions(user, context={}):
         pass
     else:
         local_concessions = [c for c in local_concessions if c.valid_to_date_time > today]
-        
+
     # Return the user's Concessions sorted by valid_from_date_time
     return sorted(local_concessions, key=lambda x: x.valid_from_date_time)
 
@@ -115,7 +115,7 @@ def getUsage(user, filters={}):
         if linked_usages:
             for usage in linked_usages:
                 local_usages.append(usage)
-                
+
     # Get the filters
     mode = filters.get("mode")
     startdate = filters.get("startdate", datetime.datetime.min.replace(tzinfo=pytz.UTC))
@@ -124,7 +124,6 @@ def getUsage(user, filters={}):
     # Filter by mode
     if mode and mode != "None":
         local_usages = [u for u in local_usages if u.mode.short_desc == mode]
-
     # Filter by date, including all usages whose "from-to" validity date range overlaps the filtered date range
     # First include those whose "from" date is within the filter range
     # Then include those whose "to" date is within the filter range
@@ -133,10 +132,9 @@ def getUsage(user, filters={}):
                         (u.travel_to.date_time >= startdate and u.travel_to.date_time <= enddate) \
                         or (u.travel_from.date_time >= startdate and u.travel_from.date_time <= enddate) \
                         or (u.travel_from.date_time <= startdate and u.travel_to.date_time >= enddate)]
-
     # Return the user's Usages sorted by travel_from.date_time
     return sorted(local_usages, key=lambda x: x.travel_from.date_time)
-    
+
 
 # Returns a list of operators that can be linked
 def getOperators(opid=""):
@@ -216,6 +214,9 @@ def getendpoints(user, endpoint):
         return []
     except TypeError:
         return []
+    except Exception as E:
+        print(E)
+
 
 
 # This function is for creating the location data for each endpoint. It has been abstracted because each object uses this
@@ -276,7 +277,7 @@ def requestData(linked_account, endpoint):
 
     except:
         pass
-        
+
 
 def getTicketPurchase(ticket, mode, operator, recordid, cust, loc_from, loc_to):
     price = getMonetaryValue(ticket['transaction']['price'])
@@ -314,10 +315,10 @@ def getTicketUsage(ticket, mode, operator, recordid, cust, loc_from, loc_to):
     tc = TravelClass(travel_class=ticket['travel_class'])
     tick = getTicket(ticket['ticket'])
     price = getMonetaryValue(ticket['price'])
-    date_time = formatdt(ticket['travel_from']['date_time'], False)
+    date_time = formatdt(ticket['travel_from']['date_time'], '%Y-%m-%dT%H:%M:%SZ')
     reference = ticket['travel_from']['reference']
     uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
-    date_time = formatdt(ticket['travel_to']['date_time'], False)
+    date_time = formatdt(ticket['travel_to']['date_time'], '%Y-%m-%dT%H:%M:%SZ')
     reference = ticket['travel_from']['reference']
     uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
     ur = getReference(ticket['reference'])
@@ -386,8 +387,6 @@ def getReference(ticket):
 
 def getApi(endpoint):
     endpoints = ['purchase', 'concession', 'usage']
-
     for i in endpoint.split('/'):
         if i in endpoints:
             return i
-    
