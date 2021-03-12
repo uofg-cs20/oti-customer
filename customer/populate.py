@@ -1,12 +1,10 @@
-import os, random, csv, datetime, pytz
+import os, random, csv, datetime, pytz, decimal
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'customer.settings')
 from django.contrib.auth.hashers import make_password
 
 import django
 django.setup()
 
-import decimal
-import datetime
 from django.contrib.auth.models import User
 from website.models import *
 from django.utils.timezone import make_aware
