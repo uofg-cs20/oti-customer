@@ -11,6 +11,8 @@ class MilliSecondEncoder(JSONEncoder):
             representation = obj.isoformat()
             if obj.microsecond:
                 representation = representation[:23] + representation[26:]
+            else:
+                representation = representation[:19] + ".000" + representation[19:]
             if representation.endswith('+00:00'):
                 representation = representation[:-6] + 'Z'
             return representation

@@ -317,10 +317,10 @@ def getTicketUsage(ticket, mode, operator, recordid, cust, loc_from, loc_to):
     tc = TravelClass(travel_class=ticket['travel_class'])
     tick = getTicket(ticket['ticket'])
     price = getMonetaryValue(ticket['price'])
-    date_time = formatdt(ticket['travel_from']['date_time'], '%Y-%m-%dT%H:%M:%SZ')
+    date_time = formatdt(ticket['travel_from']['date_time'])
     reference = ticket['travel_from']['reference']
     uft1 = UsageFromTo(location=loc_from, date_time=date_time, reference=reference)
-    date_time = formatdt(ticket['travel_to']['date_time'], '%Y-%m-%dT%H:%M:%SZ')
+    date_time = formatdt(ticket['travel_to']['date_time'])
     reference = ticket['travel_from']['reference']
     uft2 = UsageFromTo(location=loc_to, date_time=date_time, reference=reference)
     ur = getReference(ticket['reference'])
