@@ -27,19 +27,22 @@ def randtime(order, no, pos=None):
 
 def populate():
 
-    ##################### Operator Parameters #####################
-    opname = "Zebras"
-    modenames = ["cycle", "motorbike"]
-    ophomepage = "https://cs20customer.herokuapp.com/"
-    opapiurl = "https://cs20customer.herokuapp.com/api/"
+    ##### Operator Parameters (to deploy multiple instances) ####################################
+    opname = "Zebras"                                       # name of operator
+    modenames = ["cycle", "motorbike"]                      # names of modes of transport offered
+    ophomepage = "https://cs20customer.herokuapp.com/"      # URL of homepage
+    opapiurl = "https://cs20customer.herokuapp.com/api/"    # URL of Customer API
     
-    specific_from_date_time = datetime.datetime(2021,3,24,hour=16,minute=30).replace(tzinfo=pytz.UTC)
-    specific_to_date_time = datetime.datetime(2021,3,24,hour=17,minute=30).replace(tzinfo=pytz.UTC)
-    specific_from_loc_index = 200
-    specific_to_loc_index = 96
-    specific_mode_id = modenames[0]
-    specific_username = "customer0"
-    ###############################################################
+    ##### Specific Usage Parameters (to demonstrate grouping by day) #################################
+    specific_from_date_time = datetime.datetime(2021,3,12,hour=16,minute=30) \
+                              .replace(tzinfo=pytz.UTC)   # datetime of usage from
+    specific_to_date_time = datetime.datetime(2021,3,12,hour=17,minute=30) \
+                            .replace(tzinfo=pytz.UTC)     # datetime of usage to
+    specific_from_loc_index = 201                         # index of location in gb.csv for usage from
+    specific_to_loc_index = 97                            # index of location in gb.csv for usage to
+    specific_mode_id = modenames[0]                       # id of mode of usage
+    specific_username = "customer0"                       # username of user who owns the usage
+    
 
     emptyDatabase()
 
@@ -163,8 +166,10 @@ def populate():
     usages = list(Usage.objects.all())
     Service.objects.bulk_create([Service(service_type="Charging", unit="KwH", amount=20, price=mvns.pop(), usage_id=usages[i]) for i in range(recordno//6)])
 
-    # Add a Usage for a specific date - to demonstrate journey grouping
+    # add a Usage for a specific date - to demonstrate journey grouping
     specific_customer = Customer.objects.get(user__username=specific_username)
+    specific_from_loc_index -= 1
+    specific_to_loc_index -= 1
     specific_from_lat_long = LatitudeLongitude.objects.create(latitude=reader[specific_from_loc_index][1], longitude=reader[specific_from_loc_index][2])
     specific_to_lat_long = LatitudeLongitude.objects.create(latitude=reader[specific_to_loc_index][1], longitude=reader[specific_to_loc_index][2])
     Usage.objects.create(id=RecordID.objects.create(id="9001"),
