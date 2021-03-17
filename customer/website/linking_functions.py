@@ -259,7 +259,7 @@ def requestData(linked_account, endpoint):
         r = requests.get(api_url + endpoint, headers={"Authorization": "Bearer " + token})
 
         if r.status_code != 200 :
-            if op["name"] == "Zebras":
+            if op["name"] == "Cheetahs":
                 token_url = "https://cs20team.pythonanywhere.com/o/token/"
             # possible refresh
             r = requests.post(token_url,
