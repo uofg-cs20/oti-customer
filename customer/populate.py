@@ -29,7 +29,7 @@ def populate():
 
     ##### Operator Parameters (to deploy multiple instances) ####################################
     opname = "Zebras"                                       # name of operator
-    modenames = ["cycle", "motorbike"]                      # names of modes of transport offered
+    modenames = ["cycle", "scooter"]                        # names of modes of transport offered
     ophomepage = "https://cs20customer.herokuapp.com/"      # URL of homepage
     opapiurl = "https://cs20customer.herokuapp.com/api/"    # URL of Customer API
     
@@ -54,7 +54,7 @@ def populate():
         Mode.objects.get_or_create(id=m, short_desc=m.capitalize())
     modes = list(Mode.objects.all())
     
-    vehicle_type, created = Vehicle.objects.get_or_create(reference="boat 3001", vehicle_type="boat")
+    vehicle_type, created = Vehicle.objects.get_or_create(reference="bike 3001", vehicle_type="cycle")
     
     # create this operator
     thisop, created = Operator.objects.get_or_create(admin=dev, name=opname, homepage=ophomepage, api_url=opapiurl, phone="0394098748", email="thisop@bossman.com")
@@ -97,7 +97,7 @@ def populate():
     # create discount
     Discount.objects.get_or_create(discount_type="Young person", discount_value="50", discount_description="Under 19's Pass")
     Discount.objects.get_or_create(discount_type="Pensioner", discount_value="40", discount_description="Pensioner Travelcard")
-    Discount.objects.get_or_create(discount_type="Middle person", discount_value="20", discount_description="Water Concession")
+    Discount.objects.get_or_create(discount_type="Middle person", discount_value="20", discount_description="Road Concession")
     discounts = list(Discount.objects.all())
 
     # create customers and users
