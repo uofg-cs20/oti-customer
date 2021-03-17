@@ -26,6 +26,6 @@ staging:
     - gem install dpl
     - gem install json
     - gem install bundler
-    - dpl --provider=heroku --app=cs20customer --api-key=9a3e9496-0297-4d0f-85d4-da69348156da
+    - dpl --provider=heroku --app=cs20customer --api-key=$HEROKUKEY
   tags:
     - docker
