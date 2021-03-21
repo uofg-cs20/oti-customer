@@ -105,7 +105,7 @@ class PurchaseTests(TestCase):
         self.assertEqual(list(shown_post_purchases), list(filtered_purchases), "Purchases shown by default from a POST request with no filters are not valid within the next 30 days")
         
     def test_purchase_filters_after_given_date(self):
-        response = self.client.post(reverse("website:purchases"), {"startdate":(timezone.now()+timedelta(days=15)).strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:purchases"), {"startdate":(timezone.now()+timedelta(days=15)).strftime("%d-%m-%Y"), "enddate":datetime.datetime.max.strftime("%d-%m-%Y"), "link":False})
 
         # Purchases passed in the request
         shown_purchases = response.context["purchases"]
@@ -123,7 +123,7 @@ class PurchaseTests(TestCase):
         self.assertEqual(list(shown_purchases), list(filtered_purchases), "Filtering after a given date does not display the correct Purchases")
                 
     def test_purchase_filters_before_given_date(self):
-        response = self.client.post(reverse("website:purchases"), {"enddate":(timezone.now()-timedelta(days=5)).strftime("%d-%m-%Y"), "link":False})
+        response = self.client.post(reverse("website:purchases"), {"startdate":datetime.datetime.min.strftime("%d-%m-%Y"), "enddate":(timezone.now()-timedelta(days=5)).strftime("%d-%m-%Y"), "link":False})
 
         # Purchases passed in the request
         shown_purchases = response.context["purchases"]
