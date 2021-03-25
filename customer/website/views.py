@@ -232,7 +232,7 @@ def connect(request):
     connectedAccs = ConnectedAccount.objects.filter(customer=Customer.objects.get(user=request.user))
     connectedAccs = [x.operator_id for x in connectedAccs]
 
-    context = {"operators": page_obj, "connected": connectedAccs}
+    context = {"operators": page_obj, "connected": connectedAccs, "current_op": Operator.objects.all()[0]}
     return render(request, 'website/connect.html', context)
 
 

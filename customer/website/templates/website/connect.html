@@ -43,7 +43,9 @@
           <td>{{ operator.name }}</td>
           <td>{{ operator.homepage }}</td>
           <td>{{ operator.id }}</td>
-            {% if operator.id not in connected %}
+            {% if operator.name|stringformat:"s" == current_op|stringformat:"s" %}
+                <td><input  class="btn btn-md btn-secondary" type="button" style="width:100%" value="Current provider" disabled></td>
+            {% elif operator.id not in connected %}
                     <td><input  class="btn btn-md btn-primary" type="submit" value="Connect to provider" onclick="login(this)"></td>
                 {% else %}
                 <form action="{% url 'website:disconnect' operator.id %}" method="post">
