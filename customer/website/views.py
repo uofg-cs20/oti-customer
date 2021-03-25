@@ -203,6 +203,11 @@ def connect(request):
             username = request.POST.get("username")
             password = request.POST.get("password")
             operator_id = request.POST.get("id")
+            if operator_id == "292":
+                cust = Customer.objects.get(user=request.user)
+                connectedAccount = ConnectedAccount.objects.create(customer=cust, operator_id=operator_id, 
+                        auth_url="N/A", access_token="N/A",
+                        refresh_token="N/A")
             # Obtain a token for linking
             url = "https://cs20team.pythonanywhere.com/o/token/"
             r = requests.post("https://cs20team.pythonanywhere.com/o/token/", auth=HTTPBasicAuth(client_id, client_secret),
