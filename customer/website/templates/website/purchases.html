@@ -1,0 +1,71 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}
+	Purchases
+{% endblock %}
+
+{% block content %}
+	<!-- Filters -->
+	<div class="container" >
+		<h3 class="text-center my-4">Filter Purchases</h3>
+
+		<form class="form-inline" action="/purchases/" method="post" autocomplete="off">
+			{% csrf_token %}
+
+			<div class="row">
+				<div class="form-group col-xs-4 px-2">
+					Travelling After: <input class="form-control" type="text" name="startdate" id="datepicker1">
+				</div>
+				<div class="form-group col-xs-4 px-2">
+					Travelling Before: <input   class="form-control" type="text" name="enddate" id="datepicker2">
+				</div>
+				<div class="form-group col-xs-4 px-2">
+					Mode of Transport: <select  class="form-control" name="mode" id="mode">
+						<option value="None">Any</option>
+						{% for m in modes %}
+							<option id="mode" value="{% autoescape off %}{{ m }}{% endautoescape %}">{{m.short_desc}}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+
+			<div class="text-center px-4">
+				<input class="btn btn-md btn-info" type="submit" value="Filter">
+			</div>
+		</form>
+	</div>
+	
+	<div class="container my-4 mb-5">
+		<!-- Heading changes with applied filters -->
+		<h4 >{{ heading }}</h4>
+
+		<!-- Display the user's purchases -->
+		{% regroup purchases by travel_from_date_time.date as purchases %}
+		{% for date, purchase in purchases %}
+			<div class="card p-4 my-4" style="width: 50rem;">
+				<a data-toggle="collapse" href="#purchase{{ forloop.counter }}" role="button" aria-expanded="false" aria-controls="purchase{{ forloop.counter }}">
+					{{ date }}
+				</a>
+			{% for p in purchase %}
+				<div class="collapse" id="purchase{{ forloop.parentloop.counter }}">
+					<div class="card p-4 my-4" style="width: 40rem;">
+						<h5>{{ p.mode.short_desc }} Ticket</h5>
+						<p><b>{{ p.operator }}</b></p>
+						<p>{{ p.location_from }} to {{ p.location_to }}</p>
+						<p>Valid From: {{ p.travel_from_date_time }}</p>
+						<p>Expires: {{ p.travel_to_date_time }}</p>
+						{% if p.concession %}
+							<p>{{ p.transaction.price }} with concession {{ p.concession.name }}</p>
+						{% else %}
+							<p>{{ p.transaction.price }}</p>
+						{% endif %}
+					</div>
+				</div>
+				{% empty %}<p>No purchases to display.</p>
+			{% endfor %}
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

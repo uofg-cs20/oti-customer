@@ -1,0 +1,1 @@
+web: gunicorn --pythonpath customer customer.wsgi --log-file -

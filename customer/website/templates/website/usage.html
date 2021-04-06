@@ -1,0 +1,68 @@
+{% extends 'website/base.html' %}
+{% load static %}
+
+{% block title %}
+	Usages
+{% endblock %}
+
+{% block content %}
+	<!-- Filters -->
+	<div class="container" style="margin: 0 auto; width: 90%;">
+		<h3 class="text-center my-4">Filter Usages</h3>
+
+		<form class="form-inline" action="/usage/" method="post" autocomplete="off">
+			{% csrf_token %}
+			<div class="row">
+				<div class="form-group col-xs-4 px-2">
+					<p>Travelling Between: <input class="form-control" type="text" name="startdate" id="datepicker1"></p>
+				</div>
+				<div class="form-group col-xs-4 px-2">
+					<p> and: <input type="text" class="form-control" name="enddate" id="datepicker2"></p>
+				</div>
+				<div class="form-group col-xs-4 px-2">
+					<p> Mode of Transport: <select  class="form-control" name="mode" id="mode"> </p>
+						<option value="None">Any</option>
+						{% for m in modes %}
+							<option id="mode" value="{% autoescape off %}{{ m }}{% endautoescape %}">{{m.short_desc}}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="text-center px-1">
+					<p><input  class="btn btn-md btn-info" type="submit" value="Filter"></p>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<div class="container my-4 mb-5">
+		<!-- Heading changes with applied filters -->
+		<h4 >{{ heading }}</h4>
+		
+		<!-- Display the user's usages -->
+		{% if usages %}
+			{% regroup usages by travel_to.date_time.date as usages %}
+			{% for date, usage in usages %}
+			<div class="card p-4 my-4" style="width: 50rem;">
+				<a data-toggle="collapse" href="#usage{{ forloop.counter }}" role="button" aria-expanded="false" aria-controls="usage{{ forloop.counter }}">
+					{{ date }}
+				</a>
+				{% for ticket in usage %}
+				<div class="collapse" id="usage{{ forloop.parentloop.counter }}">
+					<div class="card p-4 my-4" style="width: 40rem;">
+					<tr>
+						<h5> {{ ticket.mode }} Ticket</h5>
+						<p> <b>{{ ticket.operator }}</b> </p>
+						<p>{{ ticket.travel_from.location.name }} to {{ ticket.travel_to.location.name }}</p>
+						<p> {{ ticket.travel_from.date_time }} - {{ ticket.travel_to.date_time }}</p>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+			{% endfor %}
+		{% else %}
+			<td>No usages found</td>
+		{% endif %}
+		</tr>
+	</div>
+
+{% endblock content %}
